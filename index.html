@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integrated Vehicular Vegetation Monitoring System | Senior Design</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        utility: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        },
+                        veg: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            800: '#166534',
+                            900: '#14532d',
+                        },
+                        infra: {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            200: '#e2e8f0',
+                            300: '#cbd5e1',
+                            600: '#475569',
+                            800: '#1e293b',
+                            900: '#0f172a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-hero {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(20, 83, 45, 0.85) 100%),
+                        url('https://images.unsplash.com/photo-1449824913935-59a10b8d2000?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80') center/cover;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .timeline-line {
+            background: linear-gradient(to bottom, #16a34a, #0ea5e9);
+        }
+        .map-grid {
+            background-image: 
+                linear-gradient(rgba(203, 213, 225, 0.3) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(203, 213, 225, 0.3) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .severity-high { background-color: #dc2626; }
+        .severity-medium { background-color: #ea580c; }
+        .severity-low { background-color: #16a34a; }
+    </style>
+</head>
+<body class="font-sans text-infra-800 bg-infra-50 antialiased">
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 glass-panel border-b border-infra-200 transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="cpu" class="h-6 w-6 text-veg-600"></i>
+                    <span class="font-bold text-lg tracking-tight text-infra-900">IVVM<span class="text-veg-600">System</span></span>
+                </div>
+                
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#overview" class="text-sm font-medium text-infra-600 hover:text-veg-600 transition-colors">Overview</a>
+                    <a href="#architecture" class="text-sm font-medium text-infra-600 hover:text-veg-600 transition-colors">Architecture</a>
+                    <a href="#dashboard" class="text-sm font-medium text-infra-600 hover:text-veg-600 transition-colors">Dashboard</a>
+                    <a href="#engineering" class="text-sm font-medium text-infra-600 hover:text-veg-600 transition-colors">Engineering</a>
+                    <a href="#status" class="text-sm font-medium text-infra-600 hover:text-veg-600 transition-colors">Status</a>
+                    <a href="#impact" class="text-sm font-medium text-infra-600 hover:text-veg-600 transition-colors">Impact</a>
+                    <a href="#team" class="text-sm font-medium text-infra-600 hover:text-veg-600 transition-colors">Team</a>
+                </div>
+
+                <div class="hidden md:flex items-center gap-4">
+                    <span class="text-xs font-mono text-utility-600 bg-utility-50 px-2 py-1 rounded">v2.4.0-beta</span>
+                    <a href="#dashboard" class="bg-veg-600 hover:bg-veg-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2">
+                        <i data-lucide="map" class="h-4 w-4"></i>
+                        View Dashboard
+                    </a>
+                </div>
+
+                <!-- Mobile menu button -->
+                <button class="md:hidden p-2 rounded-md text-infra-600 hover:bg-infra-100" onclick="toggleMobileMenu()">
+                    <i data-lucide="menu" class="h-6 w-6" id="menuIcon"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div class="md:hidden hidden bg-white border-t border-infra-200" id="mobileMenu">
+            <div class="px-4 pt-2 pb-3 space-y-1">
+                <a href="#overview" class="block px-3 py-2 text-base font-medium text-infra-600 hover:text-veg-600 hover:bg-infra-50 rounded-md">Overview</a>
+                <a href="#architecture" class="block px-3 py-2 text-base font-medium text-infra-600 hover:text-veg-600 hover:bg-infra-50 rounded-md">Architecture</a>
+                <a href="#dashboard" class="block px-3 py-2 text-base font-medium text-infra-600 hover:text-veg-600 hover:bg-infra-50 rounded-md">Dashboard</a>
+                <a href="#engineering" class="block px-3 py-2 text-base font-medium text-infra-600 hover:text-veg-600 hover:bg-infra-50 rounded-md">Engineering</a>
+                <a href="#status" class="block px-3 py-2 text-base font-medium text-infra-600 hover:text-veg-600 hover:bg-infra-50 rounded-md">Status</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative h-screen flex items-center justify-center gradient-hero overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-b from-transparent to-infra-900/50"></div>
+        
+        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white text-sm font-medium mb-6 animate-fade-in-up">
+                <i data-lucide="award" class="h-4 w-4 text-veg-400"></i>
+                Senior Design Engineering Project 2024-2025
+            </div>
+            
+            <h1 class="text-4xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight mb-6 leading-tight">
+                Integrated Vehicular<br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-veg-400 to-utility-400">Vegetation Monitor</span>
+            </h1>
+            
+            <p class="text-xl md:text-2xl text-infra-100 max-w-3xl mx-auto mb-8 font-light">
+                Automated geotagged roadside vegetation analysis for utility infrastructure protection during routine vehicle operations.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <a href="#architecture" class="px-8 py-4 bg-veg-600 hover:bg-veg-700 text-white rounded-lg font-semibold transition-all flex items-center gap-2 shadow-lg shadow-veg-600/30">
+                    <i data-lucide="layers" class="h-5 w-5"></i>
+                    View System Overview
+                </a>
+                <a href="#dashboard" class="px-8 py-4 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white border border-white/30 rounded-lg font-semibold transition-all flex items-center gap-2">
+                    <i data-lucide="layout-dashboard" class="h-5 w-5"></i>
+                    View Dashboard
+                </a>
+            </div>
+
+            <div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto text-left">
+                <div class="glass-panel p-6 rounded-xl">
+                    <i data-lucide="satellite" class="h-8 w-8 text-utility-400 mb-3"></i>
+                    <h3 class="text-white font-semibold mb-1">GPS-Integrated</h3>
+                    <p class="text-infra-200 text-sm">Real-time geotagging with sub-meter accuracy</p>
+                </div>
+                <div class="glass-panel p-6 rounded-xl">
+                    <i data-lucide="camera" class="h-8 w-8 text-veg-400 mb-3"></i>
+                    <h3 class="text-white font-semibold mb-1">AI-Powered</h3>
+                    <p class="text-infra-200 text-sm">Automated vegetation severity classification</p>
+                </div>
+                <div class="glass-panel p-6 rounded-xl">
+                    <i data-lucide="wifi" class="h-8 w-8 text-utility-400 mb-3"></i>
+                    <h3 class="text-white font-semibold mb-1">Cloud-Connected</h3>
+                    <p class="text-infra-200 text-sm">Wireless data transmission to central analytics</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+            <i data-lucide="chevron-down" class="h-6 w-6 text-white/70"></i>
+        </div>
+    </section>
+
+    <!-- Project Overview -->
+    <section id="overview" class="py-24 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-infra-900 mb-4">Project Overview</h2>
+                <div class="w-24 h-1 bg-gradient-to-r from-veg-500 to-utility-500 mx-auto rounded-full"></div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-16">
+                <div class="bg-red-50 border-l-4 border-red-400 p-8 rounded-r-lg">
+                    <div class="flex items-center gap-3 mb-4">
+                        <i data-lucide="alert-triangle" class="h-6 w-6 text-red-600"></i>
+                        <h3 class="text-xl font-bold text-red-900">The Problem</h3>
+                    </div>
+                    <p class="text-red-800 mb-4 leading-relaxed">
+                        Utility companies currently rely on manual inspections or costly helicopter surveys to monitor vegetation encroachment on transmission lines. These methods are labor-intensive, expensive ($500-$1,200 per mile), and reactive rather than preventative.
+                    </p>
+                    <ul class="space-y-2 text-red-700 text-sm">
+                        <li class="flex items-start gap-2">
+                            <i data-lucide="x-circle" class="h-4 w-4 mt-0.5 flex-shrink-0"></i>
+                            <span>Vegetation-related outages cost utilities $1.2B annually</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i data-lucide="x-circle" class="h-4 w-4 mt-0.5 flex-shrink-0"></i>
+                            <span>Manual inspections limited by terrain and weather</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i data-lucide="x-circle" class="h-4 w-4 mt-0.5 flex-shrink-0"></i>
+                            <span>Reactive maintenance increases wildfire risk</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="bg-veg-50 border-l-4 border-veg-500 p-8 rounded-r-lg">
+                    <div class="flex items-center gap-3 mb-4">
+                        <i data-lucide="check-circle" class="h-6 w-6 text-veg-600"></i>
+                        <h3 class="text-xl font-bold text-veg-900">Our Solution</h3>
+                    </div>
+                    <p class="text-veg-800 mb-4 leading-relaxed">
+                        An automated vehicle-mounted monitoring system that captures geotagged imagery during routine operations, processes data through AI cloud analytics, and provides real-time vegetation risk mapping.
+                    </p>
+                    <ul class="space-y-2 text-veg-700 text-sm">
+                        <li class="flex items-start gap-2">
+                            <i data-lucide="check" class="h-4 w-4 mt-0.5 flex-shrink-0"></i>
+                            <span>Scalable: Convert existing fleet vehicles to data collectors</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i data-lucide="check" class="h-4 w-4 mt-0.5 flex-shrink-0"></i>
+                            <span>Automated: Zero human intervention during data capture</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i data-lucide="check" class="h-4 w-4 mt-0.5 flex-shrink-0"></i>
+                            <span>Preventative: Predictive analytics for maintenance scheduling</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="text-center p-6 rounded-xl bg-infra-50 border border-infra-200">
+                    <div class="w-12 h-12 mx-auto bg-utility-100 rounded-lg flex items-center justify-center mb-4">
+                        <i data-lucide="scale" class="h-6 w-6 text-utility-600"></i>
+                    </div>
+                    <h4 class="font-semibold text-infra-900 mb-2">Scalable</h4>
+                    <p class="text-sm text-infra-600">Fleet-wide deployment without dedicated inspection vehicles</p>
+                </div>
+                <div class="text-center p-6 rounded-xl bg-infra-50 border border-infra-200">
+                    <div class="w-12 h-12 mx-auto bg-veg-100 rounded-lg flex items-center justify-center mb-4">
+                        <i data-lucide="bot" class="h-6 w-6 text-veg-600"></i>
+                    </div>
+                    <h4 class="font-semibold text-infra-900 mb-2">Automated</h4>
+                    <p class="text-sm text-infra-600">24/7 operation during normal fleet activities</p>
+                </div>
+                <div class="text-center p-6 rounded-xl bg-infra-50 border border-infra-200">
+                    <div class="w-12 h-12 mx-auto bg-utility-100 rounded-lg flex items-center justify-center mb-4">
+                        <i data-lucide="piggy-bank" class="h-6 w-6 text-utility-600"></i>
+                    </div>
+                    <h4 class="font-semibold text-infra-900 mb-2">Cost-Effective</h4>
+                    <p class="text-sm text-infra-600">75% reduction in inspection costs per mile</p>
+                </div>
+                <div class="text-center p-6 rounded-xl bg-infra-50 border border-infra-200">
+                    <div class="w-12 h-12 mx-auto bg-veg-100 rounded-lg flex items-center justify-center mb-4">
+                        <i data-lucide="shield-check" class="h-6 w-6 text-veg-600"></i>
+                    </div>
+                    <h4 class="font-semibold text-infra-900 mb-2">Preventative</h4>
+                    <p class="text-sm text-infra-600">Proactive risk mitigation before outages occur</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- System Architecture -->
+    <section id="architecture" class="py-24 bg-infra-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-infra-900 mb-4">System Architecture</h2>
+                <p class="text-lg text-infra-600 max-w-2xl mx-auto">
+                    End-to-end workflow from vehicle-mounted data capture to cloud-based AI analytics and utility dashboard integration.
+                </p>
+            </div>
+
+            <!-- Workflow Diagram -->
+            <div class="mb-16 overflow-x-auto">
+                <div class="flex items-center justify-between min-w-max px-4 gap-4">
+                    <div class="flex flex-col items-center w-48">
+                        <div class="w-16 h-16 bg-utility-600 rounded-full flex items-center justify-center text-white shadow-lg mb-3">
+                            <i data-lucide="truck" class="h-8 w-8"></i>
+                        </div>
+                        <h4 class="font-semibold text-infra-900 text-center">Fleet Vehicle</h4>
+                        <p class="text-xs text-infra-500 text-center mt-1">Data Collection Unit</p>
+                    </div>
+                    <div class="flex-1 h-1 bg-gradient-to-r from-utility-500 to-veg-500 rounded"></div>
+                    <div class="flex flex-col items-center w-48">
+                        <div class="w-16 h-16 bg-veg-600 rounded-full flex items-center justify-center text-white shadow-lg mb-3">
+                            <i data-lucide="gps" class="h-8 w-8"></i>
+                        </div>
+                        <h4 class="font-semibold text-infra-900 text-center">GPS Integration</h4>
+                        <p class="text-xs text-infra-500 text-center mt-1">Geotagging & Sync</p>
+                    </div>
+                    <div class="flex-1 h-1 bg-gradient-to-r from-veg-500 to-utility-500 rounded"></div>
+                    <div class="flex flex-col items-center w-48">
+                        <div class="w-16 h-16 bg-utility-600 rounded-full flex items-center justify-center text-white shadow-lg mb-3">
+                            <i data-lucide="upload-cloud" class="h-8 w-8"></i>
+                        </div>
+                        <h4 class="font-semibold text-infra-900 text-center">Wireless TX</h4>
+                        <p class="text-xs text-infra-500 text-center mt-1">4G/5G Upload</p>
+                    </div>
+                    <div class="flex-1 h-1 bg-gradient-to-r from-utility-500 to-veg-500 rounded"></div>
+                    <div class="flex flex-col items-center w-48">
+                        <div class="w-16 h-16 bg-veg-600 rounded-full flex items-center justify-center text-white shadow-lg mb-3">
+                            <i data-lucide="server" class="h-8 w-8"></i>
+                        </div>
+                        <h4 class="font-semibold text-infra-900 text-center">Cloud AI</h4>
+                        <p class="text-xs text-infra-500 text-center mt-1">Processing & Analysis</p>
+                    </div>
+                    <div class="flex-1 h-1 bg-gradient-to-r from-veg-500 to-utility-500 rounded"></div>
+                    <div class="flex flex-col items-center w-48">
+                        <div class="w-16 h-16 bg-utility-600 rounded-full flex items-center justify-center text-white shadow-lg mb-3">
+                            <i data-lucide="layout-dashboard" class="h-8 w-8"></i>
+                        </div>
+                        <h4 class="font-semibold text-infra-900 text-center">Dashboard</h4>
+                        <p class="text-xs text-infra-500 text-center mt-1">Visualization & Alerts</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Component Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white rounded-xl shadow-sm border border-infra-200 p-8">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 bg-utility-100 rounded-lg flex items-center justify-center">
+                            <i data-lucide="hard-drive" class="h-5 w-5 text-utility-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-infra-900">Hardware Components</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-4 p-4 bg-infra-50 rounded-lg border border-infra-100">
+                            <i data-lucide="camera" class="h-5 w-5 text-utility-600 mt-0.5"></i>
+                            <div>
+                                <h4 class="font-semibold text-infra-900">Stereoscopic Camera Array</h4>
+                                <p class="text-sm text-infra-600">Dual 4K industrial cameras with depth sensing capability for vegetation proximity analysis.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4 p-4 bg-infra-50 rounded-lg border border-infra-100">
+                            <i data-lucide="navigation" class="h-5 w-5 text-utility-600 mt-0.5"></i>
+                            <div>
+                                <h4 class="font-semibold text-infra-900">RTK-GPS Module</h4>
+                                <p class="text-sm text-infra-600">Real-time kinematic positioning providing ±2cm location accuracy for precise asset mapping.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4 p-4 bg-infra-50 rounded-lg border border-infra-100">
+                            <i data-lucide="battery" class="h-5 w-5 text-utility-600 mt-0.5"></i>
+                            <div>
+                                <h4 class="font-semibold text-infra-900">Power Management Unit</h4>
+                                <p class="text-sm text-infra-600">Automotive-grade voltage regulation with vibration-resistant solid-state design.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-infra-200 p-8">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 bg-veg-100 rounded-lg flex items-center justify-center">
+                            <i data-lucide="code" class="h-5 w-5 text-veg-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-infra-900">Software Stack</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-4 p-4 bg-infra-50 rounded-lg border border-infra-100">
+                            <i data-lucide="brain" class="h-5 w-5 text-veg-600 mt-0.5"></i>
+                            <div>
+                                <h4 class="font-semibold text-infra-900">Computer Vision Engine</h4>
+                                <p class="text-sm text-infra-600">YOLOv8-based vegetation detection with custom-trained models for utility-specific species.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4 p-4 bg-infra-50 rounded-lg border border-infra-100">
+                            <i data-lucide="database" class="h-5 w-5 text-veg-600 mt-0.5"></i>
+                            <div>
+                                <h4 class="font-semibold text-infra-900">Geospatial Database</h4>
+                                <p class="text-sm text-infra-600">PostgreSQL/PostGIS backend with time-series data retention for trend analysis.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4 p-4 bg-infra-50 rounded-lg border border-infra-100">
+                            <i data-lucide="globe" class="h-5 w-5 text-veg-600 mt-0.5"></i>
+                            <div>
+                                <h4 class="font-semibold text-infra-900">Web Dashboard</h4>
+                                <p class="text-sm text-infra-600">React-based frontend with Mapbox GL integration for interactive asset visualization.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Interactive Dashboard -->
+    <section id="dashboard" class="py-24 bg-infra-900 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-3xl font-bold mb-2">Live Monitoring Dashboard</h2>
+                    <p class="text-infra-300">Real-time vegetation analysis from active fleet vehicles</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="flex items-center gap-2 text-sm">
+                        <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                        System Online
+                    </span>
+                    <span class="font-mono text-sm bg-infra-800 px-3 py-1 rounded">Fleet: 12 Active</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Interface -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-infra-800 rounded-xl overflow-hidden border border-infra-700 shadow-2xl">
+                <div class="flex flex-col lg:flex-row h-[600px]">
+                    <!-- Map Area -->
+                    <div class="flex-1 relative bg-infra-900 map-grid" id="mapContainer">
+                        <!-- Placeholder Map Interface -->
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="text-center">
+                                <i data-lucide="map" class="h-16 w-16 text-infra-600 mx-auto mb-4"></i>
+                                <p class="text-infra-400 text-lg">Interactive Map Placeholder</p>
+                                <p class="text-infra-500 text-sm mt-2">Google Maps API integration pending</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Mock Data Points -->
+                        <div class="absolute top-1/4 left-1/3 transform -translate-x-1/2 -translate-y-1/2">
+                            <div class="relative group cursor-pointer">
+                                <div class="w-4 h-4 bg-red-500 rounded-full border-2 border-white shadow-lg animate-ping absolute"></div>
+                                <div class="w-4 h-4 bg-red-500 rounded-full border-2 border-white shadow-lg relative"></div>
+                                <div class="absolute left-6 top-1/2 transform -translate-y-1/2 bg-white text-infra-900 px-2 py-1 rounded text-xs font-mono opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                    V-104 | High Risk
+                                </div>
+                            </div>
+                        </div>
+                        <div class="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                            <div class="relative group cursor-pointer">
+                                <div class="w-4 h-4 bg-orange-500 rounded-full border-2 border-white shadow-lg relative"></div>
+                                <div class="absolute left-6 top-1/2 transform -translate-y-1/2 bg-white text-infra-900 px-2 py-1 rounded text-xs font-mono opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                    V-102 | Medium Risk
+                                </div>
+                            </div>
+                        </div>
+                        <div class="absolute bottom-1/3 right-1/3 transform -translate-x-1/2 -translate-y-1/2">
+                            <div class="relative group cursor-pointer">
+                                <div class="w-4 h-4 bg-green-500 rounded-full border-2 border-white shadow-lg relative"></div>
+                                <div class="absolute left-6 top-1/2 transform -translate-y-1/2 bg-white text-infra-900 px-2 py-1 rounded text-xs font-mono opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                    V-103 | Low Risk
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Map Controls -->
+                        <div class="absolute bottom-4 left-4 flex gap-2">
+                            <button class="bg-white/10 backdrop-blur-sm p-2 rounded hover:bg-white/20 transition-colors" onclick="zoomMap(1)">
+                                <i data-lucide="plus" class="h-5 w-5"></i>
+                            </button>
+                            <button class="bg-white/10 backdrop-blur-sm p-2 rounded hover:bg-white/20 transition-colors" onclick="zoomMap(-1)">
+                                <i data-lucide="minus" class="h-5 w-5"></i>
+                            </button>
+                        </div>
+
+                        <!-- Legend -->
+                        <div class="absolute top-4 right-4 bg-black/80 backdrop-blur-sm p-4 rounded-lg border border-infra-700 text-xs">
+                            <h4 class="font-semibold mb-3 text-white">Vegetation Severity</h4>
+                            <div class="space-y-2">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                                    <span class="text-infra-300">High (> 3ft clearance)</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <div class="w-3 h-3 bg-orange-500 rounded-full"></div>
+                                    <span class="text-infra-300">Medium (1-3ft)</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                                    <span class="text-infra-300">Low (< 1ft)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sidebar -->
+                    <div class="w-full lg:w-80 bg-infra-800 border-l border-infra-700 flex flex-col">
+                        <div class="p-4 border-b border-infra-700">
+                            <h3 class="font-semibold flex items-center gap-2">
+                                <i data-lucide="activity" class="h-4 w-4 text-utility-400"></i>
+                                Recent Detections
+                            </h3>
+                        </div>
+                        <div class="flex-1 overflow-y-auto p-4 space-y-3">
+                            <!-- Mock Data Cards -->
+                            <div class="bg-infra-700/50 p-3 rounded-lg border border-infra-600 hover:border-utility-500 transition-colors cursor-pointer" onclick="selectVehicle('V-104')">
+                                <div class="flex justify-between items-start mb-2">
+                                    <span class="font-mono font-semibold text-utility-400">V-104</span>
+                                    <span class="text-xs bg-red-500/20 text-red-400 px-2 py-0.5 rounded">HIGH</span>
+                                </div>
+                                <div class="space-y-1 text-xs text-infra-300">
+                                    <div class="flex items-center gap-2">
+                                        <i data-lucide="clock" class="h-3 w-3"></i>
+                                        <span>14:23:05 EST</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <i data-lucide="map-pin" class="h-3 w-3"></i>
+                                        <span>26.4583, -80.1234</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-infra-700/50 p-3 rounded-lg border border-infra-600 hover:border-utility-500 transition-colors cursor-pointer" onclick="selectVehicle('V-102')">
+                                <div class="flex justify-between items-start mb-2">
+                                    <span class="font-mono font-semibold text-utility-400">V-102</span>
+                                    <span class="text-xs bg-orange-500/20 text-orange-400 px-2 py-0.5 rounded">MED</span>
+                                </div>
+                                <div class="space-y-1 text-xs text-infra-300">
+                                    <div class="flex items-center gap-2">
+                                        <i data-lucide="clock" class="h-3 w-3"></i>
+                                        <span>14:15:22 EST</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <i data-lucide="map-pin" class="h-3 w-3"></i>
+                                        <span>26.4591, -80.1251</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-infra-700/50 p-3 rounded-lg border border-infra-600 hover:border-utility-500 transition-colors cursor-pointer" onclick="selectVehicle('V-103')">
+                                <div class="flex justify-between items-start mb-2">
+                                    <span class="font-mono font-semibold text-utility-400">V-103</span>
+                                    <span class="text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded">LOW</span>
+                                </div>
+                                <div class="space-y-1 text-xs text-infra-300">
+                                    <div class="flex items-center gap-2">
+                                        <i data-lucide="clock" class="h-3 w-3"></i>
+                                        <span>14:08:44 EST</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <i data-lucide="map-pin" class="h-3 w-3"></i>
+                                        <span>26.4602, -80.1278</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Selected Vehicle Detail -->
+                        <div class="p-4 border-t border-infra-700 bg-infra-900/50" id="vehicleDetail">
+                            <p class="text-sm text-infra-400 text-center">Select a detection to view details</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Engineering Design -->
+    <section id="engineering" class="py-24 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-infra-900 mb-4">Engineering Design</h2>
+                <p class="text-lg text-infra-600">Multi-disciplinary approach addressing mechanical, electrical, and software systems integration</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                <div class="bg-infra-50 rounded-xl p-6 border border-infra-200 hover:shadow-lg transition-all group">
+                    <div class="w-12 h-12 bg-utility-100 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <i data-lucide="cog" class="h-6 w-6 text-utility-600"></i>
+                    </div>
+                    <h3 class="font-bold text-infra-900 mb-2">Mechanical</h3>
+                    <p class="text-sm text-infra-600 mb-4">Vibration-isolated mounting system with ingress protection (IP67) rated enclosure.</p>
+                    <ul class="text-xs text-infra-500 space-y-1">
+                        <li>• Anti-vibration dampeners</li>
+                        <li>• Thermal management</li>
+                        <li>• Aerodynamic housing</li>
+                    </ul>
+                </div>
+
+                <div class="bg-infra-50 rounded-xl p-6 border border-infra-200 hover:shadow-lg transition-all group">
+                    <div class="w-12 h-12 bg-veg-100 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <i data-lucide="zap" class="h-6 w-6 text-veg-600"></i>
+                    </div>
+                    <h3 class="font-bold text-infra-900 mb-2">Electrical</h3>
+                    <p class="text-sm text-infra-600 mb-4">12V automotive power regulation with backup battery and surge protection.</p>
+                    <ul class="text-xs text-infra-500 space-y-1">
+                        <li>• Voltage regulation</li>
+                        <li>• Power filtering</li>
+                        <li>• ESD protection</li>
+                    </ul>
+                </div>
+
+                <div class="bg-infra-50 rounded-xl p-6 border border-infra-200 hover:shadow-lg transition-all group">
+                    <div class="w-12 h-12 bg-utility-100 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <i data-lucide="chip" class="h-6 w-6 text-utility-600"></i>
+                    </div>
+                    <h3 class="font-bold text-infra-900 mb-2">Computer</h3>
+                    <p class="text-sm text-infra-600 mb-4">Edge computing with NVIDIA Jetson for real-time preprocessing.</p>
+                    <ul class="text-xs text-infra-500 space-y-1">
+                        <li>• Edge AI processing</li>
+                        <li>• Data buffering</li>
+                        <li>• LTE connectivity</li>
+                    </ul>
+                </div>
+
+                <div class="bg-infra-50 rounded-xl p-6 border border-infra-200 hover:shadow-lg transition-all group">
+                    <div class="w-12 h-12 bg-veg-100 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <i data-lucide="link" class="h-6 w-6 text-veg-600"></i>
+                    </div>
+                    <h3 class="font-bold text-infra-900 mb-2">Systems Integration</h3>
+                    <p class="text-sm text-infra-600 mb-4">Unified control architecture ensuring subsystem interoperability.</p>
+                    <ul class="text-xs text-infra-500 space-y-1">
+                        <li>• API gateway</li>
+                        <li>• Data pipeline</li>
+                        <li>• Fleet management</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Design Constraints -->
+            <div class="bg-gradient-to-r from-infra-900 to-infra-800 rounded-2xl p-8 text-white">
+                <h3 class="text-2xl font-bold mb-6 flex items-center gap-3">
+                    <i data-lucide="alert-circle" class="h-6 w-6 text-utility-400"></i>
+                    Design Constraints & Considerations
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="glass-panel p-4 rounded-lg">
+                        <h4 class="font-semibold text-utility-300 mb-2 flex items-center gap-2">
+                            <i data-lucide="battery-warning" class="h-4 w-4"></i>
+                            Power
+                        </h4>
+                        <p class="text-sm text-infra-200">Limited to 50W continuous draw from vehicle 12V system. Sleep mode implementation for parked vehicles.</p>
+                    </div>
+                    <div class="glass-panel p-4 rounded-lg">
+                        <h4 class="font-semibold text-veg-300 mb-2 flex items-center gap-2">
+                            <i data-lucide="activity" class="h-4 w-4"></i>
+                            Vibration
+                        </h4>
+                        <p class="text-sm text-infra-200">Must withstand 5g RMS random vibration per IEC 60721-3-5 3M3 class specifications.</p>
+                    </div>
+                    <div class="glass-panel p-4 rounded-lg">
+                        <h4 class="font-semibold text-utility-300 mb-2 flex items-center gap-2">
+                            <i data-lucide="wifi-off" class="h-4 w-4"></i>
+                            Bandwidth
+                        </h4>
+                        <p class="text-sm text-infra-200">Edge compression required for rural areas with limited 4G coverage. Store-and-forward capability.</p>
+                    </div>
+                    <div class="glass-panel p-4 rounded-lg">
+                        <h4 class="font-semibold text-veg-300 mb-2 flex items-center gap-2">
+                            <i data-lucide="thermometer-sun" class="h-4 w-4"></i>
+                            Environment
+                        </h4>
+                        <p class="text-sm text-infra-200">Operating range -20°C to +60°C. IP67 rated for Florida hurricane season deployment.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Project Status -->
+    <section id="status" class="py-24 bg-infra-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-infra-900 mb-4">Project Status</h2>
+                <p class="text-lg text-infra-600">Current development phase and milestone tracking</p>
+            </div>
+
+            <div class="relative">
+                <!-- Timeline Line -->
+                <div class="hidden md:block absolute left-1/2 transform -translate-x-1/2 h-full w-1 timeline-line rounded-full"></div>
+
+                <div class="space-y-12">
+                    <!-- Phase 1 -->
+                    <div class="relative flex items-center justify-center">
+                        <div class="hidden md:block w-1/2 pr-8 text-right">
+                            <h3 class="text-xl font-bold text-infra-900">Ideation & Requirements</h3>
+                            <p class="text-infra-600 mt-2">Literature review, stakeholder interviews, and initial concept development with NextEra Energy engineering team.</p>
+                        </div>
+                        <div class="absolute left-1/2 transform -translate-x-1/2 w-8 h-8 bg-veg-500 rounded-full border-4 border-white shadow-lg z-10 flex items-center justify-center">
+                            <i data-lucide="check" class="h-4 w-4 text-white"></i>
+                        </div>
+                        <div class="hidden md:block w-1/2 pl-8">
+                            <span class="inline-block bg-veg-100 text-veg-800 px-3 py-1 rounded-full text-sm font-semibold">Complete</span>
+                            <p class="text-sm text-infra-500 mt-1">Aug - Sep 2024</p>
+                        </div>
+                        <div class="md:hidden w-full pl-12 border-l-4 border-veg-500 ml-4 pb-8">
+                            <h3 class="text-lg font-bold text-infra-900">Ideation & Requirements</h3>
+                            <p class="text-sm text-infra-600 mt-1">Complete • Aug-Sep 2024</p>
+                        </div>
+                    </div>
+
+                    <!-- Phase 2 -->
+                    <div class="relative flex items-center justify-center">
+                        <div class="hidden md:block w-1/2 pr-8 text-right">
+                            <span class="inline-block bg-veg-100 text-veg-800 px-3 py-1 rounded-full text-sm font-semibold">Complete</span>
+                            <p class="text-sm text-infra-500 mt-1">Sep - Oct 2024</p>
+                        </div>
+                        <div class="absolute left-1/2 transform -translate-x-1/2 w-8 h-8 bg-veg-500 rounded-full border-4 border-white shadow-lg z-10 flex items-center justify-center">
+                            <i data-lucide="check" class="h-4 w-4 text-white"></i>
+                        </div>
+                        <div class="hidden md:block w-1/2 pl-8">
+                            <h3 class="text-xl font-bold text-infra-900">Design Selection</h3>
+                            <p class="text-infra-600 mt-2">Trade-off analysis, benchmarking, and finalization of technical specifications and component selection.</p>
+                        </div>
+                        <div class="md:hidden w-full pl-12 border-l-4 border-veg-500 ml-4 pb-8">
+                            <h3 class="text-lg font-bold text-infra-900">Design Selection</h3>
+                            <p class="text-sm text-infra-600 mt-1">Complete • Sep-Oct 2024</p>
+                        </div>
+                    </div>
+
+                    <!-- Phase 3 -->
+                    <div class="relative flex items-center justify-center">
+                        <div class="hidden md:block w-1/2 pr-8 text-right">
+                            <h3 class="text-xl font-bold text-infra-900">Prototyping</h3>
+                            <p class="text-infra-600 mt-2">CAD modeling, 3D printing enclosures, PCB fabrication, and initial software algorithm development.</p>
+                        </div>
+                        <div class="absolute left-1/2 transform -translate-x-1/2 w-8 h-8 bg-utility-500 rounded-full border-4 border-white shadow-lg z-10 flex items-center justify-center">
+                            <div class="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                        </div>
+                        <div class="hidden md:block w-1/2 pl-8">
+                            <span class="inline-block bg-utility-100 text-utility-800 px-3 py-1 rounded-full text-sm font-semibold">In Progress</span>
+                            <p class="text-sm text-infra-500 mt-1">Oct - Dec 2024</p>
+                        </div>
+                        <div class="md:hidden w-full pl-12 border-l-4 border-utility-500 ml-4 pb-8">
+                            <h3 class="text-lg font-bold text-infra-900">Prototyping</h3>
+                            <p class="text-sm text-infra-600 mt-1">In Progress • Oct-Dec 2024</p>
+                        </div>
+                    </div>
+
+                    <!-- Phase 4 -->
+                    <div class="relative flex items-center justify-center opacity-50">
+                        <div class="hidden md:block w-1/2 pr-8 text-right">
+                            <span class="inline-block bg-infra-200 text-infra-700 px-3 py-1 rounded-full text-sm font-semibold">Upcoming</span>
+                            <p class="text-sm text-infra-500 mt-1">Jan - Feb 2025</p>
+                        </div>
+                        <div class="absolute left-1/2 transform -translate-x-1/2 w-8 h-8 bg-infra-300 rounded-full border-4 border-white shadow-lg z-10"></div>
+                        <div class="hidden md:block w-1/2 pl-8">
+                            <h3 class="text-xl font-bold text-infra-900">Field Testing</h3>
+                            <p class="text-infra-600 mt-2">Deployment on test fleet vehicles, data collection validation, and algorithm refinement.</p>
+                        </div>
+                        <div class="md:hidden w-full pl-12 border-l-4 border-infra-300 ml-4 pb-8">
+                            <h3 class="text-lg font-bold text-infra-900">Field Testing</h3>
+                            <p class="text-sm text-infra-600 mt-1">Upcoming • Jan-Feb 2025</p>
+                        </div>
+                    </div>
+
+                    <!-- Phase 5 -->
+                    <div class="relative flex items-center justify-center opacity-30">
+                        <div class="hidden md:block w-1/2 pr-8 text-right">
+                            <h3 class="text-xl font-bold text-infra-900">Validation & Expo</h3>
+                            <p class="text-infra-600 mt-2">Final system validation, documentation, and Senior Design Expo presentation preparation.</p>
+                        </div>
+                        <div class="absolute left-1/2 transform -translate-x-1/2 w-8 h-8 bg-infra-300 rounded-full border-4 border-white shadow-lg z-10"></div>
+                        <div class="hidden md:block w-1/2 pl-8">
+                            <span class="inline-block bg-infra-200 text-infra-700 px-3 py-1 rounded-full text-sm font-semibold">Upcoming</span>
+                            <p class="text-sm text-infra-500 mt-1">Mar - Apr 2025</p>
+                        </div>
+                        <div class="md:hidden w-full pl-12 border-l-4 border-infra-300 ml-4">
+                            <h3 class="text-lg font-bold text-infra-900">Validation & Expo</h3>
+                            <p class="text-sm text-infra-600 mt-1">Upcoming • Mar-Apr 2025</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Broader Impact -->
+    <section id="impact" class="py-24 bg-veg-900 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Broader Impact</h2>
+                <p class="text-veg-100 text-lg">Transforming utility infrastructure management through intelligent automation</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+                <div class="text-center">
+                    <div class="w-16 h-16 mx-auto bg-white/10 rounded-full flex items-center justify-center mb-4">
+                        <i data-lucide="building-2" class="h-8 w-8 text-utility-300"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2">Utility Operations</h3>
+                    <p class="text-veg-100 text-sm">Reduction in inspection labor costs by 75% while increasing survey frequency from annual to continuous monitoring.</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-16 h-16 mx-auto bg-white/10 rounded-full flex items-center justify-center mb-4">
+                        <i data-lucide="flame-off" class="h-8 w-8 text-red-300"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2">Wildfire Prevention</h3>
+                    <p class="text-veg-100 text-sm">Early detection of high-risk vegetation contact points, reducing ignition risk by up to 60% in high-risk zones.</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-16 h-16 mx-auto bg-white/10 rounded-full flex items-center justify-center mb-4">
+                        <i data-lucide="sun" class="h-8 w-8 text-yellow-300"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2">Solar Efficiency</h3>
+                    <p class="text-veg-100 text-sm">Application to solar farm vegetation monitoring, ensuring panel efficiency through automated growth detection.</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-16 h-16 mx-auto bg-white/10 rounded-full flex items-center justify-center mb-4">
+                        <i data-lucide="trending-down" class="h-8 w-8 text-utility-300"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2">Cost Savings</h3>
+                    <p class="text-veg-100 text-sm">Preventative maintenance approach reduces emergency response costs by $2.4M annually per utility zone.</p>
+                </div>
+            </div>
+
+            <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                    <div>
+                        <div class="text-4xl font-bold text-utility-300 mb-2">$2.4M</div>
+                        <div class="text-sm text-veg-100">Estimated Annual Savings</div>
+                    </div>
+                    <div>
+                        <div class="text-4xl font-bold text-utility-300 mb-2">60%</div>
+                        <div class="text-sm text-veg-100">Wildfire Risk Reduction</div>
+                    </div>
+                    <div>
+                        <div class="text-4xl font-bold text-utility-300 mb-2">24/7</div>
+                        <div class="text-sm text-veg-100">Continuous Monitoring</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Team & Sponsor -->
+    <section id="team" class="py-24 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-infra-900 mb-4">Team & Sponsorship</h2>
+                <p class="text-lg text-infra-600">Dedicated engineering team supported by industry leadership</p>
+            </div>
+
+            <!-- Sponsor Banner -->
+            <div class="bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl p-8 mb-16 text-white flex flex-col md:flex-row items-center justify-between gap-6">
+                <div class="flex items-center gap-6">
+                    <div class="w-20 h-20 bg-white rounded-xl flex items-center justify-center text-blue-900 font-bold text-2xl">
+                        NE
+                    </div>
+                    <div>
+                        <div class="text-sm font-medium text-blue-100 uppercase tracking-wider mb-1">Project Sponsor</div>
+                        <h3 class="text-2xl font-bold">NextEra Energy</h3>
+                        <p class="text-blue-100">Industry-leading clean energy infrastructure provider</p>
+                    </div>
+                </div>
+                <div class="text-right hidden md:block">
+                    <div class="text-sm text-blue-100">Technical Advisory</div>
+                    <div class="font-medium">Provided mentorship and field testing access</div>
+                </div>
+            </div>
+
+            <!-- Team Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-infra-50 rounded-xl p-6 border border-infra-200 hover:shadow-lg transition-all text-center group">
+                    <div class="w-24 h-24 mx-auto bg-gradient-to-br from-utility-200 to-utility-300 rounded-full mb-4 flex items-center justify-center text-2xl text-utility-800 font-bold group-hover:scale-110 transition-transform">
+                        JD
+                    </div>
+                    <h4 class="font-bold text-infra-900">Student Name</h4>
+                    <p class="text-sm text-veg-600 font-medium mb-2">Mechanical Lead</p>
+                    <p class="text-xs text-infra-500">Vibration analysis & housing design</p>
+                </div>
+
+                <div class="bg-infra-50 rounded-xl p-6 border border-infra-200 hover:shadow-lg transition-all text-center group">
+                    <div class="w-24 h-24 mx-auto bg-gradient-to-br from-veg-200 to-veg-300 rounded-full mb-4 flex items-center justify-center text-2xl text-veg-800 font-bold group-hover:scale-110 transition-transform">
+                        AS
+                    </div>
+                    <h4 class="font-bold text-infra-900">Student Name</h4>
+                    <p class="text-sm text-veg-600 font-medium mb-2">Electrical Lead</p>
+                    <p class="text-xs text-infra-500">Power systems & PCB design</p>
+                </div>
+
+                <div class="bg-infra-50 rounded-xl p-6 border border-infra-200 hover:shadow-lg transition-all text-center group">
+                    <div class="w-24 h-24 mx-auto bg-gradient-to-br from-utility-200 to-veg-200 rounded-full mb-4 flex items-center justify-center text-2xl text-infra-800 font-bold group-hover:scale-110 transition-transform">
+                        MK
+                    </div>
+                    <h4 class="font-bold text-infra-900">Student Name</h4>
+                    <p class="text-sm text-veg-600 font-medium mb-2">Computer Lead</p>
+                    <p class="text-xs text-infra-500">AI/ML & cloud architecture</p>
+                </div>
+
+                <div class="bg-infra-50 rounded-xl p-6 border border-infra-200 hover:shadow-lg transition-all text-center group">
+                    <div class="w-24 h-24 mx-auto bg-gradient-to-br from-infra-200 to-infra-300 rounded-full mb-4 flex items-center justify-center text-2xl text-infra-800 font-bold group-hover:scale-110 transition-transform">
+                        RL
+                    </div>
+                    <h4 class="font-bold text-infra-900">Student Name</h4>
+                    <p class="text-sm text-veg-600 font-medium mb-2">Systems Lead</p>
+                    <p class="text-xs text-infra-500">Integration & testing coordinator</p>
+                </div>
+            </div>
+
+            <div class="mt-12 text-center">
+                <div class="inline-flex items-center gap-2 text-infra-500 text-sm">
+                    <i data-lucide="university" class="h-4 w-4"></i>
+                    <span>Senior Design Project 2024-2025 • Department of Engineering</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-infra-900 text-infra-300 py-12 border-t border-infra-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                <div class="col-span-2">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i data-lucide="cpu" class="h-6 w-6 text-veg-500"></i>
+                        <span class="font-bold text-lg text-white">IVVM System</span>
+                    </div>
+                    <p class="text-sm text-infra-400 mb-4 max-w-md">
+                        Integrated Vehicular Vegetation Monitoring System for Utility Infrastructure. A senior design engineering project focused on automated infrastructure protection.
+                    </p>
+                    <div class="flex items-center gap-4">
+                        <a href="#" class="text-infra-400 hover:text-white transition-colors">
+                            <i data-lucide="github" class="h-5 w-5"></i>
+                        </a>
+                        <a href="#" class="text-infra-400 hover:text-white transition-colors">
+                            <i data-lucide="linkedin" class="h-5 w-5"></i>
+                        </a>
+                        <a href="#" class="text-infra-400 hover:text-white transition-colors">
+                            <i data-lucide="mail" class="h-5 w-5"></i>
+                        </a>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Project</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#overview" class="hover:text-veg-400 transition-colors">Overview</a></li>
+                        <li><a href="#architecture" class="hover:text-veg-400 transition-colors">Architecture</a></li>
+                        <li><a href="#dashboard" class="hover:text-veg-400 transition-colors">Dashboard</a></li>
+                        <li><a href="#engineering" class="hover:text-veg-400 transition-colors">Engineering</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Resources</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="hover:text-veg-400 transition-colors">Technical Docs</a></li>
+                        <li><a href="#" class="hover:text-veg-400 transition-colors">API Reference</a></li>
+                        <li><a href="#" class="hover:text-veg-400 transition-colors">Field Test Data</a></li>
+                        <li><a href="#" class="hover:text-veg-400 transition-colors">Contact Team</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-infra-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-sm text-infra-500">
+                    © 2025 IVVM System Project. All rights reserved.
+                </p>
+                <div class="flex items-center gap-2 text-sm text-infra-500">
+                    <span>Status:</span>
+                    <span class="flex items-center gap-1 text-veg-400">
+                        <span class="w-2 h-2 bg-veg-500 rounded-full animate-pulse"></span>
+                        Development Active
+                    </span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            const icon = document.getElementById('menuIcon');
+            menu.classList.toggle('hidden');
+            
+            // Change icon
+            if (menu.classList.contains('hidden')) {
+                icon.setAttribute('data-lucide', 'menu');
+            } else {
+                icon.setAttribute('data-lucide', 'x');
+            }
+            lucide.createIcons();
+        }
+
+        // Navbar Scroll Effect
+        window.addEventListener('scroll', function() {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('shadow-lg');
+                navbar.classList.remove('glass-panel');
+                navbar.classList.add('bg-white/95');
+            } else {
+                navbar.classList.remove('shadow-lg');
+                navbar.classList.add('glass-panel');
+                navbar.classList.remove('bg-white/95');
+            }
+        });
+
+        // Select Vehicle Function
+        function selectVehicle(vehicleId) {
+            const detailDiv = document.getElementById('vehicleDetail');
+            const mockData = {
+                'V-104': {
+                    risk: 'HIGH',
+                    color: 'text-red-400',
+                    location: 'NW Sector A-12',
+                    clearance: '0.8 ft',
+                    species: 'Melaleuca Quinquenervia',
+                    image: 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'
+                },
+                'V-102': {
+                    risk: 'MEDIUM',
+                    color: 'text-orange-400',
+                    location: 'NW Sector A-14',
+                    clearance: '2.1 ft',
+                    species: 'Casuarina Equisetifolia',
+                    image: 'https://images.unsplash.com/photo-1513836279014-a89f7a76ae78?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'
+                },
+                'V-103': {
+                    risk: 'LOW',
+                    color: 'text-green-400',
+                    location: 'NW Sector A-15',
+                    clearance: '4.5 ft',
+                    species: 'Ficus Aurea',
+                    image: 'https://images.unsplash.com/photo-1446575983799-470c50cfdd22?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'
+                }
+            };
+
+            const data = mockData[vehicleId];
+            if (data) {
+                detailDiv.innerHTML = `
+                    <div class="flex gap-3">
+                        <div class="w-20 h-20 bg-infra-700 rounded overflow-hidden flex-shrink-0">
+                            <img src="${data.image}" alt="Vegetation" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-mono font-bold text-white">${vehicleId}</span>
+                                <span class="text-xs ${data.color} font-semibold">${data.risk}</span>
+                            </div>
+                            <div class="text-xs text-infra-300 space-y-1">
+                                <div>Clearance: ${data.clearance}</div>
+                                <div>Species: ${data.species}</div>
+                                <div>Loc: ${data.location}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="w-full mt-3 py-2 bg-utility-600 hover:bg-utility-700 rounded text-xs font-medium transition-colors">
+                        Generate Work Order
+                    </button>
+                `;
+            }
+        }
+
+        // Map Zoom Mock Function
+        function zoomMap(direction) {
+            console.log(`Zooming ${direction > 0 ? 'in' : 'out'}`);
+            // Placeholder for future API integration
+        }
+
+        // Smooth Scroll
