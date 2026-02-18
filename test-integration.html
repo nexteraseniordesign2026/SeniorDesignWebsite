@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integration Test - DynamoDB + Map</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="dynamodb-service.js"></script>
+    <script src="config.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .status { padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>DynamoDB + Map Integration Test</h1>
+    
+    <div id="status"></div>
+    <div id="results"></div>
+    
+    <script>
+        async function testIntegration() {
+            const statusDiv = document.getElementById('status');
+            const resultsDiv = document.getElementById('results');
+            
+            statusDiv.innerHTML = '<div class="status info">Testing integration...</div>';
+            
+            try {
+                // Test 1: Service initialization
+                if (typeof DynamoDBService === 'undefined') {
+                    throw new Error('DynamoDBService not loaded');
+                }
+                
+                const service = new DynamoDBService(window.DYNAMODB_API_ENDPOINT);
+                console.log('Service initialized with endpoint:', window.DYNAMODB_API_ENDPOINT);
+                
+                // Test 2: Fetch data
+                const locations = await service.fetchLocations({ limit: 10 });
+                const isUsingMock = service.isUsingMockData();
+                const lastError = service.getLastError();
+                
+                // Test 3: Data transformation
+                if (locations.length === 0) {
+                    statusDiv.innerHTML = '<div class="status error">❌ No locations returned</div>';
+                    return;
+                }
+                
+                const sample = locations[0];
+                const requiredFields = ['captureId', 'lat', 'lng', 'risk', 'bgColor', 'deviceName'];
+                const missingFields = requiredFields.filter(field => !(field in sample));
+                
+                if (missingFields.length > 0) {
+                    statusDiv.innerHTML = `<div class="status error">❌ Missing fields: ${missingFields.join(', ')}</div>`;
+                    resultsDiv.innerHTML = `<pre>${JSON.stringify(sample, null, 2)}</pre>`;
+                    return;
+                }
+                
+                // Test 4: Coordinate validation
+                const invalidCoords = locations.filter(loc => 
+                    !loc.lat || !loc.lng || 
+                    isNaN(loc.lat) || isNaN(loc.lng) ||
+                    loc.lat < -90 || loc.lat > 90 ||
+                    loc.lng < -180 || loc.lng > 180
+                );
+                
+                if (invalidCoords.length > 0) {
+                    statusDiv.innerHTML = `<div class="status error">❌ Invalid coordinates in ${invalidCoords.length} items</div>`;
+                    return;
+                }
+                
+                // Success!
+                let statusMsg = '';
+                if (isUsingMock) {
+                    statusMsg = `<div class="status error">⚠️ Using MOCK DATA (API error: ${lastError || 'Unknown'})</div>`;
+                } else {
+                    statusMsg = `<div class="status success">✅ Integration working! Retrieved ${locations.length} real locations from DynamoDB</div>`;
+                }
+                
+                statusDiv.innerHTML = statusMsg;
+                
+                // Show results
+                resultsDiv.innerHTML = `
+                    <h3>Test Results:</h3>
+                    <ul>
+                        <li>✅ Service initialized</li>
+                        <li>✅ Data fetched: ${locations.length} items</li>
+                        <li>✅ Data transformed correctly</li>
+                        <li>✅ Coordinates valid: ${locations.length} items</li>
+                        <li>✅ Risk levels: ${[...new Set(locations.map(l => l.risk))].join(', ')}</li>
+                        <li>✅ Devices: ${[...new Set(locations.map(l => l.deviceName))].join(', ')}</li>
+                    </ul>
+                    <h3>Sample Location:</h3>
+                    <pre>${JSON.stringify(sample, null, 2)}</pre>
+                    <h3>All Locations:</h3>
+                    <pre>${JSON.stringify(locations.map(l => ({
+                        id: l.captureId,
+                        device: l.deviceName,
+                        coords: [l.lat, l.lng],
+                        risk: l.risk
+                    })), null, 2)}</pre>
+                `;
+                
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="status error">❌ Error: ${error.message}</div>`;
+                resultsDiv.innerHTML = `<pre>${error.stack}</pre>`;
+            }
+        }
+        
+        // Run test on load
+        window.addEventListener('load', testIntegration);
+    </script>
+</body>
+</html>
+

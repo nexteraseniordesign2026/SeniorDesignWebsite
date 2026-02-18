@@ -9,6 +9,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- DynamoDB Service -->
+    <script src="dynamodb-service.js"></script>
+    <!-- Config (API keys) -->
+    <script src="config.js"></script>
     <!-- Google Maps API Configuration -->
     <script>
         // Try to load config.js, but handle if it doesn't exist
@@ -29,49 +33,47 @@
     <!-- Google Maps API -->
     <script>
         // Global map and markers variables - must be defined before API loads
-        let map;
-        let markers = {};
-        let infoWindows = {};
-
-        // Vehicle data with coordinates
-        const vehicleData = {
-            'V-104': {
-                lat: 26.4583,
-                lng: -80.1234,
-                risk: 'HIGH',
-                color: 'text-red-400',
-                bgColor: '#dc2626',
-                location: 'NW Sector A-12',
-                clearance: '0.8 ft',
-                species: 'Melaleuca Quinquenervia',
-                image: 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
-                timestamp: '14:23:05 EST'
-            },
-            'V-102': {
-                lat: 26.4591,
-                lng: -80.1251,
-                risk: 'MEDIUM',
-                color: 'text-orange-400',
-                bgColor: '#ea580c',
-                location: 'NW Sector A-14',
-                clearance: '2.1 ft',
-                species: 'Casuarina Equisetifolia',
-                image: 'https://images.unsplash.com/photo-1513836279014-a89f7a76ae78?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
-                timestamp: '14:15:22 EST'
-            },
-            'V-103': {
-                lat: 26.4602,
-                lng: -80.1278,
-                risk: 'LOW',
-                color: 'text-green-400',
-                bgColor: '#16a34a',
-                location: 'NW Sector A-15',
-                clearance: '4.5 ft',
-                species: 'Ficus Aurea',
-                image: 'https://images.unsplash.com/photo-1446575983799-470c50cfdd22?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
-                timestamp: '14:08:44 EST'
+        // These MUST be in global scope for Google Maps callback
+        window.map = null;
+        window.markers = {};
+        window.infoWindows = {};
+        window.pendingLocations = null; // Store locations if map isn't ready yet
+        window.dynamoDBService = null; // DynamoDB service instance
+        
+        // Initialize DynamoDB Service - MUST be defined early for map initialization
+        window.initDynamoDBService = function() {
+            console.log('🔄 initDynamoDBService called');
+            console.log('   DynamoDBService available:', typeof DynamoDBService !== 'undefined');
+            console.log('   DYNAMODB_API_ENDPOINT:', window.DYNAMODB_API_ENDPOINT);
+            
+            if (typeof DynamoDBService !== 'undefined' && window.DYNAMODB_API_ENDPOINT) {
+                try {
+                    window.dynamoDBService = new DynamoDBService(window.DYNAMODB_API_ENDPOINT);
+                    dynamoDBService = window.dynamoDBService;
+                    console.log('✅ DynamoDB Service initialized successfully');
+                    return true;
+                } catch (error) {
+                    console.error('❌ Error creating DynamoDBService:', error);
+                    return false;
+                }
+            } else {
+                if (typeof DynamoDBService === 'undefined') {
+                    console.warn('⚠️ DynamoDBService class not loaded yet');
+                }
+                if (!window.DYNAMODB_API_ENDPOINT) {
+                    console.warn('⚠️ DYNAMODB_API_ENDPOINT not configured');
+                }
+                return false;
             }
         };
+        
+        // Alias for easier access
+        let map = window.map;
+        let markers = window.markers;
+        let infoWindows = window.infoWindows;
+        let pendingLocations = window.pendingLocations;
+        let dynamoDBService = window.dynamoDBService;
+        // vehicleData is now loaded from DynamoDB - see loadLocations() function
 
         // Show map error message
         window.showMapError = function(message) {
@@ -132,18 +134,24 @@
 
             console.log('Map container found, initializing map...');
 
-            // Default center (average of all vehicle locations)
-            const center = { lat: 26.4592, lng: -80.1254 };
+            // Default center (will be updated when data loads)
+            // Using approximate center of test data area
+            const center = { lat: 38.922, lng: -83.123 };
             
             try {
+                // Clear any placeholder content
+                mapContainer.innerHTML = '';
+                
                 // Ensure container is visible
                 mapContainer.style.minHeight = '600px';
                 mapContainer.style.width = '100%';
+                mapContainer.style.position = 'relative';
                 
                 // Create map with dark theme
-                map = new google.maps.Map(mapContainer, {
+                // Center will be updated when data loads
+                window.map = new google.maps.Map(mapContainer, {
                     center: center,
-                    zoom: 14,
+                    zoom: 12,
                     styles: [
                         // Base geometry
                         { elementType: 'geometry', stylers: [{ color: '#1e293b' }] },
@@ -284,62 +292,222 @@
                     fullscreenControl: true
                 });
 
-                // Create markers for each vehicle
-                Object.keys(vehicleData).forEach(vehicleId => {
-                    const data = vehicleData[vehicleId];
+                // Update local references
+                map = window.map;
+                markers = window.markers;
+                infoWindows = window.infoWindows;
+
+                console.log('✅ Google Maps initialized successfully');
+                
+                // Simple function to load data and create markers (like test-map-debug.html)
+                // Make it accessible globally
+                window.loadDataAndCreateMarkers = function() {
+                    console.log('🔄 loadDataAndCreateMarkers called');
+                    console.log('   DynamoDBService available:', typeof DynamoDBService !== 'undefined');
+                    console.log('   DYNAMODB_API_ENDPOINT:', window.DYNAMODB_API_ENDPOINT);
+                    console.log('   Map available:', !!map);
                     
-                    // Create custom marker icon
+                    if (typeof DynamoDBService === 'undefined') {
+                        console.warn('⚠️ DynamoDBService not loaded yet, retrying in 500ms...');
+                        setTimeout(window.loadDataAndCreateMarkers, 500);
+                        return;
+                    }
+                    
+                    if (!window.DYNAMODB_API_ENDPOINT) {
+                        console.error('❌ DYNAMODB_API_ENDPOINT not configured');
+                        const listContainer = document.getElementById('detectionsList');
+                        if (listContainer) {
+                            listContainer.innerHTML = `
+                                <div class="text-center text-red-400 text-sm py-8">
+                                    <i data-lucide="alert-circle" class="h-6 w-6 mx-auto mb-2"></i>
+                                    <p>API endpoint not configured</p>
+                                    <p class="text-xs mt-2 text-infra-400">Check config.js</p>
+                                </div>
+                            `;
+                            if (typeof lucide !== 'undefined') lucide.createIcons();
+                        }
+                        return;
+                    }
+                    
+                    if (!map) {
+                        console.error('❌ Map not available');
+                        return;
+                    }
+                    
+                    console.log('🔄 Creating DynamoDB service and fetching data...');
+                    const service = new DynamoDBService(window.DYNAMODB_API_ENDPOINT);
+                    
+                    service.fetchLocations({ limit: 100 }).then(locations => {
+                        console.log(`✅ Loaded ${locations.length} locations from API`);
+                        
+                        // Check if using mock data
+                        const isUsingMock = service.isUsingMockData();
+                        const lastError = service.getLastError();
+                        if (typeof showMockDataWarning === 'function') {
+                            showMockDataWarning(isUsingMock, lastError);
+                        } else if (typeof window.showMockDataWarning === 'function') {
+                            window.showMockDataWarning(isUsingMock, lastError);
+                        } else {
+                            console.warn('showMockDataWarning function not available');
+                        }
+                        
+                        // Store in map for quick lookup
+                        window.vehicleDataMap = {};
+                        vehicleDataMap = window.vehicleDataMap;
+                        locations.forEach(loc => {
+                            window.vehicleDataMap[loc.captureId] = loc;
+                            vehicleDataMap[loc.captureId] = loc;
+                        });
+                        
+                        // Update sidebar
+                        if (typeof window.updateDetectionsList === 'function') {
+                            window.updateDetectionsList(locations);
+                        } else if (typeof updateDetectionsList === 'function') {
+                            updateDetectionsList(locations);
+                        } else {
+                            console.error('❌ updateDetectionsList function not available');
+                        }
+                        
+                        // Clear existing markers
+                        Object.values(markers).forEach(marker => {
+                            if (marker && marker.setMap) {
+                                marker.setMap(null);
+                            }
+                        });
+                        Object.values(infoWindows).forEach(iw => {
+                            if (iw && iw.close) {
+                                iw.close();
+                            }
+                        });
+                        markers = {};
+                        infoWindows = {};
+                        window.markers = markers;
+                        window.infoWindows = infoWindows;
+                        
+                        // Create markers (like test-map-debug.html but with colored circles)
+                        locations.forEach(loc => {
+                            if (!loc.lat || !loc.lng || isNaN(loc.lat) || isNaN(loc.lng)) {
+                                console.warn(`⚠️ Invalid coordinates for ${loc.captureId}`);
+                                return;
+                            }
+                            
+                            // Create custom colored circle marker based on risk level
                     const markerIcon = {
                         path: google.maps.SymbolPath.CIRCLE,
                         scale: 10,
-                        fillColor: data.bgColor,
+                                fillColor: loc.bgColor || '#dc2626',
                         fillOpacity: 1,
                         strokeColor: '#ffffff',
                         strokeWeight: 2
                     };
 
-                    // Create marker
                     const marker = new google.maps.Marker({
-                        position: { lat: data.lat, lng: data.lng },
+                                position: { lat: parseFloat(loc.lat), lng: parseFloat(loc.lng) },
                         map: map,
-                        title: `${vehicleId} - ${data.risk} Risk`,
+                                title: `${loc.deviceName || loc.captureId} - ${loc.risk} Risk`,
                         icon: markerIcon,
                         animation: google.maps.Animation.DROP
                     });
 
-                    // Create info window
                     const infoWindow = new google.maps.InfoWindow({
                         content: `
                             <div style="font-family: 'Inter', sans-serif; min-width: 200px;">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                                    <h3 style="margin: 0; font-weight: 600; font-size: 14px; color: #0f172a;">${vehicleId}</h3>
-                                    <span style="background-color: ${data.bgColor}20; color: ${data.bgColor}; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">${data.risk}</span>
+                                            <h3 style="margin: 0; font-weight: 600; font-size: 14px; color: #0f172a;">${loc.deviceName || loc.captureId}</h3>
+                                            <span style="background-color: ${loc.bgColor}20; color: ${loc.bgColor}; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">${loc.risk}</span>
                                 </div>
                                 <div style="font-size: 12px; color: #475569; line-height: 1.6;">
-                                    <div><strong>Location:</strong> ${data.location}</div>
-                                    <div><strong>Clearance:</strong> ${data.clearance}</div>
-                                    <div><strong>Species:</strong> ${data.species}</div>
-                                    <div><strong>Time:</strong> ${data.timestamp}</div>
+                                            <div><strong>Location:</strong> ${loc.location}</div>
+                                            <div><strong>Class:</strong> ${loc.species}</div>
+                                            <div><strong>Confidence:</strong> ${(loc.confidence * 100).toFixed(1)}%</div>
+                                            <div><strong>Time:</strong> ${loc.timestamp}</div>
                                 </div>
                             </div>
                         `
                     });
 
-                    // Add click listener to marker
                     marker.addListener('click', () => {
-                        // Close all other info windows
-                        Object.values(infoWindows).forEach(iw => iw.close());
+                                Object.values(infoWindows).forEach(iw => {
+                                    if (iw && iw.close) iw.close();
+                                });
                         infoWindow.open(map, marker);
-                        if (typeof selectVehicle === 'function') {
-                            selectVehicle(vehicleId);
+                                selectVehicle(loc.captureId);
+                            });
+
+                            markers[loc.captureId] = marker;
+                            infoWindows[loc.captureId] = infoWindow;
+                        });
+                        
+                        console.log(`✅ Created ${Object.keys(markers).length} markers on map`);
+                        
+                        // Center map on markers
+                        if (locations.length > 0) {
+                            const bounds = new google.maps.LatLngBounds();
+                            locations.forEach(loc => {
+                                if (loc.lat && loc.lng && !isNaN(loc.lat) && !isNaN(loc.lng)) {
+                                    bounds.extend({ lat: loc.lat, lng: loc.lng });
+                                }
+                            });
+                            if (!bounds.isEmpty()) {
+                                map.fitBounds(bounds);
+                                console.log('✅ Map centered on markers');
+                            }
+                        }
+                        
+                        if (isUsingMock) {
+                            console.warn(`⚠️ Using mock data (${locations.length} items). API error: ${lastError || 'Unknown'}`);
+                        } else {
+                            console.log(`✅ Successfully loaded and displayed ${locations.length} locations`);
+                        }
+                    }).catch(error => {
+                        console.error('❌ Error fetching locations:', error);
+                        if (typeof window.showMockDataWarning === 'function') {
+                            window.showMockDataWarning(true, error.message);
+                        } else if (typeof showMockDataWarning === 'function') {
+                            showMockDataWarning(true, error.message);
+                        } else {
+                            console.warn('⚠️ showMockDataWarning function not available');
+                        }
+                        
+                        // Show error in sidebar
+                        const listContainer = document.getElementById('detectionsList');
+                        if (listContainer) {
+                            listContainer.innerHTML = `
+                                <div class="text-center text-red-400 text-sm py-8">
+                                    <i data-lucide="alert-circle" class="h-6 w-6 mx-auto mb-2"></i>
+                                    <p class="font-semibold">Error loading detections</p>
+                                    <p class="text-xs mt-2 text-infra-400">${error.message}</p>
+                                    <button onclick="location.reload()" class="mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 rounded text-white text-xs transition-colors">
+                                        Retry
+                                    </button>
+                                </div>
+                            `;
+                            if (typeof lucide !== 'undefined') {
+                                lucide.createIcons();
+                            }
                         }
                     });
-
-                    markers[vehicleId] = marker;
-                    infoWindows[vehicleId] = infoWindow;
+                };
+                
+                // Simple approach: Load data directly after map is ready (like test-map-debug.html)
+                // Wait for map tiles to load, then fetch and display data
+                google.maps.event.addListenerOnce(map, 'tilesloaded', function() {
+                    console.log('✅ Map tiles loaded, loading data...');
+                    window.loadDataAndCreateMarkers();
                 });
-
-                console.log('Google Maps initialized successfully with', Object.keys(markers).length, 'markers');
+                
+                // Fallback: if tilesloaded doesn't fire, try after delay
+                setTimeout(function() {
+                    const currentMarkers = window.markers || markers;
+                    if (!currentMarkers || Object.keys(currentMarkers).length === 0) {
+                        console.log('⚠️ Using fallback: loading data after delay');
+                        if (typeof window.loadDataAndCreateMarkers === 'function') {
+                            window.loadDataAndCreateMarkers();
+                        } else {
+                            console.error('❌ loadDataAndCreateMarkers function not available');
+                        }
+                    }
+                }, 2000);
             } catch (error) {
                 console.error('Error initializing map:', error);
                 showMapError('Error initializing map: ' + error.message);
@@ -877,57 +1045,11 @@
                                 Recent Detections
                             </h3>
                         </div>
-                        <div class="flex-1 overflow-y-auto p-4 space-y-3">
-                            <!-- Mock Data Cards -->
-                            <div class="bg-infra-700/50 p-3 rounded-lg border border-infra-600 hover:border-utility-500 transition-colors cursor-pointer" onclick="selectVehicle('V-104')">
-                                <div class="flex justify-between items-start mb-2">
-                                    <span class="font-mono font-semibold text-utility-400">V-104</span>
-                                    <span class="text-xs bg-red-500/20 text-red-400 px-2 py-0.5 rounded">HIGH</span>
-                                </div>
-                                <div class="space-y-1 text-xs text-infra-300">
-                                    <div class="flex items-center gap-2">
-                                        <i data-lucide="clock" class="h-3 w-3"></i>
-                                        <span>14:23:05 EST</span>
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <i data-lucide="map-pin" class="h-3 w-3"></i>
-                                        <span>26.4583, -80.1234</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="bg-infra-700/50 p-3 rounded-lg border border-infra-600 hover:border-utility-500 transition-colors cursor-pointer" onclick="selectVehicle('V-102')">
-                                <div class="flex justify-between items-start mb-2">
-                                    <span class="font-mono font-semibold text-utility-400">V-102</span>
-                                    <span class="text-xs bg-orange-500/20 text-orange-400 px-2 py-0.5 rounded">MED</span>
-                                </div>
-                                <div class="space-y-1 text-xs text-infra-300">
-                                    <div class="flex items-center gap-2">
-                                        <i data-lucide="clock" class="h-3 w-3"></i>
-                                        <span>14:15:22 EST</span>
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <i data-lucide="map-pin" class="h-3 w-3"></i>
-                                        <span>26.4591, -80.1251</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="bg-infra-700/50 p-3 rounded-lg border border-infra-600 hover:border-utility-500 transition-colors cursor-pointer" onclick="selectVehicle('V-103')">
-                                <div class="flex justify-between items-start mb-2">
-                                    <span class="font-mono font-semibold text-utility-400">V-103</span>
-                                    <span class="text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded">LOW</span>
-                                </div>
-                                <div class="space-y-1 text-xs text-infra-300">
-                                    <div class="flex items-center gap-2">
-                                        <i data-lucide="clock" class="h-3 w-3"></i>
-                                        <span>14:08:44 EST</span>
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <i data-lucide="map-pin" class="h-3 w-3"></i>
-                                        <span>26.4602, -80.1278</span>
-                                    </div>
-                                </div>
+                        <div class="flex-1 overflow-y-auto p-4 space-y-3" id="detectionsList">
+                            <!-- DynamoDB data will be loaded here -->
+                            <div class="text-center text-infra-400 text-sm py-8">
+                                <i data-lucide="loader" class="h-6 w-6 mx-auto mb-2 animate-spin"></i>
+                                <p>Loading detections...</p>
                             </div>
                         </div>
                         
@@ -1375,36 +1497,522 @@
             }
         });
 
-        // Select Vehicle Function
-        function selectVehicle(vehicleId) {
-            const detailDiv = document.getElementById('vehicleDetail');
-            const data = vehicleData[vehicleId];
+        // Global variables for DynamoDB data
+        // dynamoDBService is already declared in global scope above
+        window.vehicleDataMap = {}; // Map of captureId -> data (make it global)
+        let vehicleDataMap = window.vehicleDataMap; // Alias for easier access
+        // pendingLocations is already declared in global scope above
+
+        // Local alias for initDynamoDBService (already defined in global scope above)
+        function initDynamoDBService() {
+            return window.initDynamoDBService();
+        }
+
+        // Load locations from DynamoDB and update UI - must be global for map initialization
+        window.loadLocations = async function() {
+            console.log('🔄 loadLocations() called');
             
-            if (data && map) {
-                // Center map on selected vehicle
-                const marker = markers[vehicleId];
+            const service = window.dynamoDBService || dynamoDBService;
+            if (!service) {
+                console.error('❌ DynamoDB service not initialized');
+                // Try to initialize it
+                if (typeof window.initDynamoDBService === 'function') {
+                    window.initDynamoDBService();
+                    const retryService = window.dynamoDBService || dynamoDBService;
+                    if (!retryService) {
+                        console.error('❌ Failed to initialize DynamoDB service');
+                        // Show error in UI
+                        const listContainer = document.getElementById('detectionsList');
+                        if (listContainer) {
+                            listContainer.innerHTML = `
+                                <div class="text-center text-red-400 text-sm py-8">
+                                    <i data-lucide="alert-circle" class="h-6 w-6 mx-auto mb-2"></i>
+                                    <p>Failed to initialize DynamoDB service</p>
+                                    <p class="text-xs mt-2">Check console for details</p>
+                                </div>
+                            `;
+                        }
+                        return;
+                    }
+                    // Retry after initialization
+                    setTimeout(() => window.loadLocations(), 500);
+                    return;
+                } else {
+                    console.error('❌ initDynamoDBService function not available');
+                    return;
+                }
+            }
+
+            console.log('✅ Service available, fetching locations...');
+            
+            try {
+                // Add timeout to API call
+                const fetchPromise = service.fetchLocations({ limit: 100 });
+                const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('API call timed out after 10 seconds')), 10000)
+                );
+                
+                const locations = await Promise.race([fetchPromise, timeoutPromise]);
+                console.log(`✅ Fetched ${locations.length} locations from API`);
+                
+                // Check if using mock data
+                const isUsingMock = service.isUsingMockData();
+                const lastError = service.getLastError();
+                
+                // Show/hide warning banner
+                showMockDataWarning(isUsingMock, lastError);
+                
+                // Store in map for quick lookup
+                vehicleDataMap = {};
+                locations.forEach(loc => {
+                    vehicleDataMap[loc.captureId] = loc;
+                });
+
+                // Update sidebar
+                console.log('📋 Updating detections list in sidebar...');
+                updateDetectionsList(locations);
+                console.log('✅ Sidebar updated');
+                
+                // Update map markers
+                const currentMap = window.map || map;
+                console.log(`📍 Attempting to update map with ${locations.length} locations...`);
+                console.log(`   Map ready: ${!!currentMap}, Google Maps ready: ${typeof google !== 'undefined' && !!google.maps}`);
+                console.log(`   window.map: ${!!window.map}, local map: ${!!map}`);
+                
+                // Store locations for later if map isn't ready
+                window.pendingLocations = locations;
+                pendingLocations = locations;
+                
+                if (typeof google !== 'undefined' && google.maps) {
+                    if (currentMap) {
+                        console.log('✅ Map is ready, creating markers now');
+                        updateMapMarkers(locations);
+                    } else {
+                        console.warn('⚠️ Map not initialized yet, storing locations for when map is ready');
+                        // Wait for map to be ready - will be handled by map initialization
+                        // Check again after a short delay
+                        setTimeout(() => {
+                            const retryMap = window.map || map;
+                            if (retryMap && locations && locations.length > 0) {
+                                console.log('🔄 Map ready on retry, creating markers');
+                                updateMapMarkers(locations);
+                            }
+                        }, 1000);
+                    }
+                } else {
+                    console.warn('⚠️ Google Maps API not loaded yet');
+                }
+
+                if (isUsingMock) {
+                    console.warn(`⚠️ Using mock data (${locations.length} items). API error: ${lastError || 'Unknown'}`);
+                } else {
+                    console.log(`✅ Loaded ${locations.length} locations from DynamoDB`);
+                }
+            } catch (error) {
+                console.error('❌ Error loading locations:', error);
+                console.error('Error details:', {
+                    message: error.message,
+                    stack: error.stack,
+                    name: error.name
+                });
+                showMockDataWarning(true, error.message);
+                
+                // Show error in sidebar
+                const listContainer = document.getElementById('detectionsList');
+                if (listContainer) {
+                    listContainer.innerHTML = `
+                        <div class="text-center text-red-400 text-sm py-8">
+                            <i data-lucide="alert-circle" class="h-6 w-6 mx-auto mb-2"></i>
+                            <p class="font-semibold">Error loading detections</p>
+                            <p class="text-xs mt-2 text-infra-400">${error.message || 'Unknown error'}</p>
+                            <button onclick="window.loadLocations()" class="mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 rounded text-white text-xs transition-colors">
+                                Retry
+                            </button>
+                        </div>
+                    `;
+                    // Re-initialize icons
+                    if (typeof lucide !== 'undefined') {
+                        lucide.createIcons();
+                    }
+                }
+            }
+        };
+        
+        // Also create local alias
+        async function loadLocations() {
+            return window.loadLocations();
+        }
+
+        // Show warning banner when using mock data - make it globally accessible
+        window.showMockDataWarning = function(show, errorMessage) {
+            let banner = document.getElementById('mockDataWarning');
+            
+            if (show) {
+                if (!banner) {
+                    // Create banner
+                    banner = document.createElement('div');
+                    banner.id = 'mockDataWarning';
+                    banner.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 z-50 bg-yellow-500 text-yellow-900 px-6 py-3 rounded-lg shadow-lg flex items-center gap-3 max-w-2xl';
+                    banner.innerHTML = `
+                        <i data-lucide="alert-triangle" class="h-5 w-5 flex-shrink-0"></i>
+                        <div class="flex-1">
+                            <strong>Using Mock Data</strong>
+                            <p class="text-sm" id="mockDataError">API error: ${errorMessage || 'Unknown error'}</p>
+                        </div>
+                        <button onclick="document.getElementById('mockDataWarning').remove()" class="text-yellow-900 hover:text-yellow-700">
+                            <i data-lucide="x" class="h-5 w-5"></i>
+                        </button>
+                    `;
+                    document.body.appendChild(banner);
+                    lucide.createIcons();
+                } else {
+                    // Update existing banner
+                    const errorText = document.getElementById('mockDataError');
+                    if (errorText) {
+                        errorText.textContent = `API error: ${errorMessage || 'Unknown error'}`;
+                    }
+                    banner.style.display = 'flex';
+                }
+            } else if (banner) {
+                // Hide banner
+                banner.remove();
+            }
+        };
+        
+        // Also create local alias
+        function showMockDataWarning(show, errorMessage) {
+            return window.showMockDataWarning(show, errorMessage);
+        }
+
+        // Update detections list in sidebar - make it globally accessible
+        window.updateDetectionsList = function(locations) {
+            console.log(`📋 updateDetectionsList called with ${locations ? locations.length : 0} locations`);
+            const listContainer = document.getElementById('detectionsList');
+            if (!listContainer) {
+                console.error('❌ detectionsList container not found');
+                return;
+            }
+
+            if (!locations || locations.length === 0) {
+                console.warn('⚠️ No locations to display');
+                listContainer.innerHTML = `
+                    <div class="text-center text-infra-400 text-sm py-8">
+                        <i data-lucide="inbox" class="h-6 w-6 mx-auto mb-2"></i>
+                        <p>No detections found</p>
+                    </div>
+                `;
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+                return;
+            }
+
+            try {
+                // Sort by timestamp (newest first)
+                const sorted = [...locations].sort((a, b) => {
+                    const dateA = a.fullTimestamp ? new Date(a.fullTimestamp) : new Date(0);
+                    const dateB = b.fullTimestamp ? new Date(b.fullTimestamp) : new Date(0);
+                    return dateB - dateA;
+                });
+
+                console.log(`📋 Rendering ${sorted.length} detections in sidebar...`);
+
+                listContainer.innerHTML = sorted.map(loc => {
+                const riskColors = {
+                    'HIGH': 'bg-red-500/20 text-red-400',
+                    'MEDIUM': 'bg-orange-500/20 text-orange-400',
+                    'LOW': 'bg-green-500/20 text-green-400'
+                };
+                const riskLabel = {
+                    'HIGH': 'HIGH',
+                    'MEDIUM': 'MED',
+                    'LOW': 'LOW'
+                };
+
+                return `
+                    <div class="bg-infra-700/50 p-3 rounded-lg border border-infra-600 hover:border-utility-500 transition-colors cursor-pointer" onclick="window.selectVehicle('${loc.captureId}')">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="font-mono font-semibold text-utility-400">${loc.deviceName || loc.vehicleId}</span>
+                            <span class="text-xs ${riskColors[loc.risk]} px-2 py-0.5 rounded">${riskLabel[loc.risk]}</span>
+                        </div>
+                        <div class="space-y-1 text-xs text-infra-300">
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="clock" class="h-3 w-3"></i>
+                                <span>${loc.timestamp || 'N/A'}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="map-pin" class="h-3 w-3"></i>
+                                <span>${loc.lat.toFixed(4)}, ${loc.lng.toFixed(4)}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                }).join('');
+
+                console.log('✅ Sidebar HTML updated, creating icons...');
+                
+                // Re-initialize lucide icons
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                    console.log('✅ Icons created');
+                } else {
+                    console.warn('⚠️ Lucide icons not available');
+                }
+                
+                console.log(`✅ Sidebar updated with ${sorted.length} detections`);
+            } catch (error) {
+                console.error('❌ Error updating detections list:', error);
+                listContainer.innerHTML = `
+                    <div class="text-center text-red-400 text-sm py-8">
+                        <i data-lucide="alert-circle" class="h-6 w-6 mx-auto mb-2"></i>
+                        <p>Error displaying detections</p>
+                        <p class="text-xs mt-2 text-infra-400">${error.message}</p>
+                    </div>
+                `;
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            }
+        };
+        
+        // Also create local alias
+        function updateDetectionsList(locations) {
+            return window.updateDetectionsList(locations);
+        }
+
+        // Update map markers
+        function updateMapMarkers(locations) {
+            // Use window.map to ensure we have the right reference
+            const currentMap = window.map || map;
+            if (!currentMap) {
+                console.warn('⚠️ Map not ready yet, will retry when map is initialized');
+                // Retry after a short delay if map isn't ready
+                setTimeout(() => {
+                    const retryMap = window.map || map;
+                    if (retryMap && locations && locations.length > 0) {
+                        console.log('🔄 Retrying marker creation...');
+                        updateMapMarkers(locations);
+                    }
+                }, 1000);
+                return;
+            }
+            
+            // Update local references
+            map = currentMap;
+
+            if (!locations || locations.length === 0) {
+                console.warn('⚠️ No locations to display on map');
+                return;
+            }
+
+            console.log(`🗺️ Creating ${locations.length} markers on map...`);
+            console.log(`   Map object:`, currentMap);
+            console.log(`   Map container:`, currentMap.getDiv());
+            console.log(`   Sample location data:`, locations[0]);
+
+            // Clear existing markers
+            const currentMarkers = window.markers || markers;
+            const currentInfoWindows = window.infoWindows || infoWindows;
+            Object.values(currentMarkers).forEach(marker => {
+                if (marker && marker.setMap) {
+                    marker.setMap(null);
+                }
+            });
+            Object.values(currentInfoWindows).forEach(iw => {
+                if (iw && iw.close) {
+                    iw.close();
+                }
+            });
+            window.markers = {};
+            window.infoWindows = {};
+            markers = {};
+            infoWindows = {};
+
+            let createdCount = 0;
+            let errorCount = 0;
+
+            // Create new markers
+            locations.forEach((loc, index) => {
+                // Validate coordinates
+                if (!loc.lat || !loc.lng || isNaN(loc.lat) || isNaN(loc.lng)) {
+                    console.warn(`⚠️ Invalid coordinates for ${loc.captureId}: lat=${loc.lat}, lng=${loc.lng}`);
+                    return;
+                }
+                
+                console.log(`Creating marker ${index + 1}/${locations.length}: ${loc.captureId} at (${loc.lat}, ${loc.lng})`);
+                console.log(`   Data from API - Risk: ${loc.risk}, bgColor: ${loc.bgColor}, device: ${loc.deviceName}`);
+                
+                // Create custom colored circle marker based on risk level
+                const markerIcon = {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    scale: 10,
+                    fillColor: loc.bgColor || '#dc2626',
+                    fillOpacity: 1,
+                    strokeColor: '#ffffff',
+                    strokeWeight: 2
+                };
+
+                let marker = null;
+                try {
+                    marker = new google.maps.Marker({
+                        position: { lat: parseFloat(loc.lat), lng: parseFloat(loc.lng) },
+                        map: currentMap,
+                        title: `${loc.deviceName || loc.captureId} - ${loc.risk} Risk`,
+                        icon: markerIcon,
+                        animation: google.maps.Animation.DROP,
+                        visible: true,
+                        optimized: false // Ensure marker is rendered
+                    });
+                    
+                    // Verify marker was created and is on the map
                 if (marker) {
-                    map.setCenter(marker.getPosition());
-                    map.setZoom(16);
-                    // Open info window
-                    infoWindows[vehicleId].open(map, marker);
+                        createdCount++;
+                        const markerMap = marker.getMap();
+                        const markerPos = marker.getPosition();
+                        console.log(`✅ Marker ${createdCount} created for ${loc.captureId}`);
+                        console.log(`   Position: (${loc.lat}, ${loc.lng})`);
+                        console.log(`   Risk: ${loc.risk}, Color: ${loc.bgColor}`);
+                        console.log(`   Marker on map: ${!!markerMap}`);
+                        console.log(`   Marker position valid: ${!!markerPos}`);
+                        
+                        if (!markerMap) {
+                            console.error(`❌ Marker created but not on map! Forcing setMap...`);
+                            // Force set map
+                            marker.setMap(currentMap);
+                        }
+                    } else {
+                        errorCount++;
+                        console.error(`❌ Failed to create marker for ${loc.captureId}`);
+                        return; // Skip this location
+                    }
+                } catch (markerError) {
+                    errorCount++;
+                    console.error(`❌ Error creating marker for ${loc.captureId}:`, markerError);
+                    return; // Skip this location
+                }
+
+                // Only create info window and listeners if marker was created
+                if (marker) {
+                    const infoWindow = new google.maps.InfoWindow({
+                        content: `
+                            <div style="font-family: 'Inter', sans-serif; min-width: 200px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <h3 style="margin: 0; font-weight: 600; font-size: 14px; color: #0f172a;">${loc.deviceName || loc.captureId}</h3>
+                                    <span style="background-color: ${loc.bgColor}20; color: ${loc.bgColor}; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">${loc.risk}</span>
+                                </div>
+                                <div style="font-size: 12px; color: #475569; line-height: 1.6;">
+                                    <div><strong>Location:</strong> ${loc.location}</div>
+                                    <div><strong>Class:</strong> ${loc.species}</div>
+                                    <div><strong>Confidence:</strong> ${(loc.confidence * 100).toFixed(1)}%</div>
+                                    <div><strong>Time:</strong> ${loc.timestamp}</div>
+                                </div>
+                            </div>
+                        `
+                    });
+
+                    marker.addListener('click', () => {
+                        Object.values(window.infoWindows || infoWindows).forEach(iw => {
+                            if (iw && iw.close) iw.close();
+                        });
+                        infoWindow.open(currentMap, marker);
+                        selectVehicle(loc.captureId);
+                    });
+
+                    markers[loc.captureId] = marker;
+                    infoWindows[loc.captureId] = infoWindow;
+                }
+            });
+            
+            // Update window references
+            window.markers = markers;
+            window.infoWindows = infoWindows;
+
+            console.log(`✅ Created ${createdCount} markers on map (${errorCount} errors)`);
+            console.log(`   Total markers in object: ${Object.keys(markers).length}`);
+            console.log(`   window.markers count: ${Object.keys(window.markers).length}`);
+            
+            // Force map to refresh/redraw
+            if (currentMap) {
+                google.maps.event.trigger(currentMap, 'resize');
+            }
+
+            // Center map on markers if we have any
+            if (locations.length > 0) {
+                try {
+                    const bounds = new google.maps.LatLngBounds();
+                    locations.forEach(loc => {
+                        if (loc.lat && loc.lng && !isNaN(loc.lat) && !isNaN(loc.lng)) {
+                            bounds.extend({ lat: loc.lat, lng: loc.lng });
+                        }
+                    });
+                    if (!bounds.isEmpty()) {
+                        currentMap.fitBounds(bounds);
+                        console.log('✅ Map centered on markers');
+                    }
+                } catch (error) {
+                    console.error('Error centering map:', error);
+                    // Fallback to center on first location
+                    if (locations[0] && locations[0].lat && locations[0].lng) {
+                        currentMap.setCenter({ lat: locations[0].lat, lng: locations[0].lng });
+                        currentMap.setZoom(12);
+                    }
+                }
+            }
+        }
+
+        // Select Vehicle Function (updated for DynamoDB)
+        // Select vehicle function - make it globally accessible
+        window.selectVehicle = function(captureId) {
+            const detailDiv = document.getElementById('vehicleDetail');
+            // vehicleDataMap should be accessible from global scope
+            const data = (window.vehicleDataMap || vehicleDataMap) && (window.vehicleDataMap || vehicleDataMap)[captureId] 
+                ? (window.vehicleDataMap || vehicleDataMap)[captureId] 
+                : null;
+            
+            if (!data) {
+                detailDiv.innerHTML = `
+                    <p class="text-sm text-infra-400 text-center">Location data not found</p>
+                `;
+                return;
+            }
+
+            // Center map on selected location
+            const currentMap = window.map || map;
+            const currentMarkers = window.markers || markers;
+            const currentInfoWindows = window.infoWindows || infoWindows;
+            
+            if (currentMap && currentMarkers[captureId]) {
+                const marker = currentMarkers[captureId];
+                currentMap.setCenter(marker.getPosition());
+                currentMap.setZoom(16);
+                if (currentInfoWindows[captureId]) {
+                    currentInfoWindows[captureId].open(currentMap, marker);
+                }
                 }
 
                 // Update detail panel
+            const riskColors = {
+                'HIGH': 'text-red-400',
+                'MEDIUM': 'text-orange-400',
+                'LOW': 'text-green-400'
+            };
+
                 detailDiv.innerHTML = `
                     <div class="flex gap-3">
                         <div class="w-20 h-20 bg-infra-700 rounded overflow-hidden flex-shrink-0">
-                            <img src="${data.image}" alt="Vegetation" class="w-full h-full object-cover">
+                        <img src="${data.image}" alt="Vegetation" class="w-full h-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1502082553048-f009c37129b9?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'">
                         </div>
                         <div class="flex-1">
                             <div class="flex justify-between items-start mb-1">
-                                <span class="font-mono font-bold text-white">${vehicleId}</span>
-                                <span class="text-xs ${data.color} font-semibold">${data.risk}</span>
+                            <span class="font-mono font-bold text-white">${data.deviceName || data.captureId}</span>
+                            <span class="text-xs ${riskColors[data.risk]} font-semibold">${data.risk}</span>
                             </div>
                             <div class="text-xs text-infra-300 space-y-1">
-                                <div>Clearance: ${data.clearance}</div>
-                                <div>Species: ${data.species}</div>
-                                <div>Loc: ${data.location}</div>
+                            <div>Class: ${data.species}</div>
+                            <div>Confidence: ${(data.confidence * 100).toFixed(1)}%</div>
+                            <div>Location: ${data.location}</div>
+                            <div>Time: ${data.timestamp}</div>
+                            ${data.numSatellites ? `<div>GPS Sats: ${data.numSatellites}</div>` : ''}
                             </div>
                         </div>
                     </div>
@@ -1412,16 +2020,37 @@
                         Generate Work Order
                     </button>
                 `;
-            }
+        };
+        
+        // Also create local alias
+        function selectVehicle(captureId) {
+            return window.selectVehicle(captureId);
         }
 
         // Map Zoom Function
         function zoomMap(direction) {
-            if (map) {
-                const currentZoom = map.getZoom();
-                map.setZoom(currentZoom + (direction > 0 ? 1 : -1));
+            const currentMap = window.map || map;
+            if (currentMap) {
+                const currentZoom = currentMap.getZoom();
+                currentMap.setZoom(currentZoom + (direction > 0 ? 1 : -1));
             }
         }
+
+        // Initialize everything on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize DynamoDB service early
+            initDynamoDBService();
+            
+            // Map initialization will be handled by initMap callback
+            // Data loading will happen automatically when map is ready (see initializeMap function)
+
+            // Refresh data every 5 minutes (only if service and map are ready)
+            setInterval(function() {
+                if (dynamoDBService && map) {
+                    loadLocations();
+                }
+            }, 5 * 60 * 1000);
+        });
 
         // Fallback initialization if callback doesn't work
         window.addEventListener('load', function() {
@@ -1439,5 +2068,56 @@
                 }
             }, 2000);
         });
+
+        // Debug function - manually refresh markers (for testing)
+        window.debugRefreshMarkers = function() {
+            console.log('🔧 Manual marker refresh triggered');
+            const currentMap = window.map || map;
+            const currentMarkers = window.markers || markers;
+            console.log('Map state:', {
+                mapExists: !!currentMap,
+                windowMapExists: !!window.map,
+                markersCount: Object.keys(currentMarkers).length,
+                googleMapsReady: typeof google !== 'undefined' && !!google.maps
+            });
+            
+            if (dynamoDBService && currentMap) {
+                console.log('✅ Both service and map ready, loading locations...');
+                loadLocations();
+            } else if (!currentMap) {
+                console.error('❌ Map not initialized');
+                console.log('   window.map:', window.map);
+                console.log('   local map:', map);
+            } else if (!dynamoDBService) {
+                console.error('❌ DynamoDB service not initialized');
+                initDynamoDBService();
+                setTimeout(loadLocations, 500);
+            }
+        };
+        
+        // Debug function - test marker creation directly
+        window.debugCreateTestMarker = function() {
+            const currentMap = window.map || map;
+            if (!currentMap) {
+                console.error('❌ Map not ready');
+                return;
+            }
+            
+            console.log('🧪 Creating test marker at (38.921574, -83.123456)...');
+            const testMarker = new google.maps.Marker({
+                position: { lat: 38.921574, lng: -83.123456 },
+                map: currentMap,
+                title: 'Test Marker',
+                animation: google.maps.Animation.DROP
+            });
+            
+            if (testMarker) {
+                console.log('✅ Test marker created:', testMarker);
+                console.log('   Marker on map:', testMarker.getMap());
+                console.log('   Marker position:', testMarker.getPosition());
+            } else {
+                console.error('❌ Failed to create test marker');
+            }
+        };
 
         // Smooth Scroll
