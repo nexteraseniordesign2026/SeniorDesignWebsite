@@ -10,7 +10,19 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <!-- Google Maps API Configuration -->
-    <script src="config.js"></script>
+    <script>
+        // Try to load config.js, but handle if it doesn't exist
+        (function() {
+            const script = document.createElement('script');
+            script.src = 'config.js';
+            script.onerror = function() {
+                console.warn('config.js not found. Using fallback or showing setup instructions.');
+                // Set empty key - will show error message
+                window.GOOGLE_MAPS_API_KEY = '';
+            };
+            document.head.appendChild(script);
+        })();
+    </script>
     <!-- Google Maps API -->
     <script>
         // Global map and markers variables - must be defined before API loads
@@ -327,35 +339,69 @@
     <script>
         // Load Google Maps API with key from config
         (function() {
-            const apiKey = window.GOOGLE_MAPS_API_KEY || '';
-            if (!apiKey || apiKey === 'YOUR_API_KEY_HERE') {
-                console.error('Google Maps API key not configured. Please create config.js with your API key.');
-                // Show error in map container if it exists
-                window.addEventListener('load', function() {
-                    const mapContainer = document.getElementById('mapContainer');
-                    if (mapContainer) {
-                        mapContainer.innerHTML = `
-                            <div class="absolute inset-0 flex items-center justify-center bg-infra-900">
-                                <div class="text-center p-8">
-                                    <i data-lucide="alert-circle" class="h-16 w-16 text-red-500 mx-auto mb-4"></i>
-                                    <p class="text-red-400 text-lg font-semibold mb-2">API Key Not Configured</p>
-                                    <p class="text-infra-300 text-sm mb-4">Please create config.js with your Google Maps API key</p>
-                                    <p class="text-infra-400 text-xs">See config.example.js for reference</p>
+            // Wait a moment for config.js to load
+            setTimeout(function() {
+                const apiKey = window.GOOGLE_MAPS_API_KEY || '';
+                if (!apiKey || apiKey === 'YOUR_API_KEY_HERE' || apiKey === '') {
+                    console.error('Google Maps API key not configured.');
+                    // Show error in map container if it exists
+                    const showError = function() {
+                        const mapContainer = document.getElementById('mapContainer');
+                        if (mapContainer) {
+                            mapContainer.innerHTML = `
+                                <div class="absolute inset-0 flex items-center justify-center bg-infra-900">
+                                    <div class="text-center p-8 max-w-md">
+                                        <i data-lucide="alert-circle" class="h-16 w-16 text-red-500 mx-auto mb-4"></i>
+                                        <p class="text-red-400 text-lg font-semibold mb-2">API Key Not Configured</p>
+                                        <p class="text-infra-300 text-sm mb-4">Please create config.js with your Google Maps API key</p>
+                                        <div class="text-left text-xs text-infra-400 bg-infra-800 p-4 rounded-lg mt-4">
+                                            <p class="font-semibold mb-2 text-white">For GitHub Pages:</p>
+                                            <ol class="list-decimal list-inside space-y-1">
+                                                <li>Go to repo Settings > Secrets > Actions</li>
+                                                <li>Add secret: GOOGLE_MAPS_API_KEY</li>
+                                                <li>Push to trigger workflow</li>
+                                            </ol>
+                                            <p class="font-semibold mb-2 text-white mt-3">Or manually:</p>
+                                            <p>Create config.js: <code class="bg-infra-900 px-2 py-1 rounded">window.GOOGLE_MAPS_API_KEY = 'YOUR_KEY';</code></p>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        `;
-                        if (typeof lucide !== 'undefined') {
-                            lucide.createIcons();
+                            `;
+                            if (typeof lucide !== 'undefined') {
+                                lucide.createIcons();
+                            }
                         }
-                    }
-                });
-            } else {
-                const script = document.createElement('script');
-                script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initMap`;
-                script.async = true;
-                script.defer = true;
-                document.head.appendChild(script);
-            }
+                    };
+                    
+                    // Try immediately and also on load
+                    showError();
+                    window.addEventListener('load', showError);
+                } else {
+                    const script = document.createElement('script');
+                    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initMap`;
+                    script.async = true;
+                    script.defer = true;
+                    script.onerror = function() {
+                        console.error('Failed to load Google Maps API');
+                        const mapContainer = document.getElementById('mapContainer');
+                        if (mapContainer) {
+                            mapContainer.innerHTML = `
+                                <div class="absolute inset-0 flex items-center justify-center bg-infra-900">
+                                    <div class="text-center p-8">
+                                        <i data-lucide="alert-circle" class="h-16 w-16 text-red-500 mx-auto mb-4"></i>
+                                        <p class="text-red-400 text-lg font-semibold mb-2">Failed to Load Google Maps</p>
+                                        <p class="text-infra-300 text-sm">Please check your API key and restrictions</p>
+                                    </div>
+                                </div>
+                            `;
+                            if (typeof lucide !== 'undefined') {
+                                lucide.createIcons();
+                            }
+                        }
+                    };
+                    document.head.appendChild(script);
+                }
+            }, 100);
         })();
     </script>
     <script>

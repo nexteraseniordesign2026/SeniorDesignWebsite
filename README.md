@@ -34,26 +34,61 @@ This project uses Google Maps API to display an interactive map with vegetation 
 For GitHub Pages, you have two options:
 
 #### Option 1: Use GitHub Secrets with GitHub Actions (Recommended - Secure)
-1. Go to your repository Settings > Secrets and variables > Actions
-2. Click "New repository secret"
-3. Name: `GOOGLE_MAPS_API_KEY`
-4. Value: Your Google Maps API key
-5. Click "Add secret"
-6. The included `.github/workflows/deploy.yml` will automatically inject the key during deployment
-7. Push to main/master branch to trigger deployment
 
-#### Option 2: Manual config.js (Simpler but less secure)
-1. After enabling GitHub Pages, manually create `config.js` in the repository
-2. Add your API key:
+**Step 1: Add the Secret**
+1. Go to your GitHub repository
+2. Click **Settings** > **Secrets and variables** > **Actions**
+3. Click **New repository secret**
+4. Name: `GOOGLE_MAPS_API_KEY`
+5. Value: Paste your Google Maps API key
+6. Click **Add secret**
+
+**Step 2: Enable GitHub Pages with Actions**
+1. Go to **Settings** > **Pages**
+2. Under "Source", select **GitHub Actions** (not "Deploy from a branch")
+3. If you don't see this option, the workflow will handle it automatically
+
+**Step 3: Trigger Deployment**
+1. Make a small change and push to `main` or `master` branch
+2. Go to **Actions** tab to see the workflow run
+3. The workflow will create `config.js` automatically from your secret
+
+**Troubleshooting:**
+- If the workflow fails, check the Actions tab for error messages
+- Ensure the secret name is exactly `GOOGLE_MAPS_API_KEY`
+- Make sure GitHub Pages is enabled in repository settings
+
+#### Option 2: Manual config.js (Simpler - Use if Option 1 doesn't work)
+
+**Important:** This exposes your API key in the repository, but you can secure it with restrictions.
+
+1. **Remove config.js from .gitignore temporarily:**
+   - Edit `.gitignore` and comment out or remove the `config.js` line
+   
+2. **Create config.js in your repository:**
    ```javascript
    window.GOOGLE_MAPS_API_KEY = 'YOUR_API_KEY';
    ```
-3. Commit and push (the API key will be visible in the repo)
-4. Set API restrictions in Google Cloud Console to only allow your GitHub Pages domain:
-   - `https://yourusername.github.io/*`
-   - `https://yourusername.github.io/SeniorDesignWebsite/*` (if using a subdirectory)
 
-**Security Note:** Even if the API key is visible in the repo, restrict it in Google Cloud Console to only work on your GitHub Pages domain. This prevents unauthorized use.
+3. **Commit and push:**
+   ```bash
+   git add config.js
+   git commit -m "Add Google Maps API config"
+   git push
+   ```
+
+4. **Secure your API key in Google Cloud Console:**
+   - Go to [Google Cloud Console](https://console.cloud.google.com/)
+   - Navigate to **APIs & Services** > **Credentials**
+   - Click on your API key
+   - Under **Application restrictions**, select **HTTP referrers (web sites)**
+   - Add these restrictions (replace with your actual GitHub Pages URL):
+     - `https://yourusername.github.io/*`
+     - `https://yourusername.github.io/SeniorDesignWebsite/*` (if using subdirectory)
+   - Under **API restrictions**, select **Restrict key** and choose **Maps JavaScript API**
+   - Click **Save**
+
+**Security Note:** Even though the key is in the repo, these restrictions ensure it only works on your GitHub Pages domain, preventing unauthorized use.
 
 ## Features
 
