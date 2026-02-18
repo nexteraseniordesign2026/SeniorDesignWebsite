@@ -9,6 +9,355 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Google Maps API Configuration -->
+    <script src="config.js"></script>
+    <!-- Google Maps API -->
+    <script>
+        // Global map and markers variables - must be defined before API loads
+        let map;
+        let markers = {};
+        let infoWindows = {};
+
+        // Vehicle data with coordinates
+        const vehicleData = {
+            'V-104': {
+                lat: 26.4583,
+                lng: -80.1234,
+                risk: 'HIGH',
+                color: 'text-red-400',
+                bgColor: '#dc2626',
+                location: 'NW Sector A-12',
+                clearance: '0.8 ft',
+                species: 'Melaleuca Quinquenervia',
+                image: 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+                timestamp: '14:23:05 EST'
+            },
+            'V-102': {
+                lat: 26.4591,
+                lng: -80.1251,
+                risk: 'MEDIUM',
+                color: 'text-orange-400',
+                bgColor: '#ea580c',
+                location: 'NW Sector A-14',
+                clearance: '2.1 ft',
+                species: 'Casuarina Equisetifolia',
+                image: 'https://images.unsplash.com/photo-1513836279014-a89f7a76ae78?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+                timestamp: '14:15:22 EST'
+            },
+            'V-103': {
+                lat: 26.4602,
+                lng: -80.1278,
+                risk: 'LOW',
+                color: 'text-green-400',
+                bgColor: '#16a34a',
+                location: 'NW Sector A-15',
+                clearance: '4.5 ft',
+                species: 'Ficus Aurea',
+                image: 'https://images.unsplash.com/photo-1446575983799-470c50cfdd22?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+                timestamp: '14:08:44 EST'
+            }
+        };
+
+        // Show map error message
+        window.showMapError = function(message) {
+            const mapContainer = document.getElementById('mapContainer');
+            if (mapContainer) {
+                mapContainer.innerHTML = `
+                    <div class="absolute inset-0 flex items-center justify-center bg-infra-900">
+                        <div class="text-center p-8">
+                            <i data-lucide="alert-circle" class="h-16 w-16 text-red-500 mx-auto mb-4"></i>
+                            <p class="text-red-400 text-lg font-semibold mb-2">Google Maps API Error</p>
+                            <p class="text-infra-300 text-sm mb-4">${message}</p>
+                            <div class="text-left text-xs text-infra-400 bg-infra-800 p-4 rounded-lg max-w-md mx-auto">
+                                <p class="font-semibold mb-2">Common fixes:</p>
+                                <ul class="list-disc list-inside space-y-1">
+                                    <li>Enable "Maps JavaScript API" in Google Cloud Console</li>
+                                    <li>Check API key restrictions (allow localhost or file://)</li>
+                                    <li>Verify billing is enabled (free tier available)</li>
+                                    <li>Check browser console (F12) for detailed errors</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            }
+        };
+
+        // Initialize Google Map - must be global for callback
+        window.initMap = function() {
+            // Wait for DOM to be ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', function() {
+                    initializeMap();
+                });
+            } else {
+                initializeMap();
+            }
+        };
+
+        function initializeMap() {
+            // Check if Google Maps is available
+            if (typeof google === 'undefined' || !google.maps) {
+                console.error('Google Maps API not loaded');
+                showMapError('Google Maps API failed to load. Please check your API key and ensure Maps JavaScript API is enabled.');
+                return;
+            }
+
+            const mapContainer = document.getElementById('mapContainer');
+            if (!mapContainer) {
+                console.error('Map container not found');
+                // Retry after a short delay
+                setTimeout(initializeMap, 100);
+                return;
+            }
+
+            // Default center (average of all vehicle locations)
+            const center = { lat: 26.4592, lng: -80.1254 };
+            
+            try {
+                // Create map with dark theme
+                map = new google.maps.Map(mapContainer, {
+                    center: center,
+                    zoom: 14,
+                    styles: [
+                        // Base geometry
+                        { elementType: 'geometry', stylers: [{ color: '#1e293b' }] },
+                        { elementType: 'labels.text.stroke', stylers: [{ color: '#1e293b' }] },
+                        { elementType: 'labels.text.fill', stylers: [{ color: '#cbd5e1' }] },
+                        
+                        // Hide all POI (points of interest like stores, restaurants, etc.)
+                        {
+                            featureType: 'poi',
+                            stylers: [{ visibility: 'off' }]
+                        },
+                        {
+                            featureType: 'poi.business',
+                            stylers: [{ visibility: 'off' }]
+                        },
+                        {
+                            featureType: 'poi.attraction',
+                            stylers: [{ visibility: 'off' }]
+                        },
+                        {
+                            featureType: 'poi.place_of_worship',
+                            stylers: [{ visibility: 'off' }]
+                        },
+                        {
+                            featureType: 'poi.school',
+                            stylers: [{ visibility: 'off' }]
+                        },
+                        {
+                            featureType: 'poi.sports_complex',
+                            stylers: [{ visibility: 'off' }]
+                        },
+                        
+                        // Administrative boundaries (cities, states, counties)
+                        {
+                            featureType: 'administrative',
+                            elementType: 'geometry.stroke',
+                            stylers: [{ color: '#475569' }, { visibility: 'on' }]
+                        },
+                        {
+                            featureType: 'administrative',
+                            elementType: 'labels.text.fill',
+                            stylers: [{ color: '#94a3b8' }, { visibility: 'on' }]
+                        },
+                        {
+                            featureType: 'administrative.locality',
+                            elementType: 'labels.text.fill',
+                            stylers: [{ color: '#cbd5e1' }, { visibility: 'on' }]
+                        },
+                        {
+                            featureType: 'administrative.neighborhood',
+                            elementType: 'labels.text.fill',
+                            stylers: [{ color: '#94a3b8' }, { visibility: 'on' }]
+                        },
+                        {
+                            featureType: 'administrative.land_parcel',
+                            elementType: 'labels.text.fill',
+                            stylers: [{ color: '#64748b' }, { visibility: 'simplified' }]
+                        },
+                        
+                        // Landscape (keep natural features)
+                        {
+                            featureType: 'landscape',
+                            elementType: 'geometry',
+                            stylers: [{ color: '#0f172a' }]
+                        },
+                        {
+                            featureType: 'landscape.natural',
+                            elementType: 'geometry',
+                            stylers: [{ color: '#1e293b' }]
+                        },
+                        
+                        // Roads (essential - keep visible)
+                        {
+                            featureType: 'road',
+                            elementType: 'geometry',
+                            stylers: [{ color: '#334155' }]
+                        },
+                        {
+                            featureType: 'road',
+                            elementType: 'geometry.stroke',
+                            stylers: [{ color: '#475569' }]
+                        },
+                        {
+                            featureType: 'road',
+                            elementType: 'labels.text.fill',
+                            stylers: [{ color: '#94a3b8' }]
+                        },
+                        {
+                            featureType: 'road.highway',
+                            elementType: 'geometry',
+                            stylers: [{ color: '#475569' }]
+                        },
+                        {
+                            featureType: 'road.highway',
+                            elementType: 'geometry.stroke',
+                            stylers: [{ color: '#64748b' }]
+                        },
+                        {
+                            featureType: 'road.highway',
+                            elementType: 'labels.text.fill',
+                            stylers: [{ color: '#cbd5e1' }]
+                        },
+                        {
+                            featureType: 'road.arterial',
+                            elementType: 'geometry',
+                            stylers: [{ color: '#334155' }]
+                        },
+                        {
+                            featureType: 'road.local',
+                            elementType: 'geometry',
+                            stylers: [{ color: '#1e293b' }]
+                        },
+                        
+                        // Transit (hide public transit stations)
+                        {
+                            featureType: 'transit',
+                            stylers: [{ visibility: 'off' }]
+                        },
+                        {
+                            featureType: 'transit.station',
+                            stylers: [{ visibility: 'off' }]
+                        },
+                        
+                        // Water (keep visible)
+                        {
+                            featureType: 'water',
+                            elementType: 'geometry',
+                            stylers: [{ color: '#0c4a6e' }]
+                        },
+                        {
+                            featureType: 'water',
+                            elementType: 'labels.text.fill',
+                            stylers: [{ color: '#64748b' }]
+                        }
+                    ],
+                    mapTypeControl: false,
+                    streetViewControl: false,
+                    fullscreenControl: true
+                });
+
+                // Create markers for each vehicle
+                Object.keys(vehicleData).forEach(vehicleId => {
+                    const data = vehicleData[vehicleId];
+                    
+                    // Create custom marker icon
+                    const markerIcon = {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        scale: 10,
+                        fillColor: data.bgColor,
+                        fillOpacity: 1,
+                        strokeColor: '#ffffff',
+                        strokeWeight: 2
+                    };
+
+                    // Create marker
+                    const marker = new google.maps.Marker({
+                        position: { lat: data.lat, lng: data.lng },
+                        map: map,
+                        title: `${vehicleId} - ${data.risk} Risk`,
+                        icon: markerIcon,
+                        animation: google.maps.Animation.DROP
+                    });
+
+                    // Create info window
+                    const infoWindow = new google.maps.InfoWindow({
+                        content: `
+                            <div style="font-family: 'Inter', sans-serif; min-width: 200px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <h3 style="margin: 0; font-weight: 600; font-size: 14px; color: #0f172a;">${vehicleId}</h3>
+                                    <span style="background-color: ${data.bgColor}20; color: ${data.bgColor}; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">${data.risk}</span>
+                                </div>
+                                <div style="font-size: 12px; color: #475569; line-height: 1.6;">
+                                    <div><strong>Location:</strong> ${data.location}</div>
+                                    <div><strong>Clearance:</strong> ${data.clearance}</div>
+                                    <div><strong>Species:</strong> ${data.species}</div>
+                                    <div><strong>Time:</strong> ${data.timestamp}</div>
+                                </div>
+                            </div>
+                        `
+                    });
+
+                    // Add click listener to marker
+                    marker.addListener('click', () => {
+                        // Close all other info windows
+                        Object.values(infoWindows).forEach(iw => iw.close());
+                        infoWindow.open(map, marker);
+                        if (typeof selectVehicle === 'function') {
+                            selectVehicle(vehicleId);
+                        }
+                    });
+
+                    markers[vehicleId] = marker;
+                    infoWindows[vehicleId] = infoWindow;
+                });
+
+                console.log('Google Maps initialized successfully');
+            } catch (error) {
+                console.error('Error initializing map:', error);
+                showMapError('Error initializing map: ' + error.message);
+            }
+        }
+    </script>
+    <script>
+        // Load Google Maps API with key from config
+        (function() {
+            const apiKey = window.GOOGLE_MAPS_API_KEY || '';
+            if (!apiKey || apiKey === 'YOUR_API_KEY_HERE') {
+                console.error('Google Maps API key not configured. Please create config.js with your API key.');
+                // Show error in map container if it exists
+                window.addEventListener('load', function() {
+                    const mapContainer = document.getElementById('mapContainer');
+                    if (mapContainer) {
+                        mapContainer.innerHTML = `
+                            <div class="absolute inset-0 flex items-center justify-center bg-infra-900">
+                                <div class="text-center p-8">
+                                    <i data-lucide="alert-circle" class="h-16 w-16 text-red-500 mx-auto mb-4"></i>
+                                    <p class="text-red-400 text-lg font-semibold mb-2">API Key Not Configured</p>
+                                    <p class="text-infra-300 text-sm mb-4">Please create config.js with your Google Maps API key</p>
+                                    <p class="text-infra-400 text-xs">See config.example.js for reference</p>
+                                </div>
+                            </div>
+                        `;
+                        if (typeof lucide !== 'undefined') {
+                            lucide.createIcons();
+                        }
+                    }
+                });
+            } else {
+                const script = document.createElement('script');
+                script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initMap`;
+                script.async = true;
+                script.defer = true;
+                document.head.appendChild(script);
+            }
+        })();
+    </script>
     <script>
         tailwind.config = {
             theme: {
@@ -413,49 +762,15 @@
             <div class="bg-infra-800 rounded-xl overflow-hidden border border-infra-700 shadow-2xl">
                 <div class="flex flex-col lg:flex-row h-[600px]">
                     <!-- Map Area -->
-                    <div class="flex-1 relative bg-infra-900 map-grid" id="mapContainer">
-                        <!-- Placeholder Map Interface -->
-                        <div class="absolute inset-0 flex items-center justify-center">
-                            <div class="text-center">
-                                <i data-lucide="map" class="h-16 w-16 text-infra-600 mx-auto mb-4"></i>
-                                <p class="text-infra-400 text-lg">Interactive Map Placeholder</p>
-                                <p class="text-infra-500 text-sm mt-2">Google Maps API integration pending</p>
-                            </div>
-                        </div>
+                    <div class="flex-1 relative bg-infra-900" id="mapContainer">
+                        <!-- Google Map will be rendered here -->
                         
-                        <!-- Mock Data Points -->
-                        <div class="absolute top-1/4 left-1/3 transform -translate-x-1/2 -translate-y-1/2">
-                            <div class="relative group cursor-pointer">
-                                <div class="w-4 h-4 bg-red-500 rounded-full border-2 border-white shadow-lg animate-ping absolute"></div>
-                                <div class="w-4 h-4 bg-red-500 rounded-full border-2 border-white shadow-lg relative"></div>
-                                <div class="absolute left-6 top-1/2 transform -translate-y-1/2 bg-white text-infra-900 px-2 py-1 rounded text-xs font-mono opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                                    V-104 | High Risk
-                                </div>
-                            </div>
-                        </div>
-                        <div class="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                            <div class="relative group cursor-pointer">
-                                <div class="w-4 h-4 bg-orange-500 rounded-full border-2 border-white shadow-lg relative"></div>
-                                <div class="absolute left-6 top-1/2 transform -translate-y-1/2 bg-white text-infra-900 px-2 py-1 rounded text-xs font-mono opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                                    V-102 | Medium Risk
-                                </div>
-                            </div>
-                        </div>
-                        <div class="absolute bottom-1/3 right-1/3 transform -translate-x-1/2 -translate-y-1/2">
-                            <div class="relative group cursor-pointer">
-                                <div class="w-4 h-4 bg-green-500 rounded-full border-2 border-white shadow-lg relative"></div>
-                                <div class="absolute left-6 top-1/2 transform -translate-y-1/2 bg-white text-infra-900 px-2 py-1 rounded text-xs font-mono opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                                    V-103 | Low Risk
-                                </div>
-                            </div>
-                        </div>
-
                         <!-- Map Controls -->
-                        <div class="absolute bottom-4 left-4 flex gap-2">
-                            <button class="bg-white/10 backdrop-blur-sm p-2 rounded hover:bg-white/20 transition-colors" onclick="zoomMap(1)">
+                        <div class="absolute bottom-4 left-4 z-10 flex gap-2">
+                            <button class="bg-white/10 backdrop-blur-sm p-2 rounded hover:bg-white/20 transition-colors text-white" onclick="zoomMap(1)">
                                 <i data-lucide="plus" class="h-5 w-5"></i>
                             </button>
-                            <button class="bg-white/10 backdrop-blur-sm p-2 rounded hover:bg-white/20 transition-colors" onclick="zoomMap(-1)">
+                            <button class="bg-white/10 backdrop-blur-sm p-2 rounded hover:bg-white/20 transition-colors text-white" onclick="zoomMap(-1)">
                                 <i data-lucide="minus" class="h-5 w-5"></i>
                             </button>
                         </div>
@@ -953,6 +1268,7 @@
     </footer>
 
     <script>
+
         // Initialize Lucide Icons
         lucide.createIcons();
 
@@ -988,35 +1304,19 @@
         // Select Vehicle Function
         function selectVehicle(vehicleId) {
             const detailDiv = document.getElementById('vehicleDetail');
-            const mockData = {
-                'V-104': {
-                    risk: 'HIGH',
-                    color: 'text-red-400',
-                    location: 'NW Sector A-12',
-                    clearance: '0.8 ft',
-                    species: 'Melaleuca Quinquenervia',
-                    image: 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'
-                },
-                'V-102': {
-                    risk: 'MEDIUM',
-                    color: 'text-orange-400',
-                    location: 'NW Sector A-14',
-                    clearance: '2.1 ft',
-                    species: 'Casuarina Equisetifolia',
-                    image: 'https://images.unsplash.com/photo-1513836279014-a89f7a76ae78?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'
-                },
-                'V-103': {
-                    risk: 'LOW',
-                    color: 'text-green-400',
-                    location: 'NW Sector A-15',
-                    clearance: '4.5 ft',
-                    species: 'Ficus Aurea',
-                    image: 'https://images.unsplash.com/photo-1446575983799-470c50cfdd22?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'
+            const data = vehicleData[vehicleId];
+            
+            if (data && map) {
+                // Center map on selected vehicle
+                const marker = markers[vehicleId];
+                if (marker) {
+                    map.setCenter(marker.getPosition());
+                    map.setZoom(16);
+                    // Open info window
+                    infoWindows[vehicleId].open(map, marker);
                 }
-            };
 
-            const data = mockData[vehicleId];
-            if (data) {
+                // Update detail panel
                 detailDiv.innerHTML = `
                     <div class="flex gap-3">
                         <div class="w-20 h-20 bg-infra-700 rounded overflow-hidden flex-shrink-0">
@@ -1041,10 +1341,29 @@
             }
         }
 
-        // Map Zoom Mock Function
+        // Map Zoom Function
         function zoomMap(direction) {
-            console.log(`Zooming ${direction > 0 ? 'in' : 'out'}`);
-            // Placeholder for future API integration
+            if (map) {
+                const currentZoom = map.getZoom();
+                map.setZoom(currentZoom + (direction > 0 ? 1 : -1));
+            }
         }
+
+        // Fallback initialization if callback doesn't work
+        window.addEventListener('load', function() {
+            // Wait a bit for the callback to fire
+            setTimeout(function() {
+                if (typeof map === 'undefined' || !map) {
+                    // If map wasn't initialized by callback, try manual init
+                    if (typeof google !== 'undefined' && google.maps) {
+                        console.log('Initializing map via fallback method');
+                        initMap();
+                    } else {
+                        console.error('Google Maps API not available after page load');
+                        showMapError('Google Maps API failed to load. Check browser console (F12) for details.');
+                    }
+                }
+            }, 2000);
+        });
 
         // Smooth Scroll
