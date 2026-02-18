@@ -114,6 +114,7 @@
         };
 
         function initializeMap() {
+            console.log('initializeMap called');
             // Check if Google Maps is available
             if (typeof google === 'undefined' || !google.maps) {
                 console.error('Google Maps API not loaded');
@@ -123,16 +124,22 @@
 
             const mapContainer = document.getElementById('mapContainer');
             if (!mapContainer) {
-                console.error('Map container not found');
+                console.error('Map container not found, retrying...');
                 // Retry after a short delay
                 setTimeout(initializeMap, 100);
                 return;
             }
 
+            console.log('Map container found, initializing map...');
+
             // Default center (average of all vehicle locations)
             const center = { lat: 26.4592, lng: -80.1254 };
             
             try {
+                // Ensure container is visible
+                mapContainer.style.minHeight = '600px';
+                mapContainer.style.width = '100%';
+                
                 // Create map with dark theme
                 map = new google.maps.Map(mapContainer, {
                     center: center,
@@ -332,7 +339,7 @@
                     infoWindows[vehicleId] = infoWindow;
                 });
 
-                console.log('Google Maps initialized successfully');
+                console.log('Google Maps initialized successfully with', Object.keys(markers).length, 'markers');
             } catch (error) {
                 console.error('Error initializing map:', error);
                 showMapError('Error initializing map: ' + error.message);
@@ -347,6 +354,7 @@
             const maxAttempts = 20; // 2 seconds total (20 * 100ms)
             
             const checkAndLoad = function() {
+                const apiKey = window.GOOGLE_MAPS_API_KEY || '';
                 if (!apiKey || apiKey === 'YOUR_API_KEY_HERE' || apiKey === '') {
                     attempts++;
                     if (attempts < maxAttempts) {
@@ -390,11 +398,14 @@
                     window.addEventListener('load', showError);
                 } else {
                     // API key found - load Google Maps
-                    console.log('Loading Google Maps API with key:', apiKey.substring(0, 10) + '...');
+                    console.log('API key found, loading Google Maps API...');
                     const script = document.createElement('script');
                     script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initMap`;
                     script.async = true;
                     script.defer = true;
+                    script.onload = function() {
+                        console.log('Google Maps API script loaded successfully');
+                    };
                     script.onerror = function() {
                         console.error('Failed to load Google Maps API');
                         const mapContainer = document.getElementById('mapContainer');
@@ -825,7 +836,7 @@
             <div class="bg-infra-800 rounded-xl overflow-hidden border border-infra-700 shadow-2xl">
                 <div class="flex flex-col lg:flex-row h-[600px]">
                     <!-- Map Area -->
-                    <div class="flex-1 relative bg-infra-900" id="mapContainer">
+                    <div class="flex-1 relative bg-infra-900" id="mapContainer" style="min-height: 600px;">
                         <!-- Google Map will be rendered here -->
                         
                         <!-- Map Controls -->
