@@ -15,8 +15,11 @@
         (function() {
             const script = document.createElement('script');
             script.src = 'config.js';
+            script.onload = function() {
+                console.log('config.js loaded successfully');
+            };
             script.onerror = function() {
-                console.warn('config.js not found. Using fallback or showing setup instructions.');
+                console.warn('config.js not found. This is expected on GitHub Pages - use GitHub Secrets.');
                 // Set empty key - will show error message
                 window.GOOGLE_MAPS_API_KEY = '';
             };
@@ -339,12 +342,21 @@
     <script>
         // Load Google Maps API with key from config
         (function() {
-            // Wait a moment for config.js to load
-            setTimeout(function() {
-                const apiKey = window.GOOGLE_MAPS_API_KEY || '';
+            // Wait for config.js to load, with multiple attempts
+            let attempts = 0;
+            const maxAttempts = 20; // 2 seconds total (20 * 100ms)
+            
+            const checkAndLoad = function() {
                 if (!apiKey || apiKey === 'YOUR_API_KEY_HERE' || apiKey === '') {
-                    console.error('Google Maps API key not configured.');
-                    // Show error in map container if it exists
+                    attempts++;
+                    if (attempts < maxAttempts) {
+                        // Keep trying - config.js might still be loading
+                        setTimeout(checkAndLoad, 100);
+                        return;
+                    }
+                    
+                    // Max attempts reached - show error
+                    console.error('Google Maps API key not configured after', attempts, 'attempts');
                     const showError = function() {
                         const mapContainer = document.getElementById('mapContainer');
                         if (mapContainer) {
@@ -377,6 +389,8 @@
                     showError();
                     window.addEventListener('load', showError);
                 } else {
+                    // API key found - load Google Maps
+                    console.log('Loading Google Maps API with key:', apiKey.substring(0, 10) + '...');
                     const script = document.createElement('script');
                     script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initMap`;
                     script.async = true;
@@ -401,7 +415,10 @@
                     };
                     document.head.appendChild(script);
                 }
-            }, 100);
+            };
+            
+            // Start checking after a short delay
+            setTimeout(checkAndLoad, 50);
         })();
     </script>
     <script>
