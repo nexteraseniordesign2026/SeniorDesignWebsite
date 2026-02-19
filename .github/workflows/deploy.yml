@@ -3,8 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - main
-      - master
+      - main  # Change to 'master' if your default branch is master
   workflow_dispatch:
 
 permissions:
@@ -26,14 +25,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       
-      - name: Create config.js from secret
+      - name: Generate config.js from secret
         run: |
-          if [ -z "${{ secrets.GOOGLE_MAPS_API_KEY }}" ]; then
-            echo "Warning: GOOGLE_MAPS_API_KEY secret not set. Creating placeholder config.js"
-            echo "window.GOOGLE_MAPS_API_KEY = '';" > config.js
-          else
-            echo "window.GOOGLE_MAPS_API_KEY = '${{ secrets.GOOGLE_MAPS_API_KEY }}';" > config.js
-          fi
+          cat > config.js << EOF
+          // Google Maps API Configuration
+          // This file is auto-generated from GitHub Secrets during deployment
+          
+          window.GOOGLE_MAPS_API_KEY = '${{ secrets.GOOGLE_MAPS_API_KEY }}';
+          
+          // DynamoDB API Endpoint Configuration
+          window.DYNAMODB_API_ENDPOINT = 'https://oho7x3vnc0.execute-api.us-east-2.amazonaws.com/dev/locations';
+          EOF
       
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -46,4 +48,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
