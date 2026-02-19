@@ -18,12 +18,12 @@ class DynamoDBService {
      */
     mapPredictedClassToRisk(predictedClass) {
         const riskMap = {
-            'no_vegetation': 'LOW',
-            'little_vegetation': 'LOW',
-            'lot_vegetation': 'MEDIUM',
-            'back_of_panel': 'HIGH'
+            'no_vegetation': 'NO_VEGETATION',
+            'little_vegetation': 'MEDIUM',
+            'lot_vegetation': 'HIGH',
+            'back_of_panel': 'BAD_IMAGE'
         };
-        return riskMap[predictedClass] || 'LOW';
+        return riskMap[predictedClass] || 'NO_VEGETATION';
     }
 
     /**
@@ -31,11 +31,12 @@ class DynamoDBService {
      */
     getRiskColor(risk) {
         const colorMap = {
-            'HIGH': { text: 'text-red-400', bg: '#dc2626' },
-            'MEDIUM': { text: 'text-orange-400', bg: '#ea580c' },
-            'LOW': { text: 'text-green-400', bg: '#16a34a' }
+            'BAD_IMAGE': { text: 'text-gray-400', bg: '#6b7280' },      // Grey for back_of_panel
+            'HIGH': { text: 'text-red-400', bg: '#dc2626' },            // Red for lot_vegetation
+            'MEDIUM': { text: 'text-orange-400', bg: '#ea580c' },       // Orange for little_vegetation
+            'NO_VEGETATION': { text: 'text-green-400', bg: '#16a34a' }  // Green for no_vegetation
         };
-        return colorMap[risk] || colorMap['LOW'];
+        return colorMap[risk] || colorMap['NO_VEGETATION'];
     }
 
     /**

@@ -40,6 +40,12 @@
         window.pendingLocations = null; // Store locations if map isn't ready yet
         window.dynamoDBService = null; // DynamoDB service instance
         
+        // Define updateDetectionsList early - placeholder that will be replaced
+        window.updateDetectionsList = function(locations) {
+            console.warn('⚠️ updateDetectionsList placeholder called - function not fully defined yet');
+            // This will be replaced by the full implementation later
+        };
+        
         // Initialize DynamoDB Service - MUST be defined early for map initialization
         window.initDynamoDBService = function() {
             console.log('🔄 initDynamoDBService called');
@@ -139,6 +145,20 @@
             const center = { lat: 38.922, lng: -83.123 };
             
             try {
+                // Save the legend and controls before clearing (clone them)
+                const legendElement = mapContainer.querySelector('#vegetationSeverityLegend') || mapContainer.querySelector('.absolute.top-4.right-4');
+                const mapControlsElement = mapContainer.querySelector('.absolute.bottom-4.left-4');
+                
+                let legendClone = null;
+                let mapControlsClone = null;
+                
+                if (legendElement) {
+                    legendClone = legendElement.cloneNode(true);
+                }
+                if (mapControlsElement) {
+                    mapControlsClone = mapControlsElement.cloneNode(true);
+                }
+                
                 // Clear any placeholder content
                 mapContainer.innerHTML = '';
                 
@@ -297,7 +317,232 @@
                 markers = window.markers;
                 infoWindows = window.infoWindows;
 
+                // Restore legend and controls after map is created
+                if (legendClone) {
+                    mapContainer.appendChild(legendClone);
+                }
+                if (mapControlsClone) {
+                    mapContainer.appendChild(mapControlsClone);
+                }
+
                 console.log('✅ Google Maps initialized successfully');
+                
+                // Store all locations for filtering
+                window.allLocations = [];
+                window.currentFilter = 'ALL';
+                
+                // Function to update dashboard stats with today's data
+                window.updateDashboardStats = async function() {
+                    try {
+                        console.log('📊 Updating dashboard statistics...');
+                        
+                        // Get today's date range (start of today to now)
+                        const now = new Date();
+                        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                        
+                        // Fetch today's data - use all locations if available, otherwise fetch
+                        let allLocations = window.allLocations || [];
+                        
+                        if (allLocations.length === 0 && typeof DynamoDBService !== 'undefined' && window.DYNAMODB_API_ENDPOINT) {
+                            const service = new DynamoDBService(window.DYNAMODB_API_ENDPOINT);
+                            allLocations = await service.fetchLocations({ limit: 1000 });
+                            window.allLocations = allLocations;
+                        }
+                        
+                        // Filter for today's data
+                        const todayLocations = allLocations.filter(loc => {
+                            if (!loc.fullTimestamp) return false;
+                            const locDate = new Date(loc.fullTimestamp);
+                            return locDate >= startOfToday && locDate <= now;
+                        });
+                        
+                        // Calculate statistics
+                        const uniqueDevices = new Set(todayLocations.map(loc => loc.deviceName || loc.vehicleId || 'unknown')).size;
+                        const totalDetections = todayLocations.length;
+                        
+                        // Update UI
+                        const fleetStatusEl = document.getElementById('fleetStatus');
+                        const todayDetectionsEl = document.getElementById('todayDetections');
+                        const systemStatusEl = document.getElementById('systemStatus');
+                        
+                        if (fleetStatusEl) {
+                            fleetStatusEl.textContent = `Fleet: ${uniqueDevices} Active`;
+                        }
+                        
+                        if (todayDetectionsEl) {
+                            todayDetectionsEl.textContent = `Today: ${totalDetections} Detections`;
+                        }
+                        
+                        // Update system status based on whether we're using mock data
+                        if (systemStatusEl) {
+                            // Check if we have a service instance already or create one
+                            let isUsingMock = false;
+                            if (typeof DynamoDBService !== 'undefined' && window.DYNAMODB_API_ENDPOINT) {
+                                try {
+                                    const service = new DynamoDBService(window.DYNAMODB_API_ENDPOINT);
+                                    isUsingMock = service.isUsingMockData();
+                                } catch (e) {
+                                    // If service check fails, assume offline
+                                    isUsingMock = true;
+                                }
+                            } else {
+                                isUsingMock = true;
+                            }
+                            
+                            if (isUsingMock) {
+                                systemStatusEl.innerHTML = '<span class="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></span> System Offline (Mock Data)';
+                            } else {
+                                systemStatusEl.innerHTML = '<span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> System Online';
+                            }
+                        }
+                        
+                        console.log(`✅ Dashboard stats updated: ${uniqueDevices} devices, ${totalDetections} detections today`);
+                        
+                    } catch (error) {
+                        console.error('❌ Error updating dashboard stats:', error);
+                        const fleetStatusEl = document.getElementById('fleetStatus');
+                        const todayDetectionsEl = document.getElementById('todayDetections');
+                        if (fleetStatusEl) fleetStatusEl.textContent = 'Fleet: Error';
+                        if (todayDetectionsEl) todayDetectionsEl.textContent = 'Today: Error';
+                    }
+                };
+                
+                // Filter detections by type - make it globally accessible
+                window.filterDetections = function(filterType) {
+                    window.currentFilter = filterType;
+                    console.log(`🔍 Filtering detections by: ${filterType}`);
+                    
+                    // Update button styles
+                    document.querySelectorAll('[id^="filter-"]').forEach(btn => {
+                        btn.classList.remove('bg-utility-600', 'text-white');
+                        btn.classList.add('bg-infra-700', 'text-infra-300');
+                    });
+                    
+                    const filterId = filterType === 'ALL' ? 'filter-all' : 
+                                   filterType === 'BAD_IMAGE' ? 'filter-bad-image' :
+                                   filterType === 'HIGH' ? 'filter-high' :
+                                   filterType === 'MEDIUM' ? 'filter-medium' :
+                                   filterType === 'NO_VEGETATION' ? 'filter-no-veg' : null;
+                    
+                    if (filterId) {
+                        const activeBtn = document.getElementById(filterId);
+                        if (activeBtn) {
+                            activeBtn.classList.remove('bg-infra-700', 'text-infra-300');
+                            activeBtn.classList.add('bg-utility-600', 'text-white');
+                        }
+                    }
+                    
+                    // Filter locations
+                    let filteredLocations = window.allLocations || [];
+                    if (filterType !== 'ALL') {
+                        filteredLocations = (window.allLocations || []).filter(loc => loc.risk === filterType);
+                    }
+                    
+                    console.log(`   Showing ${filteredLocations.length} of ${(window.allLocations || []).length} detections`);
+                    
+                    // Update the panel with filtered results
+                    updateDetectionsPanel(filteredLocations);
+                };
+                
+                // Simple function to update detections panel - NEW IMPLEMENTATION
+                function updateDetectionsPanel(locations) {
+                    console.log(`📋 Updating detections panel with ${locations ? locations.length : 0} locations`);
+                    const listContainer = document.getElementById('detectionsList');
+                    if (!listContainer) {
+                        console.error('❌ detectionsList container not found');
+                        return;
+                    }
+
+                    if (!locations || locations.length === 0) {
+                        listContainer.innerHTML = `
+                            <div class="text-center text-infra-400 text-sm py-8">
+                                <i data-lucide="inbox" class="h-6 w-6 mx-auto mb-2"></i>
+                                <p>No detections found</p>
+                            </div>
+                        `;
+                        if (typeof lucide !== 'undefined') lucide.createIcons();
+                        return;
+                    }
+
+                    // Sort by timestamp (newest first)
+                    const sorted = [...locations].sort((a, b) => {
+                        const dateA = a.fullTimestamp ? new Date(a.fullTimestamp) : new Date(0);
+                        const dateB = b.fullTimestamp ? new Date(b.fullTimestamp) : new Date(0);
+                        return dateB - dateA;
+                    });
+
+                    const riskColors = {
+                        'BAD_IMAGE': 'bg-gray-500/20 text-gray-400',
+                        'HIGH': 'bg-red-500/20 text-red-400',
+                        'MEDIUM': 'bg-orange-500/20 text-orange-400',
+                        'NO_VEGETATION': 'bg-green-500/20 text-green-400'
+                    };
+                    const riskLabel = {
+                        'BAD_IMAGE': 'BAD IMAGE',
+                        'HIGH': 'HIGH',
+                        'MEDIUM': 'MED',
+                        'NO_VEGETATION': 'NO VEG'
+                    };
+
+                    listContainer.innerHTML = sorted.map(loc => {
+                        return `
+                            <div class="bg-infra-700/50 p-3 rounded-lg border border-infra-600 hover:border-utility-500 transition-colors cursor-pointer" onclick="window.selectVehicle('${loc.captureId}')">
+                                <div class="flex justify-between items-start mb-2">
+                                    <div class="flex-1">
+                                        <div class="font-mono font-semibold text-utility-400 text-sm">${loc.deviceName || loc.vehicleId || 'Unknown Device'}</div>
+                                        <div class="font-mono text-xs text-infra-400 mt-0.5">${loc.captureId || 'N/A'}</div>
+                                    </div>
+                                    <span class="text-xs ${riskColors[loc.risk]} px-2 py-0.5 rounded font-semibold">${riskLabel[loc.risk]}</span>
+                                </div>
+                                <div class="space-y-1.5 text-xs text-infra-300 mt-2">
+                                    <div class="flex items-center gap-2">
+                                        <i data-lucide="clock" class="h-3 w-3 flex-shrink-0"></i>
+                                        <span>${loc.timestamp || 'N/A'}</span>
+                                        ${loc.fullTimestamp ? `<span class="text-infra-400 text-[10px]">(${new Date(loc.fullTimestamp).toLocaleDateString()})</span>` : ''}
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <i data-lucide="map-pin" class="h-3 w-3 flex-shrink-0"></i>
+                                        <span class="font-mono">${loc.lat.toFixed(4)}, ${loc.lng.toFixed(4)}</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <i data-lucide="tag" class="h-3 w-3 flex-shrink-0"></i>
+                                        <span>Class: <span class="font-semibold">${loc.species || 'Unknown'}</span></span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <i data-lucide="trending-up" class="h-3 w-3 flex-shrink-0"></i>
+                                        <span>Confidence: <span class="font-semibold">${(loc.confidence * 100).toFixed(1)}%</span></span>
+                                    </div>
+                                    ${loc.clearance && loc.clearance !== 'N/A' ? `
+                                    <div class="flex items-center gap-2">
+                                        <i data-lucide="arrow-up" class="h-3 w-3 flex-shrink-0"></i>
+                                        <span>Clearance: <span class="font-semibold">${loc.clearance}</span></span>
+                                    </div>
+                                    ` : ''}
+                                    ${loc.gpsStatus ? `
+                                    <div class="flex items-center gap-2">
+                                        <i data-lucide="satellite" class="h-3 w-3 flex-shrink-0"></i>
+                                        <span>GPS: <span class="font-semibold ${loc.gpsStatus === 'fix_acquired' ? 'text-green-400' : 'text-orange-400'}">${loc.gpsStatus}</span></span>
+                                        ${loc.numSatellites ? `<span class="text-infra-400">(${loc.numSatellites} sats)</span>` : ''}
+                                    </div>
+                                    ` : ''}
+                                    ${loc.cameraId !== undefined && loc.cameraId !== null ? `
+                                    <div class="flex items-center gap-2">
+                                        <i data-lucide="camera" class="h-3 w-3 flex-shrink-0"></i>
+                                        <span>Camera ID: <span class="font-semibold">${loc.cameraId}</span></span>
+                                    </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+
+                    // Re-initialize lucide icons
+                    if (typeof lucide !== 'undefined') {
+                        lucide.createIcons();
+                    }
+                    
+                    console.log(`✅ Detections panel updated with ${sorted.length} items`);
+                }
                 
                 // Simple function to load data and create markers (like test-map-debug.html)
                 // Make it accessible globally
@@ -340,6 +585,9 @@
                     service.fetchLocations({ limit: 100 }).then(locations => {
                         console.log(`✅ Loaded ${locations.length} locations from API`);
                         
+                        // Store all locations for filtering
+                        window.allLocations = locations;
+                        
                         // Check if using mock data
                         const isUsingMock = service.isUsingMockData();
                         const lastError = service.getLastError();
@@ -359,13 +607,14 @@
                             vehicleDataMap[loc.captureId] = loc;
                         });
                         
-                        // Update sidebar
-                        if (typeof window.updateDetectionsList === 'function') {
-                            window.updateDetectionsList(locations);
-                        } else if (typeof updateDetectionsList === 'function') {
-                            updateDetectionsList(locations);
-                        } else {
-                            console.error('❌ updateDetectionsList function not available');
+                        // Update sidebar with current filter
+                        const filtered = window.currentFilter === 'ALL' ? locations : 
+                                       locations.filter(loc => loc.risk === window.currentFilter);
+                        updateDetectionsPanel(filtered);
+                        
+                        // Update dashboard statistics
+                        if (typeof window.updateDashboardStats === 'function') {
+                            window.updateDashboardStats();
                         }
                         
                         // Clear existing markers
@@ -990,11 +1239,12 @@
                     <p class="text-infra-300">Real-time vegetation analysis from active fleet vehicles</p>
                 </div>
                 <div class="flex items-center gap-3">
-                    <span class="flex items-center gap-2 text-sm">
+                    <span class="flex items-center gap-2 text-sm" id="systemStatus">
                         <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
                         System Online
                     </span>
-                    <span class="font-mono text-sm bg-infra-800 px-3 py-1 rounded">Fleet: 12 Active</span>
+                    <span class="font-mono text-sm bg-infra-800 px-3 py-1 rounded" id="fleetStatus">Fleet: Loading...</span>
+                    <span class="font-mono text-sm bg-infra-800 px-3 py-1 rounded" id="todayDetections">Today: Loading...</span>
                 </div>
             </div>
         </div>
@@ -1018,20 +1268,24 @@
                         </div>
 
                         <!-- Legend -->
-                        <div class="absolute top-4 right-4 bg-black/80 backdrop-blur-sm p-4 rounded-lg border border-infra-700 text-xs">
+                        <div id="vegetationSeverityLegend" class="absolute top-4 right-4 z-20 bg-black/80 backdrop-blur-sm p-4 rounded-lg border border-infra-700 text-xs shadow-lg">
                             <h4 class="font-semibold mb-3 text-white">Vegetation Severity</h4>
                             <div class="space-y-2">
                                 <div class="flex items-center gap-2">
+                                    <div class="w-3 h-3 bg-gray-500 rounded-full"></div>
+                                    <span class="text-infra-300">Bad image (back_of_panel)</span>
+                                </div>
+                                <div class="flex items-center gap-2">
                                     <div class="w-3 h-3 bg-red-500 rounded-full"></div>
-                                    <span class="text-infra-300">High (> 3ft clearance)</span>
+                                    <span class="text-infra-300">High (lot_vegetation)</span>
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <div class="w-3 h-3 bg-orange-500 rounded-full"></div>
-                                    <span class="text-infra-300">Medium (1-3ft)</span>
+                                    <span class="text-infra-300">Medium (little_vegetation)</span>
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <div class="w-3 h-3 bg-green-500 rounded-full"></div>
-                                    <span class="text-infra-300">Low (< 1ft)</span>
+                                    <span class="text-infra-300">No Vegetation (no_vegetation)</span>
                                 </div>
                             </div>
                         </div>
@@ -1040,10 +1294,28 @@
                     <!-- Sidebar -->
                     <div class="w-full lg:w-80 bg-infra-800 border-l border-infra-700 flex flex-col">
                         <div class="p-4 border-b border-infra-700">
-                            <h3 class="font-semibold flex items-center gap-2">
+                            <h3 class="font-semibold flex items-center gap-2 mb-3">
                                 <i data-lucide="activity" class="h-4 w-4 text-utility-400"></i>
                                 Recent Detections
                             </h3>
+                            <!-- Filter by Type -->
+                            <div class="flex flex-wrap gap-2">
+                                <button onclick="filterDetections('ALL')" id="filter-all" class="px-3 py-1.5 text-xs rounded bg-utility-600 text-white font-medium transition-colors">
+                                    All
+                                </button>
+                                <button onclick="filterDetections('BAD_IMAGE')" id="filter-bad-image" class="px-3 py-1.5 text-xs rounded bg-infra-700 text-infra-300 hover:bg-gray-500/20 hover:text-gray-400 font-medium transition-colors">
+                                    Bad Image
+                                </button>
+                                <button onclick="filterDetections('HIGH')" id="filter-high" class="px-3 py-1.5 text-xs rounded bg-infra-700 text-infra-300 hover:bg-red-500/20 hover:text-red-400 font-medium transition-colors">
+                                    High
+                                </button>
+                                <button onclick="filterDetections('MEDIUM')" id="filter-medium" class="px-3 py-1.5 text-xs rounded bg-infra-700 text-infra-300 hover:bg-orange-500/20 hover:text-orange-400 font-medium transition-colors">
+                                    Medium
+                                </button>
+                                <button onclick="filterDetections('NO_VEGETATION')" id="filter-no-veg" class="px-3 py-1.5 text-xs rounded bg-infra-700 text-infra-300 hover:bg-green-500/20 hover:text-green-400 font-medium transition-colors">
+                                    No Veg
+                                </button>
+                            </div>
                         </div>
                         <div class="flex-1 overflow-y-auto p-4 space-y-3" id="detectionsList">
                             <!-- DynamoDB data will be loaded here -->
@@ -1732,18 +2004,49 @@
                 return `
                     <div class="bg-infra-700/50 p-3 rounded-lg border border-infra-600 hover:border-utility-500 transition-colors cursor-pointer" onclick="window.selectVehicle('${loc.captureId}')">
                         <div class="flex justify-between items-start mb-2">
-                            <span class="font-mono font-semibold text-utility-400">${loc.deviceName || loc.vehicleId}</span>
-                            <span class="text-xs ${riskColors[loc.risk]} px-2 py-0.5 rounded">${riskLabel[loc.risk]}</span>
+                            <div class="flex-1">
+                                <div class="font-mono font-semibold text-utility-400 text-sm">${loc.deviceName || loc.vehicleId || 'Unknown Device'}</div>
+                                <div class="font-mono text-xs text-infra-400 mt-0.5">${loc.captureId || 'N/A'}</div>
+                            </div>
+                            <span class="text-xs ${riskColors[loc.risk]} px-2 py-0.5 rounded font-semibold">${riskLabel[loc.risk]}</span>
                         </div>
-                        <div class="space-y-1 text-xs text-infra-300">
+                        <div class="space-y-1.5 text-xs text-infra-300 mt-2">
                             <div class="flex items-center gap-2">
-                                <i data-lucide="clock" class="h-3 w-3"></i>
+                                <i data-lucide="clock" class="h-3 w-3 flex-shrink-0"></i>
                                 <span>${loc.timestamp || 'N/A'}</span>
+                                ${loc.fullTimestamp ? `<span class="text-infra-400 text-[10px]">(${new Date(loc.fullTimestamp).toLocaleDateString()})</span>` : ''}
                             </div>
                             <div class="flex items-center gap-2">
-                                <i data-lucide="map-pin" class="h-3 w-3"></i>
-                                <span>${loc.lat.toFixed(4)}, ${loc.lng.toFixed(4)}</span>
+                                <i data-lucide="map-pin" class="h-3 w-3 flex-shrink-0"></i>
+                                <span class="font-mono">${loc.lat.toFixed(4)}, ${loc.lng.toFixed(4)}</span>
                             </div>
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="tag" class="h-3 w-3 flex-shrink-0"></i>
+                                <span>Class: <span class="font-semibold">${loc.species || 'Unknown'}</span></span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="trending-up" class="h-3 w-3 flex-shrink-0"></i>
+                                <span>Confidence: <span class="font-semibold">${(loc.confidence * 100).toFixed(1)}%</span></span>
+                            </div>
+                            ${loc.clearance && loc.clearance !== 'N/A' ? `
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="arrow-up" class="h-3 w-3 flex-shrink-0"></i>
+                                <span>Clearance: <span class="font-semibold">${loc.clearance}</span></span>
+                            </div>
+                            ` : ''}
+                            ${loc.gpsStatus ? `
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="satellite" class="h-3 w-3 flex-shrink-0"></i>
+                                <span>GPS: <span class="font-semibold ${loc.gpsStatus === 'fix_acquired' ? 'text-green-400' : 'text-orange-400'}">${loc.gpsStatus}</span></span>
+                                ${loc.numSatellites ? `<span class="text-infra-400">(${loc.numSatellites} sats)</span>` : ''}
+                            </div>
+                            ` : ''}
+                            ${loc.cameraId !== undefined && loc.cameraId !== null ? `
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="camera" class="h-3 w-3 flex-shrink-0"></i>
+                                <span>Camera ID: <span class="font-semibold">${loc.cameraId}</span></span>
+                            </div>
+                            ` : ''}
                         </div>
                     </div>
                 `;
@@ -1963,6 +2266,7 @@
         // Select Vehicle Function (updated for DynamoDB)
         // Select vehicle function - make it globally accessible
         window.selectVehicle = function(captureId) {
+            console.log(`📍 Selecting vehicle: ${captureId}`);
             const detailDiv = document.getElementById('vehicleDetail');
             // vehicleDataMap should be accessible from global scope
             const data = (window.vehicleDataMap || vehicleDataMap) && (window.vehicleDataMap || vehicleDataMap)[captureId] 
@@ -1970,9 +2274,12 @@
                 : null;
             
             if (!data) {
-                detailDiv.innerHTML = `
-                    <p class="text-sm text-infra-400 text-center">Location data not found</p>
-                `;
+                console.error(`❌ Data not found for ${captureId}`);
+                if (detailDiv) {
+                    detailDiv.innerHTML = `
+                        <p class="text-sm text-infra-400 text-center">Location data not found</p>
+                    `;
+                }
                 return;
             }
 
@@ -1981,21 +2288,51 @@
             const currentMarkers = window.markers || markers;
             const currentInfoWindows = window.infoWindows || infoWindows;
             
-            if (currentMap && currentMarkers[captureId]) {
-                const marker = currentMarkers[captureId];
-                currentMap.setCenter(marker.getPosition());
+            console.log(`   Map available: ${!!currentMap}`);
+            console.log(`   Marker available: ${!!currentMarkers[captureId]}`);
+            console.log(`   Data coordinates: ${data.lat}, ${data.lng}`);
+            
+            if (currentMap) {
+                // Always center on coordinates for accuracy
+                const position = { lat: parseFloat(data.lat), lng: parseFloat(data.lng) };
+                console.log(`   Centering map on: ${position.lat}, ${position.lng}`);
+                currentMap.setCenter(position);
                 currentMap.setZoom(16);
-                if (currentInfoWindows[captureId]) {
-                    currentInfoWindows[captureId].open(currentMap, marker);
+                
+                // If marker exists, open info window and highlight it
+                if (currentMarkers && currentMarkers[captureId]) {
+                    const marker = currentMarkers[captureId];
+                    
+                    // Close all other info windows first
+                    if (currentInfoWindows) {
+                        Object.values(currentInfoWindows).forEach(iw => {
+                            if (iw && iw.close) iw.close();
+                        });
+                    }
+                    
+                    // Open info window for this marker
+                    if (currentInfoWindows && currentInfoWindows[captureId]) {
+                        currentInfoWindows[captureId].open(currentMap, marker);
+                    }
+                    
+                    // Add a bounce animation to highlight the marker
+                    marker.setAnimation(google.maps.Animation.BOUNCE);
+                    setTimeout(() => {
+                        marker.setAnimation(null);
+                    }, 2000);
                 }
-                }
+            } else {
+                console.error('❌ Map not available');
+            }
 
                 // Update detail panel
-            const riskColors = {
-                'HIGH': 'text-red-400',
-                'MEDIUM': 'text-orange-400',
-                'LOW': 'text-green-400'
-            };
+            if (detailDiv) {
+                const riskColors = {
+                    'BAD_IMAGE': 'text-gray-400',
+                    'HIGH': 'text-red-400',
+                    'MEDIUM': 'text-orange-400',
+                    'NO_VEGETATION': 'text-green-400'
+                };
 
                 detailDiv.innerHTML = `
                     <div class="flex gap-3">
@@ -2020,6 +2357,9 @@
                         Generate Work Order
                     </button>
                 `;
+            } else {
+                console.error('❌ Detail panel not found');
+            }
         };
         
         // Also create local alias
