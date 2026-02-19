@@ -13,21 +13,14 @@
     <script src="dynamodb-service.js"></script>
     <!-- Config (API keys) -->
     <script src="config.js"></script>
-    <!-- Google Maps API Configuration -->
     <script>
-        // Try to load config.js, but handle if it doesn't exist
+        // Verify config.js loaded
         (function() {
-            const script = document.createElement('script');
-            script.src = 'config.js';
-            script.onload = function() {
-                console.log('config.js loaded successfully');
-            };
-            script.onerror = function() {
-                console.warn('config.js not found. This is expected on GitHub Pages - use GitHub Secrets.');
-                // Set empty key - will show error message
-                window.GOOGLE_MAPS_API_KEY = '';
-            };
-            document.head.appendChild(script);
+            if (window.GOOGLE_MAPS_API_KEY) {
+                console.log('✅ config.js loaded successfully');
+            } else {
+                console.warn('⚠️ config.js not loaded or API key not set');
+            }
         })();
     </script>
     <!-- Google Maps API -->
@@ -340,20 +333,36 @@
                         const now = new Date();
                         const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
                         
-                        // Fetch today's data - use all locations if available, otherwise fetch
+                        // Use all locations if available, otherwise try to fetch
                         let allLocations = window.allLocations || [];
                         
-                        if (allLocations.length === 0 && typeof DynamoDBService !== 'undefined' && window.DYNAMODB_API_ENDPOINT) {
-                            const service = new DynamoDBService(window.DYNAMODB_API_ENDPOINT);
-                            allLocations = await service.fetchLocations({ limit: 1000 });
-                            window.allLocations = allLocations;
+                        // If no locations cached, try to fetch them
+                        if (allLocations.length === 0) {
+                            if (typeof DynamoDBService !== 'undefined' && window.DYNAMODB_API_ENDPOINT) {
+                                try {
+                                    console.log('   Fetching locations for stats...');
+                                    const service = new DynamoDBService(window.DYNAMODB_API_ENDPOINT);
+                                    allLocations = await service.fetchLocations({ limit: 1000 });
+                                    window.allLocations = allLocations;
+                                    console.log(`   Fetched ${allLocations.length} locations`);
+                                } catch (error) {
+                                    console.error('   Error fetching locations for stats:', error);
+                                    allLocations = [];
+                                }
+                            } else {
+                                console.warn('   DynamoDBService or API endpoint not available');
+                            }
                         }
                         
                         // Filter for today's data
                         const todayLocations = allLocations.filter(loc => {
                             if (!loc.fullTimestamp) return false;
-                            const locDate = new Date(loc.fullTimestamp);
-                            return locDate >= startOfToday && locDate <= now;
+                            try {
+                                const locDate = new Date(loc.fullTimestamp);
+                                return locDate >= startOfToday && locDate <= now;
+                            } catch (e) {
+                                return false;
+                            }
                         });
                         
                         // Calculate statistics
@@ -373,16 +382,14 @@
                             todayDetectionsEl.textContent = `Today: ${totalDetections} Detections`;
                         }
                         
-                        // Update system status based on whether we're using mock data
+                        // Update system status
                         if (systemStatusEl) {
-                            // Check if we have a service instance already or create one
                             let isUsingMock = false;
                             if (typeof DynamoDBService !== 'undefined' && window.DYNAMODB_API_ENDPOINT) {
                                 try {
                                     const service = new DynamoDBService(window.DYNAMODB_API_ENDPOINT);
                                     isUsingMock = service.isUsingMockData();
                                 } catch (e) {
-                                    // If service check fails, assume offline
                                     isUsingMock = true;
                                 }
                             } else {
@@ -2380,6 +2387,13 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize DynamoDB service early
             initDynamoDBService();
+            
+            // Try to update dashboard stats after a short delay to allow everything to load
+            setTimeout(() => {
+                if (typeof window.updateDashboardStats === 'function') {
+                    window.updateDashboardStats();
+                }
+            }, 1500);
             
             // Map initialization will be handled by initMap callback
             // Data loading will happen automatically when map is ready (see initializeMap function)
