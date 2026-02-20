@@ -73,32 +73,13 @@
             }
         };
 
-        // Show map error message
+        // Show map error message - graceful placeholder UI
         window.showMapError = function(message) {
-            const mapContainer = document.getElementById('mapContainer');
-            if (mapContainer) {
-                mapContainer.innerHTML = `
-                    <div class="absolute inset-0 flex items-center justify-center bg-infra-900">
-                        <div class="text-center p-8">
-                            <i data-lucide="alert-circle" class="h-16 w-16 text-red-500 mx-auto mb-4"></i>
-                            <p class="text-red-400 text-lg font-semibold mb-2">Google Maps API Error</p>
-                            <p class="text-infra-300 text-sm mb-4">${message}</p>
-                            <div class="text-left text-xs text-infra-400 bg-infra-800 p-4 rounded-lg max-w-md mx-auto">
-                                <p class="font-semibold mb-2">Common fixes:</p>
-                                <ul class="list-disc list-inside space-y-1">
-                                    <li>Enable "Maps JavaScript API" in Google Cloud Console</li>
-                                    <li>Check API key restrictions (allow localhost or file://)</li>
-                                    <li>Verify billing is enabled (free tier available)</li>
-                                    <li>Check browser console (F12) for detailed errors</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                if (typeof lucide !== 'undefined') {
-                    lucide.createIcons();
-                }
+            const mapPlaceholder = document.getElementById('mapPlaceholder');
+            if (mapPlaceholder) {
+                mapPlaceholder.classList.remove('hidden');
             }
+            console.warn('Map error:', message);
         };
 
         // Initialize Google Map - must be global for callback
@@ -466,20 +447,66 @@
                             800: '#1e293b',
                             900: '#0f172a',
                         }
+                    },
+                    spacing: {
+                        '18': '4.5rem',
+                        '88': '22rem',
+                    },
+                    maxWidth: {
+                        '8xl': '88rem',
                     }
                 }
             }
         }
     </script>
     <style>
+        /* ============================================
+           UNIFIED DESIGN SYSTEM
+           ============================================ */
+        
+        /* Spacing Scale (based on 4px base unit) */
+        :root {
+            --spacing-xs: 0.25rem;   /* 4px */
+            --spacing-sm: 0.5rem;    /* 8px */
+            --spacing-md: 1rem;      /* 16px */
+            --spacing-lg: 1.5rem;    /* 24px */
+            --spacing-xl: 2rem;      /* 32px */
+            --spacing-2xl: 3rem;     /* 48px */
+            --spacing-3xl: 4rem;     /* 64px */
+        }
+        
+        /* Radius Scale */
+        :root {
+            --radius-sm: 0.375rem;   /* 6px */
+            --radius-md: 0.5rem;     /* 8px */
+            --radius-lg: 0.75rem;    /* 12px */
+            --radius-xl: 1rem;       /* 16px */
+            --radius-full: 9999px;
+        }
+        
+        /* Shadow Scale */
+        :root {
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        /* Focus Ring */
+        :root {
+            --focus-ring: 0 0 0 2px rgba(22, 163, 74, 0.5);
+            --focus-ring-offset: 2px;
+        }
+        
+        /* Backgrounds */
         .gradient-hero {
             background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(20, 83, 45, 0.85) 100%),
                         url('https://images.unsplash.com/photo-1449824913935-59a10b8d2000?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80') center/cover;
         }
         .glass-panel {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
         }
         .timeline-line {
             background: linear-gradient(to bottom, #16a34a, #0ea5e9);
@@ -493,32 +520,211 @@
         .severity-high { background-color: #dc2626; }
         .severity-medium { background-color: #ea580c; }
         .severity-low { background-color: #16a34a; }
+        
+        /* Standardized Card Component */
+        .card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        /* Standardized Button Components */
+        .btn-primary {
+            background: #16a34a;
+            color: white;
+            padding: 0.625rem 1.25rem;
+            border-radius: var(--radius-md);
+            font-weight: 500;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+        }
+        .btn-primary:hover {
+            background: #15803d;
+            box-shadow: var(--shadow-md);
+        }
+        .btn-primary:focus {
+            outline: none;
+            box-shadow: var(--focus-ring), var(--shadow-md);
+        }
+        .btn-secondary {
+            background: white;
+            color: #475569;
+            padding: 0.625rem 1.25rem;
+            border-radius: var(--radius-md);
+            font-weight: 500;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+        }
+        .btn-secondary:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+        }
+        .btn-secondary:focus {
+            outline: none;
+            box-shadow: var(--focus-ring);
+        }
+        
+        /* Standardized Input Components */
+        .input {
+            padding: 0.625rem 1rem;
+            border-radius: var(--radius-md);
+            border: 1px solid #e2e8f0;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+        .input:focus {
+            outline: none;
+            border-color: #16a34a;
+            box-shadow: var(--focus-ring);
+        }
+        
+        /* Standardized Badge Components */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: var(--spacing-xs) var(--spacing-md);
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-success {
+            background: #dcfce7;
+            color: #166534;
+        }
+        .badge-warning {
+            background: #fed7aa;
+            color: #9a3412;
+        }
+        .badge-info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        .badge-neutral {
+            background: #f1f5f9;
+            color: #475569;
+        }
+        
+        /* Standardized Tabs */
+        .tabs {
+            border-bottom: 2px solid #e2e8f0;
+        }
+        .tab-button {
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            color: #64748b;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: -2px;
+            border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+        }
+        .tab-button:hover {
+            color: #475569;
+            background: rgba(241, 245, 249, 0.5);
+        }
+        .tab-button.active {
+            color: #16a34a;
+            border-bottom-color: #16a34a;
+        }
+        .tab-button:focus {
+            outline: none;
+            box-shadow: var(--focus-ring);
+        }
+        .tab-panel {
+            display: none;
+            padding: var(--spacing-lg) 0;
+        }
+        .tab-panel.active {
+            display: block;
+        }
+        
+        /* Standardized Accordions */
+        .accordion-item {
+            border: 1px solid #e2e8f0;
+            border-radius: var(--radius-md);
+            margin-bottom: var(--spacing-md);
+            overflow: hidden;
+        }
+        .accordion-header {
+            padding: var(--spacing-md) var(--spacing-lg);
+            background: #f8fafc;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s;
+        }
+        .accordion-header:hover {
+            background: #f1f5f9;
+        }
+        .accordion-header[aria-expanded="true"] {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .accordion-header:focus {
+            outline: none;
+            box-shadow: inset var(--focus-ring);
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .accordion-content.active {
+            max-height: 1000px;
+        }
+        .accordion-body {
+            padding: var(--spacing-lg);
+        }
+        
+        /* Scrollspy Active State */
+        .nav-link.active {
+            color: #16a34a;
+            font-weight: 600;
+        }
+        
+        /* Sticky Sub-Nav */
+        .sticky-sub-nav {
+            position: sticky;
+            top: 4rem;
+            z-index: 40;
+            background: rgba(15, 23, 42, 0.98);
+            backdrop-filter: blur(8px);
+        }
     </style>
 </head>
 <body class="font-sans text-infra-800 bg-infra-50 antialiased">
 
     <!-- Navigation -->
-    <nav class="fixed w-full z-50 glass-panel border-b border-infra-200 transition-all duration-300" id="navbar">
+    <nav class="fixed w-full z-50 bg-white/95 backdrop-blur-sm border-b border-infra-200 transition-all duration-300" id="navbar">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center gap-2">
                     <i data-lucide="cpu" class="h-6 w-6 text-veg-600"></i>
-                    <span class="font-bold text-lg tracking-tight text-infra-900">IVVM<span class="text-veg-600">System</span></span>
                 </div>
                 
                 <!-- Desktop Menu -->
-                <div class="hidden md:flex items-center space-x-8">
-                    <a href="#overview" class="text-sm font-medium text-infra-600 hover:text-veg-600 transition-colors">Overview</a>
-                    <a href="#architecture" class="text-sm font-medium text-infra-600 hover:text-veg-600 transition-colors">Architecture</a>
-                    <a href="#dashboard" class="text-sm font-medium text-infra-600 hover:text-veg-600 transition-colors">Dashboard</a>
-                    <a href="#engineering" class="text-sm font-medium text-infra-600 hover:text-veg-600 transition-colors">Engineering</a>
-                    <a href="#status" class="text-sm font-medium text-infra-600 hover:text-veg-600 transition-colors">Status</a>
-                    <a href="#impact" class="text-sm font-medium text-infra-600 hover:text-veg-600 transition-colors">Impact</a>
-                    <a href="#team" class="text-sm font-medium text-infra-600 hover:text-veg-600 transition-colors">Team</a>
-                </div>
+                <nav class="hidden md:flex items-center space-x-8" role="navigation" aria-label="Main navigation">
+                    <a href="#overview" class="nav-link text-sm font-medium text-infra-600 hover:text-veg-600 transition-colors focus:outline-none focus:ring-2 focus:ring-veg-500 focus:ring-offset-2 rounded px-2 py-1" data-section="overview">Overview</a>
+                    <a href="#architecture" class="nav-link text-sm font-medium text-infra-600 hover:text-veg-600 transition-colors focus:outline-none focus:ring-2 focus:ring-veg-500 focus:ring-offset-2 rounded px-2 py-1" data-section="architecture">Architecture</a>
+                    <a href="#dashboard" class="nav-link text-sm font-medium text-infra-600 hover:text-veg-600 transition-colors focus:outline-none focus:ring-2 focus:ring-veg-500 focus:ring-offset-2 rounded px-2 py-1" data-section="dashboard">Dashboard</a>
+                    <a href="#engineering" class="nav-link text-sm font-medium text-infra-600 hover:text-veg-600 transition-colors focus:outline-none focus:ring-2 focus:ring-veg-500 focus:ring-offset-2 rounded px-2 py-1" data-section="engineering">Engineering</a>
+                    <a href="#status" class="nav-link text-sm font-medium text-infra-600 hover:text-veg-600 transition-colors focus:outline-none focus:ring-2 focus:ring-veg-500 focus:ring-offset-2 rounded px-2 py-1" data-section="status">Status</a>
+                    <a href="#impact" class="nav-link text-sm font-medium text-infra-600 hover:text-veg-600 transition-colors focus:outline-none focus:ring-2 focus:ring-veg-500 focus:ring-offset-2 rounded px-2 py-1" data-section="impact">Impact</a>
+                    <a href="#team" class="nav-link text-sm font-medium text-infra-600 hover:text-veg-600 transition-colors focus:outline-none focus:ring-2 focus:ring-veg-500 focus:ring-offset-2 rounded px-2 py-1" data-section="team">Team</a>
+                </nav>
 
                 <div class="hidden md:flex items-center gap-4">
-                    <span class="text-xs font-mono text-utility-600 bg-utility-50 px-2 py-1 rounded">v2.4.0-beta</span>
+                    <span class="text-xs font-mono text-utility-600 bg-utility-50 px-2 py-1 rounded">Prototype</span>
                     <a href="#dashboard" class="bg-veg-600 hover:bg-veg-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2">
                         <i data-lucide="map" class="h-4 w-4"></i>
                         View Dashboard
@@ -526,75 +732,94 @@
                 </div>
 
                 <!-- Mobile menu button -->
-                <button class="md:hidden p-2 rounded-md text-infra-600 hover:bg-infra-100" onclick="toggleMobileMenu()">
+                <button class="md:hidden p-2 rounded-md text-infra-600 hover:bg-infra-100 focus:outline-none focus:ring-2 focus:ring-veg-500 focus:ring-offset-2" onclick="toggleMobileMenu()" aria-label="Toggle mobile menu" aria-expanded="false" id="mobileMenuButton">
                     <i data-lucide="menu" class="h-6 w-6" id="menuIcon"></i>
                 </button>
             </div>
         </div>
 
         <!-- Mobile Menu -->
-        <div class="md:hidden hidden bg-white border-t border-infra-200" id="mobileMenu">
+        <div class="md:hidden hidden bg-white border-t border-infra-200" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
             <div class="px-4 pt-2 pb-3 space-y-1">
-                <a href="#overview" class="block px-3 py-2 text-base font-medium text-infra-600 hover:text-veg-600 hover:bg-infra-50 rounded-md">Overview</a>
-                <a href="#architecture" class="block px-3 py-2 text-base font-medium text-infra-600 hover:text-veg-600 hover:bg-infra-50 rounded-md">Architecture</a>
-                <a href="#dashboard" class="block px-3 py-2 text-base font-medium text-infra-600 hover:text-veg-600 hover:bg-infra-50 rounded-md">Dashboard</a>
-                <a href="#engineering" class="block px-3 py-2 text-base font-medium text-infra-600 hover:text-veg-600 hover:bg-infra-50 rounded-md">Engineering</a>
-                <a href="#status" class="block px-3 py-2 text-base font-medium text-infra-600 hover:text-veg-600 hover:bg-infra-50 rounded-md">Status</a>
+                <a href="#overview" class="nav-link block px-3 py-2 text-base font-medium text-infra-600 hover:text-veg-600 hover:bg-infra-50 rounded-md focus:outline-none focus:ring-2 focus:ring-veg-500 focus:ring-inset" data-section="overview">Overview</a>
+                <a href="#architecture" class="nav-link block px-3 py-2 text-base font-medium text-infra-600 hover:text-veg-600 hover:bg-infra-50 rounded-md focus:outline-none focus:ring-2 focus:ring-veg-500 focus:ring-inset" data-section="architecture">Architecture</a>
+                <a href="#dashboard" class="nav-link block px-3 py-2 text-base font-medium text-infra-600 hover:text-veg-600 hover:bg-infra-50 rounded-md focus:outline-none focus:ring-2 focus:ring-veg-500 focus:ring-inset" data-section="dashboard">Dashboard</a>
+                <a href="#engineering" class="nav-link block px-3 py-2 text-base font-medium text-infra-600 hover:text-veg-600 hover:bg-infra-50 rounded-md focus:outline-none focus:ring-2 focus:ring-veg-500 focus:ring-inset" data-section="engineering">Engineering</a>
+                <a href="#status" class="nav-link block px-3 py-2 text-base font-medium text-infra-600 hover:text-veg-600 hover:bg-infra-50 rounded-md focus:outline-none focus:ring-2 focus:ring-veg-500 focus:ring-inset" data-section="status">Status</a>
+                <a href="#impact" class="nav-link block px-3 py-2 text-base font-medium text-infra-600 hover:text-veg-600 hover:bg-infra-50 rounded-md focus:outline-none focus:ring-2 focus:ring-veg-500 focus:ring-inset" data-section="impact">Impact</a>
+                <a href="#team" class="nav-link block px-3 py-2 text-base font-medium text-infra-600 hover:text-veg-600 hover:bg-infra-50 rounded-md focus:outline-none focus:ring-2 focus:ring-veg-500 focus:ring-inset" data-section="team">Team</a>
             </div>
         </div>
     </nav>
 
     <!-- Hero Section -->
-    <section class="relative h-screen flex items-center justify-center gradient-hero overflow-hidden">
+    <section class="relative py-24 md:py-32 flex items-center gradient-hero overflow-hidden">
         <div class="absolute inset-0 bg-gradient-to-b from-transparent to-infra-900/50"></div>
         
-        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white text-sm font-medium mb-6 animate-fade-in-up">
-                <i data-lucide="award" class="h-4 w-4 text-veg-400"></i>
-                Senior Design Engineering Project 2024-2025
-            </div>
-            
-            <h1 class="text-4xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight mb-6 leading-tight">
-                Integrated Vehicular<br>
-                <span class="text-transparent bg-clip-text bg-gradient-to-r from-veg-400 to-utility-400">Vegetation Monitor</span>
-            </h1>
-            
-            <p class="text-xl md:text-2xl text-infra-100 max-w-3xl mx-auto mb-8 font-light">
-                Automated geotagged roadside vegetation analysis for utility infrastructure protection during routine vehicle operations.
-            </p>
-            
-            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                <a href="#architecture" class="px-8 py-4 bg-veg-600 hover:bg-veg-700 text-white rounded-lg font-semibold transition-all flex items-center gap-2 shadow-lg shadow-veg-600/30">
-                    <i data-lucide="layers" class="h-5 w-5"></i>
-                    View System Overview
-                </a>
-                <a href="#dashboard" class="px-8 py-4 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white border border-white/30 rounded-lg font-semibold transition-all flex items-center gap-2">
-                    <i data-lucide="layout-dashboard" class="h-5 w-5"></i>
-                    View Dashboard
-                </a>
+        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+            <div class="text-center mb-12">
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white text-sm font-medium mb-6">
+                    <i data-lucide="award" class="h-4 w-4 text-veg-400"></i>
+                    Senior Design Engineering Project 2025–2026
+                </div>
+                
+                <h1 class="text-3xl md:text-5xl lg:text-6xl font-bold text-white tracking-tight mb-4 leading-tight">
+                    Integrated Vehicular<br>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-veg-400 to-utility-400">Vegetation Monitor</span>
+                </h1>
+                
+                <p class="text-lg md:text-xl text-infra-100 max-w-2xl mx-auto mb-8">
+                    Automated geotagged roadside vegetation analysis for utility infrastructure protection during routine vehicle operations.
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                    <a href="#architecture" class="btn-primary px-8 py-3 text-white flex items-center gap-2">
+                        <i data-lucide="layers" class="h-5 w-5"></i>
+                        View System Overview
+                    </a>
+                    <a href="#dashboard" class="px-8 py-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white border border-white/30 rounded-lg font-semibold transition-all flex items-center gap-2">
+                        <i data-lucide="layout-dashboard" class="h-5 w-5"></i>
+                        View Dashboard
+                    </a>
+                </div>
             </div>
 
-            <div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto text-left">
-                <div class="glass-panel p-6 rounded-xl">
-                    <i data-lucide="satellite" class="h-8 w-8 text-utility-400 mb-3"></i>
-                    <h3 class="text-white font-semibold mb-1">GPS-Integrated</h3>
-                    <p class="text-infra-200 text-sm">Real-time geotagging with sub-meter accuracy</p>
+            <!-- Project Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto mt-12">
+                <div class="card bg-white/95 backdrop-blur-sm">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="w-10 h-10 bg-utility-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="building-2" class="h-5 w-5 text-utility-600"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs text-infra-500 uppercase tracking-wide">Sponsor</div>
+                            <div class="text-lg font-bold text-infra-900">NextEra Energy</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="glass-panel p-6 rounded-xl">
-                    <i data-lucide="camera" class="h-8 w-8 text-veg-400 mb-3"></i>
-                    <h3 class="text-white font-semibold mb-1">AI-Powered</h3>
-                    <p class="text-infra-200 text-sm">Automated vegetation severity classification</p>
+                <div class="card bg-white/95 backdrop-blur-sm">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="w-10 h-10 bg-veg-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="activity" class="h-5 w-5 text-veg-600"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs text-infra-500 uppercase tracking-wide">Status</div>
+                            <div class="text-lg font-bold text-infra-900">Prototype</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="glass-panel p-6 rounded-xl">
-                    <i data-lucide="wifi" class="h-8 w-8 text-utility-400 mb-3"></i>
-                    <h3 class="text-white font-semibold mb-1">Cloud-Connected</h3>
-                    <p class="text-infra-200 text-sm">Wireless data transmission to central analytics</p>
+                <div class="card bg-white/95 backdrop-blur-sm">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="w-10 h-10 bg-infra-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="calendar" class="h-5 w-5 text-infra-600"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs text-infra-500 uppercase tracking-wide">Last Updated</div>
+                            <div class="text-lg font-bold text-infra-900">Feb 2026</div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-            <i data-lucide="chevron-down" class="h-6 w-6 text-white/70"></i>
         </div>
     </section>
 
@@ -606,79 +831,83 @@
                 <div class="w-24 h-1 bg-gradient-to-r from-veg-500 to-utility-500 mx-auto rounded-full"></div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-16">
-                <div class="bg-red-50 border-l-4 border-red-400 p-8 rounded-r-lg">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-16">
+                <div class="card">
                     <div class="flex items-center gap-3 mb-4">
-                        <i data-lucide="alert-triangle" class="h-6 w-6 text-red-600"></i>
-                        <h3 class="text-xl font-bold text-red-900">The Problem</h3>
+                        <div class="w-10 h-10 bg-infra-100 rounded-lg flex items-center justify-center">
+                            <i data-lucide="alert-triangle" class="h-5 w-5 text-infra-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-infra-900">The Problem</h3>
                     </div>
-                    <p class="text-red-800 mb-4 leading-relaxed">
-                        Utility companies currently rely on manual inspections or costly helicopter surveys to monitor vegetation encroachment on transmission lines. These methods are labor-intensive, expensive ($500-$1,200 per mile), and reactive rather than preventative.
+                    <p class="text-infra-700 mb-4 leading-relaxed">
+                        Utility companies often rely on manual inspections or specialized surveys to monitor vegetation encroachment on transmission lines. These methods can be labor-intensive, costly (hundreds to thousands per mile), and reactive rather than preventative.
                     </p>
-                    <ul class="space-y-2 text-red-700 text-sm">
+                    <ul class="space-y-2 text-infra-600 text-sm">
                         <li class="flex items-start gap-2">
-                            <i data-lucide="x-circle" class="h-4 w-4 mt-0.5 flex-shrink-0"></i>
-                            <span>Vegetation-related outages cost utilities $1.2B annually</span>
+                            <i data-lucide="x-circle" class="h-4 w-4 mt-0.5 flex-shrink-0 text-infra-400"></i>
+                            <span>Vegetation-related outages can be costly annually</span>
                         </li>
                         <li class="flex items-start gap-2">
-                            <i data-lucide="x-circle" class="h-4 w-4 mt-0.5 flex-shrink-0"></i>
+                            <i data-lucide="x-circle" class="h-4 w-4 mt-0.5 flex-shrink-0 text-infra-400"></i>
                             <span>Manual inspections limited by terrain and weather</span>
                         </li>
                         <li class="flex items-start gap-2">
-                            <i data-lucide="x-circle" class="h-4 w-4 mt-0.5 flex-shrink-0"></i>
+                            <i data-lucide="x-circle" class="h-4 w-4 mt-0.5 flex-shrink-0 text-infra-400"></i>
                             <span>Reactive maintenance increases wildfire risk</span>
                         </li>
                     </ul>
                 </div>
 
-                <div class="bg-veg-50 border-l-4 border-veg-500 p-8 rounded-r-lg">
+                <div class="card">
                     <div class="flex items-center gap-3 mb-4">
-                        <i data-lucide="check-circle" class="h-6 w-6 text-veg-600"></i>
-                        <h3 class="text-xl font-bold text-veg-900">Our Solution</h3>
+                        <div class="w-10 h-10 bg-infra-100 rounded-lg flex items-center justify-center">
+                            <i data-lucide="check-circle" class="h-5 w-5 text-infra-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-infra-900">Our Solution</h3>
                     </div>
-                    <p class="text-veg-800 mb-4 leading-relaxed">
-                        An automated vehicle-mounted monitoring system that captures geotagged imagery during routine operations, processes data through AI cloud analytics, and provides real-time vegetation risk mapping.
+                    <p class="text-infra-700 mb-4 leading-relaxed">
+                        A vehicle-mounted monitoring prototype that captures geotagged imagery during routine operations, processes data through an AI analytics pipeline, and visualizes vegetation risk on a dashboard using demo data where applicable.
                     </p>
-                    <ul class="space-y-2 text-veg-700 text-sm">
+                    <ul class="space-y-2 text-infra-600 text-sm">
                         <li class="flex items-start gap-2">
-                            <i data-lucide="check" class="h-4 w-4 mt-0.5 flex-shrink-0"></i>
-                            <span>Scalable: Convert existing fleet vehicles to data collectors</span>
+                            <i data-lucide="check" class="h-4 w-4 mt-0.5 flex-shrink-0 text-veg-600"></i>
+                            <span>Scalable concept: Convert existing fleet vehicles into data collectors</span>
                         </li>
                         <li class="flex items-start gap-2">
-                            <i data-lucide="check" class="h-4 w-4 mt-0.5 flex-shrink-0"></i>
-                            <span>Automated: Zero human intervention during data capture</span>
+                            <i data-lucide="check" class="h-4 w-4 mt-0.5 flex-shrink-0 text-veg-600"></i>
+                            <span>Automated capture workflow with minimal operator interaction (prototype)</span>
                         </li>
                         <li class="flex items-start gap-2">
-                            <i data-lucide="check" class="h-4 w-4 mt-0.5 flex-shrink-0"></i>
-                            <span>Preventative: Predictive analytics for maintenance scheduling</span>
+                            <i data-lucide="check" class="h-4 w-4 mt-0.5 flex-shrink-0 text-veg-600"></i>
+                            <span>Decision support: Risk scoring to help prioritize maintenance planning</span>
                         </li>
                     </ul>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div class="text-center p-6 rounded-xl bg-infra-50 border border-infra-200">
+                <div class="card text-center">
                     <div class="w-12 h-12 mx-auto bg-utility-100 rounded-lg flex items-center justify-center mb-4">
                         <i data-lucide="scale" class="h-6 w-6 text-utility-600"></i>
                     </div>
                     <h4 class="font-semibold text-infra-900 mb-2">Scalable</h4>
                     <p class="text-sm text-infra-600">Fleet-wide deployment without dedicated inspection vehicles</p>
                 </div>
-                <div class="text-center p-6 rounded-xl bg-infra-50 border border-infra-200">
+                <div class="card text-center">
                     <div class="w-12 h-12 mx-auto bg-veg-100 rounded-lg flex items-center justify-center mb-4">
                         <i data-lucide="bot" class="h-6 w-6 text-veg-600"></i>
                     </div>
                     <h4 class="font-semibold text-infra-900 mb-2">Automated</h4>
-                    <p class="text-sm text-infra-600">24/7 operation during normal fleet activities</p>
+                    <p class="text-sm text-infra-600">Designed to run during normal fleet activities (prototype)</p>
                 </div>
-                <div class="text-center p-6 rounded-xl bg-infra-50 border border-infra-200">
+                <div class="card text-center">
                     <div class="w-12 h-12 mx-auto bg-utility-100 rounded-lg flex items-center justify-center mb-4">
                         <i data-lucide="piggy-bank" class="h-6 w-6 text-utility-600"></i>
                     </div>
                     <h4 class="font-semibold text-infra-900 mb-2">Cost-Effective</h4>
-                    <p class="text-sm text-infra-600">75% reduction in inspection costs per mile</p>
+                    <p class="text-sm text-infra-600">Goal: reduce inspection effort and cost through automation</p>
                 </div>
-                <div class="text-center p-6 rounded-xl bg-infra-50 border border-infra-200">
+                <div class="card text-center">
                     <div class="w-12 h-12 mx-auto bg-veg-100 rounded-lg flex items-center justify-center mb-4">
                         <i data-lucide="shield-check" class="h-6 w-6 text-veg-600"></i>
                     </div>
@@ -695,77 +924,79 @@
             <div class="text-center mb-16">
                 <h2 class="text-3xl md:text-4xl font-bold text-infra-900 mb-4">System Architecture</h2>
                 <p class="text-lg text-infra-600 max-w-2xl mx-auto">
-                    End-to-end workflow from vehicle-mounted data capture to cloud-based AI analytics and utility dashboard integration.
+                    Prototype workflow from vehicle-mounted data capture to AI-assisted analysis and dashboard visualization.
                 </p>
             </div>
 
-            <!-- Workflow Diagram -->
-            <div class="mb-16 overflow-x-auto">
-                <div class="flex items-center justify-between min-w-max px-4 gap-4">
-                    <div class="flex flex-col items-center w-48">
-                        <div class="w-16 h-16 bg-utility-600 rounded-full flex items-center justify-center text-white shadow-lg mb-3">
-                            <i data-lucide="truck" class="h-8 w-8"></i>
+            <!-- Tabbed Interface -->
+            <div class="card">
+                <div class="tabs flex flex-wrap gap-2 mb-6" role="tablist" aria-label="System Architecture Tabs">
+                    <button class="tab-button active" onclick="switchTab('workflow')" id="tab-workflow" aria-selected="true" role="tab" aria-controls="panel-workflow" tabindex="0">Workflow</button>
+                    <button class="tab-button" onclick="switchTab('hardware')" id="tab-hardware" aria-selected="false" role="tab" aria-controls="panel-hardware" tabindex="-1">Hardware</button>
+                    <button class="tab-button" onclick="switchTab('software')" id="tab-software" aria-selected="false" role="tab" aria-controls="panel-software" tabindex="-1">Software</button>
+                    <button class="tab-button" onclick="switchTab('pipeline')" id="tab-pipeline" aria-selected="false" role="tab" aria-controls="panel-pipeline" tabindex="-1">Data Pipeline</button>
+                </div>
+
+                <div id="panel-workflow" class="tab-panel active" role="tabpanel" aria-labelledby="tab-workflow">
+                    <div class="overflow-x-auto">
+                        <div class="flex items-center justify-between min-w-max px-4 gap-4 py-4">
+                            <div class="flex flex-col items-center w-48">
+                                <div class="w-16 h-16 bg-utility-600 rounded-full flex items-center justify-center text-white shadow-lg mb-3">
+                                    <i data-lucide="truck" class="h-8 w-8"></i>
+                                </div>
+                                <h4 class="font-semibold text-infra-900 text-center">Fleet Vehicle</h4>
+                                <p class="text-xs text-infra-500 text-center mt-1">Data Collection Unit</p>
+                            </div>
+                            <div class="flex-1 h-1 bg-gradient-to-r from-utility-500 to-veg-500 rounded"></div>
+                            <div class="flex flex-col items-center w-48">
+                                <div class="w-16 h-16 bg-veg-600 rounded-full flex items-center justify-center text-white shadow-lg mb-3">
+                                    <i data-lucide="gps" class="h-8 w-8"></i>
+                                </div>
+                                <h4 class="font-semibold text-infra-900 text-center">GPS Integration</h4>
+                                <p class="text-xs text-infra-500 text-center mt-1">Geotagging & Sync</p>
+                            </div>
+                            <div class="flex-1 h-1 bg-gradient-to-r from-veg-500 to-utility-500 rounded"></div>
+                            <div class="flex flex-col items-center w-48">
+                                <div class="w-16 h-16 bg-utility-600 rounded-full flex items-center justify-center text-white shadow-lg mb-3">
+                                    <i data-lucide="upload-cloud" class="h-8 w-8"></i>
+                                </div>
+                                <h4 class="font-semibold text-infra-900 text-center">Wireless TX</h4>
+                                <p class="text-xs text-infra-500 text-center mt-1">Cellular/Wi‑Fi Upload</p>
+                            </div>
+                            <div class="flex-1 h-1 bg-gradient-to-r from-utility-500 to-veg-500 rounded"></div>
+                            <div class="flex flex-col items-center w-48">
+                                <div class="w-16 h-16 bg-veg-600 rounded-full flex items-center justify-center text-white shadow-lg mb-3">
+                                    <i data-lucide="server" class="h-8 w-8"></i>
+                                </div>
+                                <h4 class="font-semibold text-infra-900 text-center">Cloud AI</h4>
+                                <p class="text-xs text-infra-500 text-center mt-1">Processing & Analysis</p>
+                            </div>
+                            <div class="flex-1 h-1 bg-gradient-to-r from-veg-500 to-utility-500 rounded"></div>
+                            <div class="flex flex-col items-center w-48">
+                                <div class="w-16 h-16 bg-utility-600 rounded-full flex items-center justify-center text-white shadow-lg mb-3">
+                                    <i data-lucide="layout-dashboard" class="h-8 w-8"></i>
+                                </div>
+                                <h4 class="font-semibold text-infra-900 text-center">Dashboard</h4>
+                                <p class="text-xs text-infra-500 text-center mt-1">Visualization & Alerts</p>
+                            </div>
                         </div>
-                        <h4 class="font-semibold text-infra-900 text-center">Fleet Vehicle</h4>
-                        <p class="text-xs text-infra-500 text-center mt-1">Data Collection Unit</p>
-                    </div>
-                    <div class="flex-1 h-1 bg-gradient-to-r from-utility-500 to-veg-500 rounded"></div>
-                    <div class="flex flex-col items-center w-48">
-                        <div class="w-16 h-16 bg-veg-600 rounded-full flex items-center justify-center text-white shadow-lg mb-3">
-                            <i data-lucide="gps" class="h-8 w-8"></i>
-                        </div>
-                        <h4 class="font-semibold text-infra-900 text-center">GPS Integration</h4>
-                        <p class="text-xs text-infra-500 text-center mt-1">Geotagging & Sync</p>
-                    </div>
-                    <div class="flex-1 h-1 bg-gradient-to-r from-veg-500 to-utility-500 rounded"></div>
-                    <div class="flex flex-col items-center w-48">
-                        <div class="w-16 h-16 bg-utility-600 rounded-full flex items-center justify-center text-white shadow-lg mb-3">
-                            <i data-lucide="upload-cloud" class="h-8 w-8"></i>
-                        </div>
-                        <h4 class="font-semibold text-infra-900 text-center">Wireless TX</h4>
-                        <p class="text-xs text-infra-500 text-center mt-1">4G/5G Upload</p>
-                    </div>
-                    <div class="flex-1 h-1 bg-gradient-to-r from-utility-500 to-veg-500 rounded"></div>
-                    <div class="flex flex-col items-center w-48">
-                        <div class="w-16 h-16 bg-veg-600 rounded-full flex items-center justify-center text-white shadow-lg mb-3">
-                            <i data-lucide="server" class="h-8 w-8"></i>
-                        </div>
-                        <h4 class="font-semibold text-infra-900 text-center">Cloud AI</h4>
-                        <p class="text-xs text-infra-500 text-center mt-1">Processing & Analysis</p>
-                    </div>
-                    <div class="flex-1 h-1 bg-gradient-to-r from-veg-500 to-utility-500 rounded"></div>
-                    <div class="flex flex-col items-center w-48">
-                        <div class="w-16 h-16 bg-utility-600 rounded-full flex items-center justify-center text-white shadow-lg mb-3">
-                            <i data-lucide="layout-dashboard" class="h-8 w-8"></i>
-                        </div>
-                        <h4 class="font-semibold text-infra-900 text-center">Dashboard</h4>
-                        <p class="text-xs text-infra-500 text-center mt-1">Visualization & Alerts</p>
                     </div>
                 </div>
-            </div>
 
-            <!-- Component Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="bg-white rounded-xl shadow-sm border border-infra-200 p-8">
-                    <div class="flex items-center gap-3 mb-6">
-                        <div class="w-10 h-10 bg-utility-100 rounded-lg flex items-center justify-center">
-                            <i data-lucide="hard-drive" class="h-5 w-5 text-utility-600"></i>
-                        </div>
-                        <h3 class="text-xl font-bold text-infra-900">Hardware Components</h3>
-                    </div>
+                <div id="panel-hardware" class="tab-panel" role="tabpanel" aria-labelledby="tab-hardware">
                     <div class="space-y-4">
                         <div class="flex items-start gap-4 p-4 bg-infra-50 rounded-lg border border-infra-100">
                             <i data-lucide="camera" class="h-5 w-5 text-utility-600 mt-0.5"></i>
                             <div>
                                 <h4 class="font-semibold text-infra-900">Stereoscopic Camera Array</h4>
-                                <p class="text-sm text-infra-600">Dual 4K industrial cameras with depth sensing capability for vegetation proximity analysis.</p>
+                                <p class="text-sm text-infra-600">Vehicle-mounted camera system for image capture and proximity estimation (prototype).</p>
                             </div>
                         </div>
                         <div class="flex items-start gap-4 p-4 bg-infra-50 rounded-lg border border-infra-100">
                             <i data-lucide="navigation" class="h-5 w-5 text-utility-600 mt-0.5"></i>
                             <div>
-                                <h4 class="font-semibold text-infra-900">RTK-GPS Module</h4>
-                                <p class="text-sm text-infra-600">Real-time kinematic positioning providing ±2cm location accuracy for precise asset mapping.</p>
+                                <h4 class="font-semibold text-infra-900">GPS Module</h4>
+                                <p class="text-sm text-infra-600">GPS-based geotagging for mapping context and timestamp alignment (prototype).</p>
                             </div>
                         </div>
                         <div class="flex items-start gap-4 p-4 bg-infra-50 rounded-lg border border-infra-100">
@@ -778,34 +1009,37 @@
                     </div>
                 </div>
 
-                <div class="bg-white rounded-xl shadow-sm border border-infra-200 p-8">
-                    <div class="flex items-center gap-3 mb-6">
-                        <div class="w-10 h-10 bg-veg-100 rounded-lg flex items-center justify-center">
-                            <i data-lucide="code" class="h-5 w-5 text-veg-600"></i>
-                        </div>
-                        <h3 class="text-xl font-bold text-infra-900">Software Stack</h3>
-                    </div>
+                <div id="panel-software" class="tab-panel" role="tabpanel" aria-labelledby="tab-software">
                     <div class="space-y-4">
                         <div class="flex items-start gap-4 p-4 bg-infra-50 rounded-lg border border-infra-100">
                             <i data-lucide="brain" class="h-5 w-5 text-veg-600 mt-0.5"></i>
                             <div>
                                 <h4 class="font-semibold text-infra-900">Computer Vision Engine</h4>
-                                <p class="text-sm text-infra-600">YOLOv8-based vegetation detection with custom-trained models for utility-specific species.</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start gap-4 p-4 bg-infra-50 rounded-lg border border-infra-100">
-                            <i data-lucide="database" class="h-5 w-5 text-veg-600 mt-0.5"></i>
-                            <div>
-                                <h4 class="font-semibold text-infra-900">Geospatial Database</h4>
-                                <p class="text-sm text-infra-600">PostgreSQL/PostGIS backend with time-series data retention for trend analysis.</p>
+                                <p class="text-sm text-infra-600">Prototype vegetation detection and severity classification using an object-detection model and domain-specific training data.</p>
                             </div>
                         </div>
                         <div class="flex items-start gap-4 p-4 bg-infra-50 rounded-lg border border-infra-100">
                             <i data-lucide="globe" class="h-5 w-5 text-veg-600 mt-0.5"></i>
                             <div>
                                 <h4 class="font-semibold text-infra-900">Web Dashboard</h4>
-                                <p class="text-sm text-infra-600">React-based frontend with Mapbox GL integration for interactive asset visualization.</p>
+                                <p class="text-sm text-infra-600">Single-page HTML + Tailwind CSS + vanilla JavaScript with Google Maps JavaScript API for interactive visualization.</p>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="panel-pipeline" class="tab-panel" role="tabpanel" aria-labelledby="tab-pipeline">
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-4 p-4 bg-infra-50 rounded-lg border border-infra-100">
+                            <i data-lucide="database" class="h-5 w-5 text-veg-600 mt-0.5"></i>
+                            <div>
+                                <h4 class="font-semibold text-infra-900">Geospatial Database</h4>
+                                <p class="text-sm text-infra-600">Structured geotagged detection records (demo dataset) suitable for mapping, filtering, and historical review.</p>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-infra-50 rounded-lg border border-infra-100">
+                            <h4 class="font-semibold text-infra-900 mb-2">Data Flow</h4>
+                            <p class="text-sm text-infra-600">Vehicle-mounted sensors capture imagery → GPS geotagging → Edge preprocessing → Wireless transmission → Cloud AI processing → Database storage → Dashboard visualization</p>
                         </div>
                     </div>
                 </div>
@@ -818,122 +1052,195 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h2 class="text-3xl font-bold mb-2">Live Monitoring Dashboard</h2>
-                    <p class="text-infra-300">Real-time vegetation analysis from active fleet vehicles</p>
+                    <h2 class="text-3xl font-bold mb-2">Monitoring Dashboard</h2>
+                    <p class="text-infra-300">Prototype visualization using demo data</p>
                 </div>
                 <div class="flex items-center gap-3">
                     <span class="flex items-center gap-2 text-sm">
                         <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                        System Online
+                        Demo Data Loaded
                     </span>
-                    <span class="font-mono text-sm bg-infra-800 px-3 py-1 rounded">Fleet: 12 Active</span>
+                    <span class="font-mono text-sm bg-infra-800 px-3 py-1 rounded">Demo Fleet: 3 Sample Vehicles</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sticky Sub-Nav -->
+        <div class="sticky-sub-nav border-b border-infra-700 py-3">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center gap-6 text-sm" role="tablist" aria-label="Filter by risk">
+                    <button type="button" class="dashboard-subnav-btn text-white font-medium border-b-2 border-veg-500 pb-1" data-filter="all" onclick="setDashboardSubNavFilter('all')">All Detections</button>
+                    <button type="button" class="dashboard-subnav-btn text-infra-300 hover:text-white transition-colors border-b-2 border-transparent pb-1" data-filter="high" onclick="setDashboardSubNavFilter('high')">High Risk</button>
+                    <button type="button" class="dashboard-subnav-btn text-infra-300 hover:text-white transition-colors border-b-2 border-transparent pb-1" data-filter="medium" onclick="setDashboardSubNavFilter('medium')">Medium Risk</button>
+                    <button type="button" class="dashboard-subnav-btn text-infra-300 hover:text-white transition-colors border-b-2 border-transparent pb-1" data-filter="low" onclick="setDashboardSubNavFilter('low')">Low Risk</button>
                 </div>
             </div>
         </div>
 
         <!-- Dashboard Interface -->
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="bg-infra-800 rounded-xl overflow-hidden border border-infra-700 shadow-2xl">
-                <div class="flex flex-col lg:flex-row h-[600px]">
+        <div class="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-infra-800 rounded-xl overflow-hidden border border-infra-700 shadow-lg">
+                <!-- Top Bar -->
+                <div class="bg-infra-800 border-b border-infra-700 px-6 py-3 flex items-center justify-between flex-wrap gap-3">
+                    <div class="flex items-center gap-4 text-sm">
+                        <div class="flex items-center gap-2 text-infra-300">
+                            <i data-lucide="refresh-cw" class="h-4 w-4"></i>
+                            <span>Last sync: <span class="text-white font-mono">14:23:05 EST</span></span>
+                        </div>
+                        <div class="h-4 w-px bg-infra-700"></div>
+                        <div class="flex items-center gap-2 text-infra-300">
+                            <i data-lucide="database" class="h-4 w-4"></i>
+                            <span>Data source: <span class="text-white">Demo</span></span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button type="button" class="px-3 py-1.5 bg-infra-700 hover:bg-infra-600 text-infra-300 text-xs font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-utility-500" onclick="handleExportClick()" title="Export not available in demo">
+                            <i data-lucide="download" class="h-3 w-3 inline mr-1.5"></i>
+                            Export
+                        </button>
+                        <button class="px-3 py-1.5 bg-infra-700 hover:bg-infra-600 text-infra-300 text-xs font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-utility-500" onclick="resetMapView()" title="Reset map view">
+                            <i data-lucide="rotate-ccw" class="h-3 w-3 inline mr-1.5"></i>
+                            Reset View
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="flex flex-col lg:flex-row h-[700px]">
+                    <!-- Left Sidebar Filters -->
+                    <div class="w-full lg:w-72 bg-infra-800 border-r border-infra-700 flex flex-col">
+                        <div class="p-4 border-b border-infra-700">
+                            <h3 class="font-semibold text-white mb-4 flex items-center gap-2">
+                                <i data-lucide="filter" class="h-4 w-4 text-utility-400"></i>
+                                Filters
+                            </h3>
+                            
+                            <!-- Search -->
+                            <div class="mb-4">
+                                <label class="block text-xs font-medium text-infra-300 mb-2">Search Vehicle ID</label>
+                                <div class="relative">
+                                    <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-infra-400"></i>
+                                    <input type="text" id="dashboardSearch" placeholder="V-104, V-102..." class="w-full pl-10 pr-4 py-2 bg-infra-900 border border-infra-700 rounded-lg text-white text-sm placeholder-infra-500 focus:outline-none focus:ring-2 focus:ring-utility-500" oninput="handleDashboardSearch(this.value)">
+                                </div>
+                            </div>
+                            
+                            <!-- Severity Multi-Select -->
+                            <div class="mb-4">
+                                <label class="block text-xs font-medium text-infra-300 mb-2">Severity</label>
+                                <div class="space-y-2">
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" class="severity-filter" data-severity="high" checked onchange="handleSeverityFilter()" class="w-4 h-4 rounded border-infra-600 bg-infra-900 text-red-500 focus:ring-2 focus:ring-red-500">
+                                        <div class="w-2 h-2 bg-red-500 rounded-full"></div>
+                                        <span class="text-sm text-infra-300">High</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" class="severity-filter" data-severity="medium" checked onchange="handleSeverityFilter()" class="w-4 h-4 rounded border-infra-600 bg-infra-900 text-orange-500 focus:ring-2 focus:ring-orange-500">
+                                        <div class="w-2 h-2 bg-orange-500 rounded-full"></div>
+                                        <span class="text-sm text-infra-300">Medium</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" class="severity-filter" data-severity="low" checked onchange="handleSeverityFilter()" class="w-4 h-4 rounded border-infra-600 bg-infra-900 text-green-500 focus:ring-2 focus:ring-green-500">
+                                        <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                                        <span class="text-sm text-infra-300">Low</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- Date/Time Range (Placeholder) -->
+                            <div class="mb-4">
+                                <label class="block text-xs font-medium text-infra-300 mb-2">Date Range</label>
+                                <div class="text-xs text-infra-500 bg-infra-900 p-2 rounded-lg border border-infra-700">
+                                    All dates (demo)
+                                </div>
+                            </div>
+                            
+                            <!-- Species Dropdown (Placeholder) -->
+                            <div class="mb-4">
+                                <label class="block text-xs font-medium text-infra-300 mb-2">Species</label>
+                                <select class="w-full px-3 py-2 bg-infra-900 border border-infra-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-utility-500" disabled>
+                                    <option>All species</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Clear Filters -->
+                            <button onclick="clearDashboardFilters()" class="w-full px-3 py-2 bg-infra-700 hover:bg-infra-600 text-infra-300 text-xs font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-utility-500">
+                                <i data-lucide="x" class="h-3 w-3 inline mr-1.5"></i>
+                                Clear Filters
+                            </button>
+                        </div>
+                    </div>
+                    
                     <!-- Map Area -->
-                    <div class="flex-1 relative bg-infra-900" id="mapContainer" style="min-height: 600px;">
-                        <!-- Google Map will be rendered here -->
+                    <div class="flex-1 relative bg-infra-900" id="mapContainer" style="min-height: 700px;">
+                        <!-- Map placeholder for graceful failure -->
+                        <div id="mapPlaceholder" class="hidden absolute inset-0 flex items-center justify-center bg-infra-900">
+                            <div class="text-center p-8 max-w-md">
+                                <div class="w-16 h-16 mx-auto mb-4 bg-infra-800 rounded-full flex items-center justify-center">
+                                    <i data-lucide="map" class="h-8 w-8 text-infra-400"></i>
+                                </div>
+                                <h3 class="text-lg font-semibold text-white mb-2">Map Unavailable</h3>
+                                <p class="text-sm text-infra-400 mb-4">Google Maps API is not configured. Detection data is still available in the sidebar.</p>
+                                <div class="text-xs text-infra-500 bg-infra-800 p-3 rounded-lg text-left">
+                                    <p class="font-medium mb-1">To enable maps:</p>
+                                    <ul class="list-disc list-inside space-y-1">
+                                        <li>Create config.js with your API key</li>
+                                        <li>Enable Maps JavaScript API in Google Cloud</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
                         
                         <!-- Map Controls -->
                         <div class="absolute bottom-4 left-4 z-10 flex gap-2">
-                            <button class="bg-white/10 backdrop-blur-sm p-2 rounded hover:bg-white/20 transition-colors text-white" onclick="zoomMap(1)">
+                            <button class="bg-white/10 backdrop-blur-sm p-2 rounded-lg hover:bg-white/20 transition-colors text-white focus:outline-none focus:ring-2 focus:ring-white/50" onclick="zoomMap(1)" aria-label="Zoom in">
                                 <i data-lucide="plus" class="h-5 w-5"></i>
                             </button>
-                            <button class="bg-white/10 backdrop-blur-sm p-2 rounded hover:bg-white/20 transition-colors text-white" onclick="zoomMap(-1)">
+                            <button class="bg-white/10 backdrop-blur-sm p-2 rounded-lg hover:bg-white/20 transition-colors text-white focus:outline-none focus:ring-2 focus:ring-white/50" onclick="zoomMap(-1)" aria-label="Zoom out">
                                 <i data-lucide="minus" class="h-5 w-5"></i>
                             </button>
                         </div>
 
                         <!-- Legend -->
-                        <div class="absolute top-4 right-4 bg-black/80 backdrop-blur-sm p-4 rounded-lg border border-infra-700 text-xs">
+                        <div class="absolute top-4 right-4 bg-black/80 backdrop-blur-sm p-4 rounded-lg border border-infra-700 text-xs z-10">
                             <h4 class="font-semibold mb-3 text-white">Vegetation Severity</h4>
                             <div class="space-y-2">
                                 <div class="flex items-center gap-2">
                                     <div class="w-3 h-3 bg-red-500 rounded-full"></div>
-                                    <span class="text-infra-300">High (> 3ft clearance)</span>
+                                    <span class="text-infra-300">High (≤ 1ft clearance)</span>
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <div class="w-3 h-3 bg-orange-500 rounded-full"></div>
-                                    <span class="text-infra-300">Medium (1-3ft)</span>
+                                    <span class="text-infra-300">Medium (1–3ft)</span>
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <div class="w-3 h-3 bg-green-500 rounded-full"></div>
-                                    <span class="text-infra-300">Low (< 1ft)</span>
+                                    <span class="text-infra-300">Low (≥ 3ft)</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Sidebar -->
-                    <div class="w-full lg:w-80 bg-infra-800 border-l border-infra-700 flex flex-col">
+                    <!-- Right Sidebar - Detection List -->
+                    <div class="w-full lg:w-88 bg-infra-800 border-l border-infra-700 flex flex-col">
                         <div class="p-4 border-b border-infra-700">
-                            <h3 class="font-semibold flex items-center gap-2">
-                                <i data-lucide="activity" class="h-4 w-4 text-utility-400"></i>
-                                Recent Detections
-                            </h3>
+                            <div class="flex items-center justify-between mb-1">
+                                <h3 class="font-semibold text-white flex items-center gap-2">
+                                    <i data-lucide="activity" class="h-4 w-4 text-utility-400"></i>
+                                    Recent Detections
+                                </h3>
+                                <span id="detectionCount" class="text-xs text-infra-400 font-mono">3</span>
+                            </div>
+                            <p class="text-xs text-infra-500">Click to view details</p>
                         </div>
-                        <div class="flex-1 overflow-y-auto p-4 space-y-3">
-                            <!-- Mock Data Cards -->
-                            <div class="bg-infra-700/50 p-3 rounded-lg border border-infra-600 hover:border-utility-500 transition-colors cursor-pointer" onclick="selectVehicle('V-104')">
-                                <div class="flex justify-between items-start mb-2">
-                                    <span class="font-mono font-semibold text-utility-400">V-104</span>
-                                    <span class="text-xs bg-red-500/20 text-red-400 px-2 py-0.5 rounded">HIGH</span>
-                                </div>
-                                <div class="space-y-1 text-xs text-infra-300">
-                                    <div class="flex items-center gap-2">
-                                        <i data-lucide="clock" class="h-3 w-3"></i>
-                                        <span>14:23:05 EST</span>
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <i data-lucide="map-pin" class="h-3 w-3"></i>
-                                        <span>26.4583, -80.1234</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="bg-infra-700/50 p-3 rounded-lg border border-infra-600 hover:border-utility-500 transition-colors cursor-pointer" onclick="selectVehicle('V-102')">
-                                <div class="flex justify-between items-start mb-2">
-                                    <span class="font-mono font-semibold text-utility-400">V-102</span>
-                                    <span class="text-xs bg-orange-500/20 text-orange-400 px-2 py-0.5 rounded">MED</span>
-                                </div>
-                                <div class="space-y-1 text-xs text-infra-300">
-                                    <div class="flex items-center gap-2">
-                                        <i data-lucide="clock" class="h-3 w-3"></i>
-                                        <span>14:15:22 EST</span>
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <i data-lucide="map-pin" class="h-3 w-3"></i>
-                                        <span>26.4591, -80.1251</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="bg-infra-700/50 p-3 rounded-lg border border-infra-600 hover:border-utility-500 transition-colors cursor-pointer" onclick="selectVehicle('V-103')">
-                                <div class="flex justify-between items-start mb-2">
-                                    <span class="font-mono font-semibold text-utility-400">V-103</span>
-                                    <span class="text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded">LOW</span>
-                                </div>
-                                <div class="space-y-1 text-xs text-infra-300">
-                                    <div class="flex items-center gap-2">
-                                        <i data-lucide="clock" class="h-3 w-3"></i>
-                                        <span>14:08:44 EST</span>
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <i data-lucide="map-pin" class="h-3 w-3"></i>
-                                        <span>26.4602, -80.1278</span>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="flex-1 overflow-y-auto" id="detectionList">
+                            <!-- Detection items rendered by JS -->
                         </div>
                         
-                        <!-- Selected Vehicle Detail -->
-                        <div class="p-4 border-t border-infra-700 bg-infra-900/50" id="vehicleDetail">
-                            <p class="text-sm text-infra-400 text-center">Select a detection to view details</p>
+                        <!-- Selected Vehicle Detail Panel -->
+                        <div class="p-4 border-t border-infra-700 bg-infra-900/50 min-h-[200px]" id="vehicleDetail">
+                            <div class="text-center py-8">
+                                <i data-lucide="mouse-pointer-click" class="h-8 w-8 text-infra-500 mx-auto mb-2"></i>
+                                <p class="text-sm text-infra-400">Select a detection to view details</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -949,203 +1256,277 @@
                 <p class="text-lg text-infra-600">Multi-disciplinary approach addressing mechanical, electrical, and software systems integration</p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-                <div class="bg-infra-50 rounded-xl p-6 border border-infra-200 hover:shadow-lg transition-all group">
-                    <div class="w-12 h-12 bg-utility-100 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                        <i data-lucide="cog" class="h-6 w-6 text-utility-600"></i>
+            <div class="max-w-3xl mx-auto space-y-3">
+                <div class="accordion-item">
+                    <button class="accordion-header w-full" onclick="toggleAccordion('mechanical')" aria-expanded="false" id="accordion-mechanical">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-utility-100 rounded-lg flex items-center justify-center">
+                                <i data-lucide="cog" class="h-5 w-5 text-utility-600"></i>
+                            </div>
+                            <h3 class="font-bold text-infra-900 text-left">Mechanical</h3>
+                        </div>
+                        <i data-lucide="chevron-down" class="h-5 w-5 text-infra-500 transition-transform" id="icon-mechanical"></i>
+                    </button>
+                    <div class="accordion-content" id="content-mechanical">
+                        <div class="accordion-body">
+                            <p class="text-sm text-infra-600 mb-4">Vibration-isolated mounting system with weather-resistant enclosure considerations (prototype).</p>
+                            <ul class="text-sm text-infra-500 space-y-2">
+                                <li class="flex items-start gap-2">
+                                    <i data-lucide="check" class="h-4 w-4 mt-0.5 text-veg-600"></i>
+                                    <span>Anti-vibration dampeners</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i data-lucide="check" class="h-4 w-4 mt-0.5 text-veg-600"></i>
+                                    <span>Thermal management</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i data-lucide="check" class="h-4 w-4 mt-0.5 text-veg-600"></i>
+                                    <span>Aerodynamic housing</span>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
-                    <h3 class="font-bold text-infra-900 mb-2">Mechanical</h3>
-                    <p class="text-sm text-infra-600 mb-4">Vibration-isolated mounting system with ingress protection (IP67) rated enclosure.</p>
-                    <ul class="text-xs text-infra-500 space-y-1">
-                        <li>• Anti-vibration dampeners</li>
-                        <li>• Thermal management</li>
-                        <li>• Aerodynamic housing</li>
-                    </ul>
                 </div>
 
-                <div class="bg-infra-50 rounded-xl p-6 border border-infra-200 hover:shadow-lg transition-all group">
-                    <div class="w-12 h-12 bg-veg-100 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                        <i data-lucide="zap" class="h-6 w-6 text-veg-600"></i>
+                <div class="accordion-item">
+                    <button class="accordion-header w-full" onclick="toggleAccordion('electrical')" aria-expanded="false" id="accordion-electrical">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-veg-100 rounded-lg flex items-center justify-center">
+                                <i data-lucide="zap" class="h-5 w-5 text-veg-600"></i>
+                            </div>
+                            <h3 class="font-bold text-infra-900 text-left">Electrical</h3>
+                        </div>
+                        <i data-lucide="chevron-down" class="h-5 w-5 text-infra-500 transition-transform" id="icon-electrical"></i>
+                    </button>
+                    <div class="accordion-content" id="content-electrical">
+                        <div class="accordion-body">
+                            <p class="text-sm text-infra-600 mb-4">12V automotive power regulation with backup battery and surge protection.</p>
+                            <ul class="text-sm text-infra-500 space-y-2">
+                                <li class="flex items-start gap-2">
+                                    <i data-lucide="check" class="h-4 w-4 mt-0.5 text-veg-600"></i>
+                                    <span>Voltage regulation</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i data-lucide="check" class="h-4 w-4 mt-0.5 text-veg-600"></i>
+                                    <span>Power filtering</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i data-lucide="check" class="h-4 w-4 mt-0.5 text-veg-600"></i>
+                                    <span>ESD protection</span>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
-                    <h3 class="font-bold text-infra-900 mb-2">Electrical</h3>
-                    <p class="text-sm text-infra-600 mb-4">12V automotive power regulation with backup battery and surge protection.</p>
-                    <ul class="text-xs text-infra-500 space-y-1">
-                        <li>• Voltage regulation</li>
-                        <li>• Power filtering</li>
-                        <li>• ESD protection</li>
-                    </ul>
                 </div>
 
-                <div class="bg-infra-50 rounded-xl p-6 border border-infra-200 hover:shadow-lg transition-all group">
-                    <div class="w-12 h-12 bg-utility-100 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                        <i data-lucide="chip" class="h-6 w-6 text-utility-600"></i>
+                <div class="accordion-item">
+                    <button class="accordion-header w-full" onclick="toggleAccordion('computer')" aria-expanded="false" id="accordion-computer">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-utility-100 rounded-lg flex items-center justify-center">
+                                <i data-lucide="chip" class="h-5 w-5 text-utility-600"></i>
+                            </div>
+                            <h3 class="font-bold text-infra-900 text-left">Computer</h3>
+                        </div>
+                        <i data-lucide="chevron-down" class="h-5 w-5 text-infra-500 transition-transform" id="icon-computer"></i>
+                    </button>
+                    <div class="accordion-content" id="content-computer">
+                        <div class="accordion-body">
+                            <p class="text-sm text-infra-600 mb-4">On-vehicle compute for data buffering and optional preprocessing (prototype).</p>
+                            <ul class="text-sm text-infra-500 space-y-2">
+                                <li class="flex items-start gap-2">
+                                    <i data-lucide="check" class="h-4 w-4 mt-0.5 text-veg-600"></i>
+                                    <span>Edge AI processing</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i data-lucide="check" class="h-4 w-4 mt-0.5 text-veg-600"></i>
+                                    <span>Data buffering</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i data-lucide="check" class="h-4 w-4 mt-0.5 text-veg-600"></i>
+                                    <span>LTE connectivity</span>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
-                    <h3 class="font-bold text-infra-900 mb-2">Computer</h3>
-                    <p class="text-sm text-infra-600 mb-4">Edge computing with NVIDIA Jetson for real-time preprocessing.</p>
-                    <ul class="text-xs text-infra-500 space-y-1">
-                        <li>• Edge AI processing</li>
-                        <li>• Data buffering</li>
-                        <li>• LTE connectivity</li>
-                    </ul>
                 </div>
 
-                <div class="bg-infra-50 rounded-xl p-6 border border-infra-200 hover:shadow-lg transition-all group">
-                    <div class="w-12 h-12 bg-veg-100 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                        <i data-lucide="link" class="h-6 w-6 text-veg-600"></i>
+                <div class="accordion-item">
+                    <button class="accordion-header w-full" onclick="toggleAccordion('systems')" aria-expanded="false" id="accordion-systems">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-veg-100 rounded-lg flex items-center justify-center">
+                                <i data-lucide="link" class="h-5 w-5 text-veg-600"></i>
+                            </div>
+                            <h3 class="font-bold text-infra-900 text-left">Systems Integration</h3>
+                        </div>
+                        <i data-lucide="chevron-down" class="h-5 w-5 text-infra-500 transition-transform" id="icon-systems"></i>
+                    </button>
+                    <div class="accordion-content" id="content-systems">
+                        <div class="accordion-body">
+                            <p class="text-sm text-infra-600 mb-4">Unified control architecture ensuring subsystem interoperability.</p>
+                            <ul class="text-sm text-infra-500 space-y-2">
+                                <li class="flex items-start gap-2">
+                                    <i data-lucide="check" class="h-4 w-4 mt-0.5 text-veg-600"></i>
+                                    <span>API gateway</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i data-lucide="check" class="h-4 w-4 mt-0.5 text-veg-600"></i>
+                                    <span>Data pipeline</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i data-lucide="check" class="h-4 w-4 mt-0.5 text-veg-600"></i>
+                                    <span>Dashboard integration</span>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
-                    <h3 class="font-bold text-infra-900 mb-2">Systems Integration</h3>
-                    <p class="text-sm text-infra-600 mb-4">Unified control architecture ensuring subsystem interoperability.</p>
-                    <ul class="text-xs text-infra-500 space-y-1">
-                        <li>• API gateway</li>
-                        <li>• Data pipeline</li>
-                        <li>• Fleet management</li>
-                    </ul>
                 </div>
             </div>
 
             <!-- Design Constraints -->
-            <div class="bg-gradient-to-r from-infra-900 to-infra-800 rounded-2xl p-8 text-white">
-                <h3 class="text-2xl font-bold mb-6 flex items-center gap-3">
-                    <i data-lucide="alert-circle" class="h-6 w-6 text-utility-400"></i>
+            <div class="card bg-infra-900 text-white mt-8">
+                <h3 class="text-xl font-bold mb-6 flex items-center gap-3">
+                    <i data-lucide="alert-circle" class="h-5 w-5 text-utility-400"></i>
                     Design Constraints & Considerations
                 </h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div class="glass-panel p-4 rounded-lg">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="p-4 bg-infra-800 rounded-lg border border-infra-700">
                         <h4 class="font-semibold text-utility-300 mb-2 flex items-center gap-2">
                             <i data-lucide="battery-warning" class="h-4 w-4"></i>
                             Power
                         </h4>
-                        <p class="text-sm text-infra-200">Limited to 50W continuous draw from vehicle 12V system. Sleep mode implementation for parked vehicles.</p>
+                        <p class="text-sm text-infra-300">Designed to fit within typical auxiliary power budgets on a vehicle 12V system, with sleep modes for parked vehicles (prototype).</p>
                     </div>
-                    <div class="glass-panel p-4 rounded-lg">
+                    <div class="p-4 bg-infra-800 rounded-lg border border-infra-700">
                         <h4 class="font-semibold text-veg-300 mb-2 flex items-center gap-2">
                             <i data-lucide="activity" class="h-4 w-4"></i>
                             Vibration
                         </h4>
-                        <p class="text-sm text-infra-200">Must withstand 5g RMS random vibration per IEC 60721-3-5 3M3 class specifications.</p>
+                        <p class="text-sm text-infra-300">Vehicle-mount vibration tolerance through mechanical isolation and validation during prototyping.</p>
                     </div>
-                    <div class="glass-panel p-4 rounded-lg">
+                    <div class="p-4 bg-infra-800 rounded-lg border border-infra-700">
                         <h4 class="font-semibold text-utility-300 mb-2 flex items-center gap-2">
                             <i data-lucide="wifi-off" class="h-4 w-4"></i>
                             Bandwidth
                         </h4>
-                        <p class="text-sm text-infra-200">Edge compression required for rural areas with limited 4G coverage. Store-and-forward capability.</p>
+                        <p class="text-sm text-infra-300">Edge compression required for rural areas with limited 4G coverage. Store-and-forward capability.</p>
                     </div>
-                    <div class="glass-panel p-4 rounded-lg">
+                    <div class="p-4 bg-infra-800 rounded-lg border border-infra-700">
                         <h4 class="font-semibold text-veg-300 mb-2 flex items-center gap-2">
                             <i data-lucide="thermometer-sun" class="h-4 w-4"></i>
                             Environment
                         </h4>
-                        <p class="text-sm text-infra-200">Operating range -20°C to +60°C. IP67 rated for Florida hurricane season deployment.</p>
+                        <p class="text-sm text-infra-300">Outdoor automotive operating conditions (heat/rain/dust) with weather-hardening considerations for future iterations.</p>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Project Status -->
+    <!-- Progress Report / Timeline -->
     <section id="status" class="py-24 bg-infra-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl md:text-4xl font-bold text-infra-900 mb-4">Project Status</h2>
-                <p class="text-lg text-infra-600">Current development phase and milestone tracking</p>
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-infra-900 mb-4">Progress Report &amp; Timeline</h2>
+                <p class="text-lg text-infra-600">Project schedule and milestone status</p>
+                <p class="text-sm text-infra-500 mt-2">Overall schedule: Week of 11/21 → Week of 03/27</p>
             </div>
 
-            <div class="relative">
-                <!-- Timeline Line -->
-                <div class="hidden md:block absolute left-1/2 transform -translate-x-1/2 h-full w-1 timeline-line rounded-full"></div>
+            <!-- Completed -->
+            <div class="card mb-8">
+                <h3 class="font-bold text-infra-900 mb-4 flex items-center gap-2">
+                    <span class="w-2 h-2 bg-veg-500 rounded-full"></span>
+                    Completed
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-infra-200">
+                                <th class="text-left py-2 px-3 font-semibold text-infra-900">Phase / Task</th>
+                                <th class="text-left py-2 px-3 font-semibold text-infra-900">Date Range</th>
+                                <th class="text-left py-2 px-3 font-semibold text-infra-900">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-infra-100">
+                            <tr><td class="py-2 px-3 text-infra-600 font-medium" colspan="3">Planning &amp; Design</td></tr>
+                            <tr><td class="py-2 px-3 text-infra-700">System Requirements &amp; Scope Finalization</td><td class="py-2 px-3 text-infra-600">Week of 11/21 → 12/05</td><td class="py-2 px-3"><span class="badge badge-success">Completed</span></td></tr>
+                            <tr><td class="py-2 px-3 text-infra-700">Hardware Architecture &amp; Design Decisions</td><td class="py-2 px-3 text-infra-600">Week of 11/28 → 12/05</td><td class="py-2 px-3"><span class="badge badge-success">Completed</span></td></tr>
+                            <tr><td class="py-2 px-3 text-infra-700">Prototype Design (CAD + Mechanical Layout)</td><td class="py-2 px-3 text-infra-600">Week of 11/28 → 12/12</td><td class="py-2 px-3"><span class="badge badge-success">Completed</span></td></tr>
+                            <tr><td class="py-2 px-3 text-infra-700">Bill of Materials Finalization &amp; Vendor Selection</td><td class="py-2 px-3 text-infra-600">Week of 12/05 → 12/19</td><td class="py-2 px-3"><span class="badge badge-success">Completed</span></td></tr>
+                            <tr><td class="py-2 px-3 text-infra-600 font-medium" colspan="3">Procurement &amp; Logistics</td></tr>
+                            <tr><td class="py-2 px-3 text-infra-700">Procurement &amp; Order Placement</td><td class="py-2 px-3 text-infra-600">Week of 12/12 → 12/19</td><td class="py-2 px-3"><span class="badge badge-success">Completed</span></td></tr>
+                            <tr><td class="py-2 px-3 text-infra-700">Shipping &amp; External Dependency Lead Time</td><td class="py-2 px-3 text-infra-600">Week of 12/19 → 01/09</td><td class="py-2 px-3"><span class="badge badge-success">Completed</span></td></tr>
+                            <tr><td class="py-2 px-3 text-infra-700">Hardware Receipt &amp; Inventory Verification</td><td class="py-2 px-3 text-infra-600">Week of 01/02 → 01/09</td><td class="py-2 px-3"><span class="badge badge-success">Completed</span></td></tr>
+                            <tr><td class="py-2 px-3 text-infra-600 font-medium" colspan="3">Cloud &amp; Infrastructure</td></tr>
+                            <tr><td class="py-2 px-3 text-infra-700">Cloud Architecture Design</td><td class="py-2 px-3 text-infra-600">Week of 01/02 → 01/16</td><td class="py-2 px-3"><span class="badge badge-success">Completed</span></td></tr>
+                            <tr><td class="py-2 px-3 text-infra-700">AWS Account, IAM &amp; Security Configuration</td><td class="py-2 px-3 text-infra-600">Week of 01/09 → 01/23</td><td class="py-2 px-3"><span class="badge badge-success">Completed</span></td></tr>
+                            <tr><td class="py-2 px-3 text-infra-700">S3 Bucket &amp; DynamoDB Schema Setup</td><td class="py-2 px-3 text-infra-600">Week of 01/09 → 01/23</td><td class="py-2 px-3"><span class="badge badge-success">Completed</span></td></tr>
+                            <tr><td class="py-2 px-3 text-infra-700">API Gateway &amp; Secure Ingestion Setup</td><td class="py-2 px-3 text-infra-600">Week of 01/16 → 01/23</td><td class="py-2 px-3"><span class="badge badge-success">Completed</span></td></tr>
+                            <tr><td class="py-2 px-3 text-infra-700">Mock Data Pipeline Validation</td><td class="py-2 px-3 text-infra-600">Week of 01/16 → 01/23</td><td class="py-2 px-3"><span class="badge badge-success">Completed</span></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-                <div class="space-y-12">
-                    <!-- Phase 1 -->
-                    <div class="relative flex items-center justify-center">
-                        <div class="hidden md:block w-1/2 pr-8 text-right">
-                            <h3 class="text-xl font-bold text-infra-900">Ideation & Requirements</h3>
-                            <p class="text-infra-600 mt-2">Literature review, stakeholder interviews, and initial concept development with NextEra Energy engineering team.</p>
-                        </div>
-                        <div class="absolute left-1/2 transform -translate-x-1/2 w-8 h-8 bg-veg-500 rounded-full border-4 border-white shadow-lg z-10 flex items-center justify-center">
-                            <i data-lucide="check" class="h-4 w-4 text-white"></i>
-                        </div>
-                        <div class="hidden md:block w-1/2 pl-8">
-                            <span class="inline-block bg-veg-100 text-veg-800 px-3 py-1 rounded-full text-sm font-semibold">Complete</span>
-                            <p class="text-sm text-infra-500 mt-1">Aug - Sep 2024</p>
-                        </div>
-                        <div class="md:hidden w-full pl-12 border-l-4 border-veg-500 ml-4 pb-8">
-                            <h3 class="text-lg font-bold text-infra-900">Ideation & Requirements</h3>
-                            <p class="text-sm text-infra-600 mt-1">Complete • Aug-Sep 2024</p>
-                        </div>
-                    </div>
+            <!-- In Progress -->
+            <div class="card mb-8">
+                <h3 class="font-bold text-infra-900 mb-4 flex items-center gap-2">
+                    <span class="w-2 h-2 bg-utility-500 rounded-full animate-pulse"></span>
+                    In Progress
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-infra-200">
+                                <th class="text-left py-2 px-3 font-semibold text-infra-900">Phase / Task</th>
+                                <th class="text-left py-2 px-3 font-semibold text-infra-900">Date Range</th>
+                                <th class="text-left py-2 px-3 font-semibold text-infra-900">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-infra-100">
+                            <tr><td class="py-2 px-3 text-infra-700">Initial Hardware Bring-Up</td><td class="py-2 px-3 text-infra-600">Week of 01/16 → 01/23</td><td class="py-2 px-3"><span class="badge badge-warning">In Progress</span></td></tr>
+                            <tr><td class="py-2 px-3 text-infra-700">Camera Integration &amp; Configuration</td><td class="py-2 px-3 text-infra-600">Week of 01/23 → 02/06</td><td class="py-2 px-3"><span class="badge badge-warning">In Progress</span></td></tr>
+                            <tr><td class="py-2 px-3 text-infra-700">Local Image Capture &amp; Storage Testing</td><td class="py-2 px-3 text-infra-600">Week of 01/23 → 02/06</td><td class="py-2 px-3"><span class="badge badge-warning">In Progress</span></td></tr>
+                            <tr><td class="py-2 px-3 text-infra-700">Cloud Upload Script Development</td><td class="py-2 px-3 text-infra-600">Week of 01/23 → 02/13</td><td class="py-2 px-3"><span class="badge badge-warning">In Progress</span></td></tr>
+                            <tr><td class="py-2 px-3 text-infra-700">Edge-to-Cloud Connectivity Validation</td><td class="py-2 px-3 text-infra-600">Week of 01/30 → 02/13</td><td class="py-2 px-3"><span class="badge badge-warning">In Progress</span></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-                    <!-- Phase 2 -->
-                    <div class="relative flex items-center justify-center">
-                        <div class="hidden md:block w-1/2 pr-8 text-right">
-                            <span class="inline-block bg-veg-100 text-veg-800 px-3 py-1 rounded-full text-sm font-semibold">Complete</span>
-                            <p class="text-sm text-infra-500 mt-1">Sep - Oct 2024</p>
-                        </div>
-                        <div class="absolute left-1/2 transform -translate-x-1/2 w-8 h-8 bg-veg-500 rounded-full border-4 border-white shadow-lg z-10 flex items-center justify-center">
-                            <i data-lucide="check" class="h-4 w-4 text-white"></i>
-                        </div>
-                        <div class="hidden md:block w-1/2 pl-8">
-                            <h3 class="text-xl font-bold text-infra-900">Design Selection</h3>
-                            <p class="text-infra-600 mt-2">Trade-off analysis, benchmarking, and finalization of technical specifications and component selection.</p>
-                        </div>
-                        <div class="md:hidden w-full pl-12 border-l-4 border-veg-500 ml-4 pb-8">
-                            <h3 class="text-lg font-bold text-infra-900">Design Selection</h3>
-                            <p class="text-sm text-infra-600 mt-1">Complete • Sep-Oct 2024</p>
-                        </div>
-                    </div>
-
-                    <!-- Phase 3 -->
-                    <div class="relative flex items-center justify-center">
-                        <div class="hidden md:block w-1/2 pr-8 text-right">
-                            <h3 class="text-xl font-bold text-infra-900">Prototyping</h3>
-                            <p class="text-infra-600 mt-2">CAD modeling, 3D printing enclosures, PCB fabrication, and initial software algorithm development.</p>
-                        </div>
-                        <div class="absolute left-1/2 transform -translate-x-1/2 w-8 h-8 bg-utility-500 rounded-full border-4 border-white shadow-lg z-10 flex items-center justify-center">
-                            <div class="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                        </div>
-                        <div class="hidden md:block w-1/2 pl-8">
-                            <span class="inline-block bg-utility-100 text-utility-800 px-3 py-1 rounded-full text-sm font-semibold">In Progress</span>
-                            <p class="text-sm text-infra-500 mt-1">Oct - Dec 2024</p>
-                        </div>
-                        <div class="md:hidden w-full pl-12 border-l-4 border-utility-500 ml-4 pb-8">
-                            <h3 class="text-lg font-bold text-infra-900">Prototyping</h3>
-                            <p class="text-sm text-infra-600 mt-1">In Progress • Oct-Dec 2024</p>
-                        </div>
-                    </div>
-
-                    <!-- Phase 4 -->
-                    <div class="relative flex items-center justify-center opacity-50">
-                        <div class="hidden md:block w-1/2 pr-8 text-right">
-                            <span class="inline-block bg-infra-200 text-infra-700 px-3 py-1 rounded-full text-sm font-semibold">Upcoming</span>
-                            <p class="text-sm text-infra-500 mt-1">Jan - Feb 2025</p>
-                        </div>
-                        <div class="absolute left-1/2 transform -translate-x-1/2 w-8 h-8 bg-infra-300 rounded-full border-4 border-white shadow-lg z-10"></div>
-                        <div class="hidden md:block w-1/2 pl-8">
-                            <h3 class="text-xl font-bold text-infra-900">Field Testing</h3>
-                            <p class="text-infra-600 mt-2">Deployment on test fleet vehicles, data collection validation, and algorithm refinement.</p>
-                        </div>
-                        <div class="md:hidden w-full pl-12 border-l-4 border-infra-300 ml-4 pb-8">
-                            <h3 class="text-lg font-bold text-infra-900">Field Testing</h3>
-                            <p class="text-sm text-infra-600 mt-1">Upcoming • Jan-Feb 2025</p>
-                        </div>
-                    </div>
-
-                    <!-- Phase 5 -->
-                    <div class="relative flex items-center justify-center opacity-30">
-                        <div class="hidden md:block w-1/2 pr-8 text-right">
-                            <h3 class="text-xl font-bold text-infra-900">Validation & Expo</h3>
-                            <p class="text-infra-600 mt-2">Final system validation, documentation, and Senior Design Expo presentation preparation.</p>
-                        </div>
-                        <div class="absolute left-1/2 transform -translate-x-1/2 w-8 h-8 bg-infra-300 rounded-full border-4 border-white shadow-lg z-10"></div>
-                        <div class="hidden md:block w-1/2 pl-8">
-                            <span class="inline-block bg-infra-200 text-infra-700 px-3 py-1 rounded-full text-sm font-semibold">Upcoming</span>
-                            <p class="text-sm text-infra-500 mt-1">Mar - Apr 2025</p>
-                        </div>
-                        <div class="md:hidden w-full pl-12 border-l-4 border-infra-300 ml-4">
-                            <h3 class="text-lg font-bold text-infra-900">Validation & Expo</h3>
-                            <p class="text-sm text-infra-600 mt-1">Upcoming • Mar-Apr 2025</p>
-                        </div>
-                    </div>
+            <!-- Upcoming -->
+            <div class="card">
+                <h3 class="font-bold text-infra-900 mb-4 flex items-center gap-2">
+                    <span class="w-2 h-2 bg-infra-300 rounded-full"></span>
+                    Upcoming
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-infra-200">
+                                <th class="text-left py-2 px-3 font-semibold text-infra-900">Phase / Task</th>
+                                <th class="text-left py-2 px-3 font-semibold text-infra-900">Date Range</th>
+                                <th class="text-left py-2 px-3 font-semibold text-infra-900">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-infra-100">
+                            <tr><td class="py-2 px-3 text-infra-600 font-medium" colspan="3">ML Pipeline</td></tr>
+                            <tr><td class="py-2 px-3 text-infra-700">Dataset Definition &amp; Labeling Strategy</td><td class="py-2 px-3 text-infra-600">Week of 02/06 → 02/13</td><td class="py-2 px-3"><span class="badge badge-neutral">Upcoming</span></td></tr>
+                            <tr><td class="py-2 px-3 text-infra-700">ML Labeling Round 1</td><td class="py-2 px-3 text-infra-600">Week of 02/13 → 02/20</td><td class="py-2 px-3"><span class="badge badge-neutral">Upcoming</span></td></tr>
+                            <tr><td class="py-2 px-3 text-infra-700">ML Labeling Round 2</td><td class="py-2 px-3 text-infra-600">Week of 02/20 → 02/27</td><td class="py-2 px-3"><span class="badge badge-neutral">Upcoming</span></td></tr>
+                            <tr><td class="py-2 px-3 text-infra-700">SageMaker Environment Setup &amp; Model Training</td><td class="py-2 px-3 text-infra-600">Week of 02/13 → 02/27</td><td class="py-2 px-3"><span class="badge badge-neutral">Upcoming</span></td></tr>
+                            <tr><td class="py-2 px-3 text-infra-600 font-medium" colspan="3">System Integration</td></tr>
+                            <tr><td class="py-2 px-3 text-infra-700">End-to-End System Integration Test</td><td class="py-2 px-3 text-infra-600">Week of 02/20 → 03/06</td><td class="py-2 px-3"><span class="badge badge-neutral">Upcoming</span></td></tr>
+                            <tr><td class="py-2 px-3 text-infra-700">Inference Deployment &amp; API Integration</td><td class="py-2 px-3 text-infra-600">Week of 02/20 → 03/06</td><td class="py-2 px-3"><span class="badge badge-neutral">Upcoming</span></td></tr>
+                            <tr><td class="py-2 px-3 text-infra-700">Metadata Processing &amp; Scoring Logic</td><td class="py-2 px-3 text-infra-600">Week of 02/27 → 03/06</td><td class="py-2 px-3"><span class="badge badge-neutral">Upcoming</span></td></tr>
+                            <tr><td class="py-2 px-3 text-infra-700">Dashboard / UI Development</td><td class="py-2 px-3 text-infra-600">Week of 02/27 → 03/13</td><td class="py-2 px-3"><span class="badge badge-neutral">Upcoming</span></td></tr>
+                            <tr><td class="py-2 px-3 text-infra-600 font-medium" colspan="3">Validation &amp; Field Testing</td></tr>
+                            <tr><td class="py-2 px-3 text-infra-700">Hardware Assembly &amp; System Hardening</td><td class="py-2 px-3 text-infra-600">Week of 03/06 → 03/20</td><td class="py-2 px-3"><span class="badge badge-neutral">Upcoming</span></td></tr>
+                            <tr><td class="py-2 px-3 text-infra-700">Reliability &amp; Performance Testing</td><td class="py-2 px-3 text-infra-600">Week of 03/13 → 03/27</td><td class="py-2 px-3"><span class="badge badge-neutral">Upcoming</span></td></tr>
+                            <tr><td class="py-2 px-3 text-infra-700">Vehicle-Based Field Testing</td><td class="py-2 px-3 text-infra-600">Week of 03/20 → 03/27</td><td class="py-2 px-3"><span class="badge badge-neutral">Upcoming</span></td></tr>
+                            <tr><td class="py-2 px-3 text-infra-600 font-medium" colspan="3">Final Deliverable</td></tr>
+                            <tr><td class="py-2 px-3 text-infra-700">Final Documentation &amp; Presentation Preparation</td><td class="py-2 px-3 text-infra-600">Week of 03/20 → 03/27</td><td class="py-2 px-3"><span class="badge badge-neutral">Upcoming</span></td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -1165,119 +1546,109 @@
                         <i data-lucide="building-2" class="h-8 w-8 text-utility-300"></i>
                     </div>
                     <h3 class="text-xl font-semibold mb-2">Utility Operations</h3>
-                    <p class="text-veg-100 text-sm">Reduction in inspection labor costs by 75% while increasing survey frequency from annual to continuous monitoring.</p>
+                    <p class="text-veg-100 text-sm">Prototype goal: reduce inspection labor through automation and increase survey frequency during routine operations.</p>
                 </div>
                 <div class="text-center">
                     <div class="w-16 h-16 mx-auto bg-white/10 rounded-full flex items-center justify-center mb-4">
                         <i data-lucide="flame-off" class="h-8 w-8 text-red-300"></i>
                     </div>
                     <h3 class="text-xl font-semibold mb-2">Wildfire Prevention</h3>
-                    <p class="text-veg-100 text-sm">Early detection of high-risk vegetation contact points, reducing ignition risk by up to 60% in high-risk zones.</p>
+                    <p class="text-veg-100 text-sm">Supports earlier identification of high-risk vegetation contact points to help prioritize mitigation efforts.</p>
                 </div>
                 <div class="text-center">
                     <div class="w-16 h-16 mx-auto bg-white/10 rounded-full flex items-center justify-center mb-4">
                         <i data-lucide="sun" class="h-8 w-8 text-yellow-300"></i>
                     </div>
                     <h3 class="text-xl font-semibold mb-2">Solar Efficiency</h3>
-                    <p class="text-veg-100 text-sm">Application to solar farm vegetation monitoring, ensuring panel efficiency through automated growth detection.</p>
+                    <p class="text-veg-100 text-sm">Potential extension: solar farm vegetation monitoring to support maintenance planning and panel access.</p>
                 </div>
                 <div class="text-center">
                     <div class="w-16 h-16 mx-auto bg-white/10 rounded-full flex items-center justify-center mb-4">
                         <i data-lucide="trending-down" class="h-8 w-8 text-utility-300"></i>
                     </div>
                     <h3 class="text-xl font-semibold mb-2">Cost Savings</h3>
-                    <p class="text-veg-100 text-sm">Preventative maintenance approach reduces emergency response costs by $2.4M annually per utility zone.</p>
+                    <p class="text-veg-100 text-sm">Potential to reduce emergency response and outage-related costs through earlier detection and prioritization.</p>
                 </div>
             </div>
 
             <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
                     <div>
-                        <div class="text-4xl font-bold text-utility-300 mb-2">$2.4M</div>
-                        <div class="text-sm text-veg-100">Estimated Annual Savings</div>
+                        <div class="text-4xl font-bold text-utility-300 mb-2">TBD</div>
+                        <div class="text-sm text-veg-100">Estimated Annual Savings (site-specific)</div>
                     </div>
                     <div>
-                        <div class="text-4xl font-bold text-utility-300 mb-2">60%</div>
-                        <div class="text-sm text-veg-100">Wildfire Risk Reduction</div>
+                        <div class="text-4xl font-bold text-utility-300 mb-2">TBD</div>
+                        <div class="text-sm text-veg-100">Risk Reduction Potential (under validation)</div>
                     </div>
                     <div>
-                        <div class="text-4xl font-bold text-utility-300 mb-2">24/7</div>
-                        <div class="text-sm text-veg-100">Continuous Monitoring</div>
+                        <div class="text-4xl font-bold text-utility-300 mb-2">Routine</div>
+                        <div class="text-sm text-veg-100">Monitoring During Operations (prototype)</div>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Team & Sponsor -->
+    <!-- Team -->
     <section id="team" class="py-24 bg-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl md:text-4xl font-bold text-infra-900 mb-4">Team & Sponsorship</h2>
-                <p class="text-lg text-infra-600">Dedicated engineering team supported by industry leadership</p>
-            </div>
-
-            <!-- Sponsor Banner -->
-            <div class="bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl p-8 mb-16 text-white flex flex-col md:flex-row items-center justify-between gap-6">
-                <div class="flex items-center gap-6">
-                    <div class="w-20 h-20 bg-white rounded-xl flex items-center justify-center text-blue-900 font-bold text-2xl">
-                        NE
-                    </div>
-                    <div>
-                        <div class="text-sm font-medium text-blue-100 uppercase tracking-wider mb-1">Project Sponsor</div>
-                        <h3 class="text-2xl font-bold">NextEra Energy</h3>
-                        <p class="text-blue-100">Industry-leading clean energy infrastructure provider</p>
-                    </div>
-                </div>
-                <div class="text-right hidden md:block">
-                    <div class="text-sm text-blue-100">Technical Advisory</div>
-                    <div class="font-medium">Provided mentorship and field testing access</div>
-                </div>
-            </div>
-
-            <!-- Team Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <h2 class="text-3xl md:text-4xl font-bold text-infra-900 mb-12 text-center">Team</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div class="bg-infra-50 rounded-xl p-6 border border-infra-200 hover:shadow-lg transition-all text-center group">
                     <div class="w-24 h-24 mx-auto bg-gradient-to-br from-utility-200 to-utility-300 rounded-full mb-4 flex items-center justify-center text-2xl text-utility-800 font-bold group-hover:scale-110 transition-transform">
-                        JD
+                        AA
                     </div>
-                    <h4 class="font-bold text-infra-900">Student Name</h4>
-                    <p class="text-sm text-veg-600 font-medium mb-2">Mechanical Lead</p>
-                    <p class="text-xs text-infra-500">Vibration analysis & housing design</p>
+                    <h4 class="font-bold text-infra-900">Adeoluwa Adekanmbi</h4>
                 </div>
 
                 <div class="bg-infra-50 rounded-xl p-6 border border-infra-200 hover:shadow-lg transition-all text-center group">
                     <div class="w-24 h-24 mx-auto bg-gradient-to-br from-veg-200 to-veg-300 rounded-full mb-4 flex items-center justify-center text-2xl text-veg-800 font-bold group-hover:scale-110 transition-transform">
-                        AS
+                        IA
                     </div>
-                    <h4 class="font-bold text-infra-900">Student Name</h4>
-                    <p class="text-sm text-veg-600 font-medium mb-2">Electrical Lead</p>
-                    <p class="text-xs text-infra-500">Power systems & PCB design</p>
+                    <h4 class="font-bold text-infra-900">Ibukunoluwa Adeloye</h4>
                 </div>
 
                 <div class="bg-infra-50 rounded-xl p-6 border border-infra-200 hover:shadow-lg transition-all text-center group">
                     <div class="w-24 h-24 mx-auto bg-gradient-to-br from-utility-200 to-veg-200 rounded-full mb-4 flex items-center justify-center text-2xl text-infra-800 font-bold group-hover:scale-110 transition-transform">
-                        MK
+                        IA
                     </div>
-                    <h4 class="font-bold text-infra-900">Student Name</h4>
-                    <p class="text-sm text-veg-600 font-medium mb-2">Computer Lead</p>
-                    <p class="text-xs text-infra-500">AI/ML & cloud architecture</p>
+                    <h4 class="font-bold text-infra-900">Itunuoluwa Akarakiri</h4>
                 </div>
 
                 <div class="bg-infra-50 rounded-xl p-6 border border-infra-200 hover:shadow-lg transition-all text-center group">
                     <div class="w-24 h-24 mx-auto bg-gradient-to-br from-infra-200 to-infra-300 rounded-full mb-4 flex items-center justify-center text-2xl text-infra-800 font-bold group-hover:scale-110 transition-transform">
-                        RL
+                        JM
                     </div>
-                    <h4 class="font-bold text-infra-900">Student Name</h4>
-                    <p class="text-sm text-veg-600 font-medium mb-2">Systems Lead</p>
-                    <p class="text-xs text-infra-500">Integration & testing coordinator</p>
+                    <h4 class="font-bold text-infra-900">Jahmelia Mccarthy</h4>
+                </div>
+
+                <div class="bg-infra-50 rounded-xl p-6 border border-infra-200 hover:shadow-lg transition-all text-center group">
+                    <div class="w-24 h-24 mx-auto bg-gradient-to-br from-utility-200 to-veg-200 rounded-full mb-4 flex items-center justify-center text-2xl text-infra-800 font-bold group-hover:scale-110 transition-transform">
+                        JR
+                    </div>
+                    <h4 class="font-bold text-infra-900">Jessica Rubin</h4>
+                </div>
+
+                <div class="bg-infra-50 rounded-xl p-6 border border-infra-200 hover:shadow-lg transition-all text-center group">
+                    <div class="w-24 h-24 mx-auto bg-gradient-to-br from-infra-200 to-utility-200 rounded-full mb-4 flex items-center justify-center text-2xl text-infra-800 font-bold group-hover:scale-110 transition-transform">
+                        NA
+                    </div>
+                    <h4 class="font-bold text-infra-900">Noah Adeyeye</h4>
+                </div>
+
+                <div class="bg-infra-50 rounded-xl p-6 border border-infra-200 hover:shadow-lg transition-all text-center group">
+                    <div class="w-24 h-24 mx-auto bg-gradient-to-br from-veg-200 to-utility-200 rounded-full mb-4 flex items-center justify-center text-2xl text-veg-800 font-bold group-hover:scale-110 transition-transform">
+                        OU
+                    </div>
+                    <h4 class="font-bold text-infra-900">Odia Ubhimhinye</h4>
                 </div>
             </div>
 
             <div class="mt-12 text-center">
                 <div class="inline-flex items-center gap-2 text-infra-500 text-sm">
                     <i data-lucide="university" class="h-4 w-4"></i>
-                    <span>Senior Design Project 2024-2025 • Department of Engineering</span>
+                    <span>Senior Design Project 2025–2026 • Department of Engineering</span>
                 </div>
             </div>
         </div>
@@ -1290,21 +1661,14 @@
                 <div class="col-span-2">
                     <div class="flex items-center gap-2 mb-4">
                         <i data-lucide="cpu" class="h-6 w-6 text-veg-500"></i>
-                        <span class="font-bold text-lg text-white">IVVM System</span>
                     </div>
                     <p class="text-sm text-infra-400 mb-4 max-w-md">
-                        Integrated Vehicular Vegetation Monitoring System for Utility Infrastructure. A senior design engineering project focused on automated infrastructure protection.
+                        Integrated Vehicular Vegetation Monitoring System for Utility Infrastructure. A senior design engineering prototype focused on automated infrastructure protection.
                     </p>
                     <div class="flex items-center gap-4">
-                        <a href="#" class="text-infra-400 hover:text-white transition-colors">
-                            <i data-lucide="github" class="h-5 w-5"></i>
-                        </a>
-                        <a href="#" class="text-infra-400 hover:text-white transition-colors">
-                            <i data-lucide="linkedin" class="h-5 w-5"></i>
-                        </a>
-                        <a href="#" class="text-infra-400 hover:text-white transition-colors">
-                            <i data-lucide="mail" class="h-5 w-5"></i>
-                        </a>
+                        <a href="javascript:void(0)" class="text-infra-400 hover:text-white transition-colors" onclick="showDemoMessage('Link not yet available.'); return false;" aria-label="GitHub"> <i data-lucide="github" class="h-5 w-5"></i></a>
+                        <a href="javascript:void(0)" class="text-infra-400 hover:text-white transition-colors" onclick="showDemoMessage('Link not yet available.'); return false;" aria-label="LinkedIn"> <i data-lucide="linkedin" class="h-5 w-5"></i></a>
+                        <a href="javascript:void(0)" class="text-infra-400 hover:text-white transition-colors" onclick="showDemoMessage('Link not yet available.'); return false;" aria-label="Email"> <i data-lucide="mail" class="h-5 w-5"></i></a>
                     </div>
                 </div>
                 <div>
@@ -1319,22 +1683,22 @@
                 <div>
                     <h4 class="text-white font-semibold mb-4">Resources</h4>
                     <ul class="space-y-2 text-sm">
-                        <li><a href="#" class="hover:text-veg-400 transition-colors">Technical Docs</a></li>
-                        <li><a href="#" class="hover:text-veg-400 transition-colors">API Reference</a></li>
-                        <li><a href="#" class="hover:text-veg-400 transition-colors">Field Test Data</a></li>
-                        <li><a href="#" class="hover:text-veg-400 transition-colors">Contact Team</a></li>
+                        <li><a href="javascript:void(0)" class="hover:text-veg-400 transition-colors" onclick="showDemoMessage('Not yet available.'); return false;">Technical Docs</a></li>
+                        <li><a href="javascript:void(0)" class="hover:text-veg-400 transition-colors" onclick="showDemoMessage('Not yet available.'); return false;">API Reference</a></li>
+                        <li><a href="javascript:void(0)" class="hover:text-veg-400 transition-colors" onclick="showDemoMessage('Not yet available.'); return false;">Field Test Data</a></li>
+                        <li><a href="javascript:void(0)" class="hover:text-veg-400 transition-colors" onclick="showDemoMessage('Not yet available.'); return false;">Contact Team</a></li>
                     </ul>
                 </div>
             </div>
             <div class="border-t border-infra-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
                 <p class="text-sm text-infra-500">
-                    © 2025 IVVM System Project. All rights reserved.
+                    © 2025–2026 Senior Design Project. All rights reserved.
                 </p>
                 <div class="flex items-center gap-2 text-sm text-infra-500">
                     <span>Status:</span>
                     <span class="flex items-center gap-1 text-veg-400">
                         <span class="w-2 h-2 bg-veg-500 rounded-full animate-pulse"></span>
-                        Development Active
+                        Prototype Active
                     </span>
                 </div>
             </div>
@@ -1350,78 +1714,254 @@
         function toggleMobileMenu() {
             const menu = document.getElementById('mobileMenu');
             const icon = document.getElementById('menuIcon');
+            const button = document.getElementById('mobileMenuButton');
+            const isHidden = menu.classList.contains('hidden');
+            
             menu.classList.toggle('hidden');
             
+            // Update ARIA attributes
+            if (button) {
+                button.setAttribute('aria-expanded', !isHidden);
+            }
+            
             // Change icon
-            if (menu.classList.contains('hidden')) {
+            if (!isHidden) {
                 icon.setAttribute('data-lucide', 'menu');
             } else {
                 icon.setAttribute('data-lucide', 'x');
             }
             lucide.createIcons();
         }
+        
+        // Close mobile menu when clicking a link
+        document.querySelectorAll('#mobileMenu .nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                const menu = document.getElementById('mobileMenu');
+                if (!menu.classList.contains('hidden')) {
+                    toggleMobileMenu();
+                }
+            });
+        });
 
-        // Navbar Scroll Effect
+        // Navbar Scroll Effect & Scrollspy
+        const sections = document.querySelectorAll('section[id]');
+        const navLinks = document.querySelectorAll('.nav-link');
+        
+        function updateActiveNavLink() {
+            const scrollY = window.pageYOffset;
+            
+            sections.forEach(section => {
+                const sectionHeight = section.offsetHeight;
+                const sectionTop = section.offsetTop - 100;
+                const sectionId = section.getAttribute('id');
+                
+                if (scrollY > sectionTop && scrollY <= sectionTop + sectionHeight) {
+                    navLinks.forEach(link => {
+                        link.classList.remove('active');
+                        if (link.getAttribute('data-section') === sectionId) {
+                            link.classList.add('active');
+                        }
+                    });
+                }
+            });
+        }
+        
         window.addEventListener('scroll', function() {
             const navbar = document.getElementById('navbar');
             if (window.scrollY > 50) {
-                navbar.classList.add('shadow-lg');
-                navbar.classList.remove('glass-panel');
-                navbar.classList.add('bg-white/95');
+                navbar.classList.add('shadow-md');
             } else {
-                navbar.classList.remove('shadow-lg');
-                navbar.classList.add('glass-panel');
-                navbar.classList.remove('bg-white/95');
+                navbar.classList.remove('shadow-md');
             }
+            updateActiveNavLink();
         });
+        
+        // Initial call to set active link on page load
+        updateActiveNavLink();
 
         // Select Vehicle Function
-        function selectVehicle(vehicleId) {
-            const detailDiv = document.getElementById('vehicleDetail');
+        window.selectVehicle = function(vehicleId) {
             const data = vehicleData[vehicleId];
+            if (!data) return;
             
-            if (data && map) {
-                // Center map on selected vehicle
+            // Update state
+            AppState.dashboard.selectedVehicle = vehicleId;
+            
+            // Update map if available
+            if (map) {
                 const marker = markers[vehicleId];
                 if (marker) {
                     map.setCenter(marker.getPosition());
                     map.setZoom(16);
-                    // Open info window
-                    infoWindows[vehicleId].open(map, marker);
+                    if (infoWindows[vehicleId]) {
+                        infoWindows[vehicleId].open(map, marker);
+                    }
                 }
+            }
 
-                // Update detail panel
-                detailDiv.innerHTML = `
-                    <div class="flex gap-3">
-                        <div class="w-20 h-20 bg-infra-700 rounded overflow-hidden flex-shrink-0">
-                            <img src="${data.image}" alt="Vegetation" class="w-full h-full object-cover">
-                        </div>
-                        <div class="flex-1">
-                            <div class="flex justify-between items-start mb-1">
-                                <span class="font-mono font-bold text-white">${vehicleId}</span>
-                                <span class="text-xs ${data.color} font-semibold">${data.risk}</span>
-                            </div>
-                            <div class="text-xs text-infra-300 space-y-1">
-                                <div>Clearance: ${data.clearance}</div>
-                                <div>Species: ${data.species}</div>
-                                <div>Loc: ${data.location}</div>
-                            </div>
-                        </div>
-                    </div>
-                    <button class="w-full mt-3 py-2 bg-utility-600 hover:bg-utility-700 rounded text-xs font-medium transition-colors">
-                        Generate Work Order
-                    </button>
-                `;
+            // Update detail panel
+            if (typeof Render !== 'undefined' && Render.updateVehicleDetail) {
+                Render.updateVehicleDetail(vehicleId);
+            }
+            
+            // Update detection list selection state
+            document.querySelectorAll('.detection-item').forEach(item => {
+                const itemId = item.getAttribute('data-vehicle-id');
+                if (itemId === vehicleId) {
+                    item.classList.add('bg-infra-700', 'border-utility-500');
+                    item.classList.remove('bg-infra-700/50', 'border-infra-600');
+                } else {
+                    item.classList.remove('bg-infra-700', 'border-utility-500');
+                    item.classList.add('bg-infra-700/50', 'border-infra-600');
+                }
+            });
+        };
+        
+        // Dashboard Filtering Functions
+        function getFilteredVehicleData() {
+            const searchQuery = AppState.dashboard.searchQuery.toLowerCase();
+            const severityFilters = AppState.dashboard.filters.severity;
+            
+            return Object.entries(vehicleData)
+                .map(([id, data]) => ({ id, ...data }))
+                .filter(item => {
+                    // Search filter
+                    if (searchQuery && !item.id.toLowerCase().includes(searchQuery) && 
+                        !item.location.toLowerCase().includes(searchQuery)) {
+                        return false;
+                    }
+                    
+                    // Severity filter
+                    const riskLower = item.risk.toLowerCase();
+                    if (riskLower === 'high' && !severityFilters.high) return false;
+                    if (riskLower === 'medium' && !severityFilters.medium) return false;
+                    if (riskLower === 'low' && !severityFilters.low) return false;
+                    
+                    return true;
+                })
+                .sort((a, b) => {
+                    // Sort by risk priority (HIGH > MEDIUM > LOW), then by timestamp
+                    const riskOrder = { 'HIGH': 3, 'MEDIUM': 2, 'LOW': 1 };
+                    return riskOrder[b.risk] - riskOrder[a.risk] || b.timestamp.localeCompare(a.timestamp);
+                });
+        }
+        
+        function updateDashboardDisplay() {
+            const filtered = getFilteredVehicleData();
+            if (typeof Render !== 'undefined' && Render.renderDetectionList) {
+                Render.renderDetectionList(filtered);
+            }
+            
+            // Update markers visibility
+            if (map && markers) {
+                Object.keys(vehicleData).forEach(id => {
+                    const marker = markers[id];
+                    if (marker) {
+                        const isVisible = filtered.some(item => item.id === id);
+                        marker.setVisible(isVisible);
+                    }
+                });
             }
         }
+        
+        // Dashboard Event Handlers
+        window.handleDashboardSearch = function(query) {
+            AppState.dashboard.searchQuery = query;
+            updateDashboardDisplay();
+        };
+        
+        window.handleSeverityFilter = function() {
+            const checkboxes = document.querySelectorAll('.severity-filter');
+            AppState.dashboard.filters.severity = {
+                high: document.querySelector('.severity-filter[data-severity="high"]').checked,
+                medium: document.querySelector('.severity-filter[data-severity="medium"]').checked,
+                low: document.querySelector('.severity-filter[data-severity="low"]').checked
+            };
+            updateDashboardDisplay();
+        };
+        
+        // Sub-nav filter (sticky dashboard buttons)
+        window.setDashboardSubNavFilter = function(filter) {
+            const filters = AppState.dashboard.filters.severity;
+            if (filter === 'all') {
+                filters.high = true;
+                filters.medium = true;
+                filters.low = true;
+            } else {
+                filters.high = filter === 'high';
+                filters.medium = filter === 'medium';
+                filters.low = filter === 'low';
+            }
+            // Sync sidebar checkboxes if present
+            const highCb = document.querySelector('.severity-filter[data-severity="high"]');
+            const medCb = document.querySelector('.severity-filter[data-severity="medium"]');
+            const lowCb = document.querySelector('.severity-filter[data-severity="low"]');
+            if (highCb) highCb.checked = filters.high;
+            if (medCb) medCb.checked = filters.medium;
+            if (lowCb) lowCb.checked = filters.low;
+            updateDashboardDisplay();
+            // Update sub-nav button styles
+            document.querySelectorAll('.dashboard-subnav-btn').forEach(btn => {
+                const f = btn.getAttribute('data-filter');
+                const active = (filter === 'all' && f === 'all') || (filter === 'high' && f === 'high') || (filter === 'medium' && f === 'medium') || (filter === 'low' && f === 'low');
+                btn.classList.toggle('text-white', active);
+                btn.classList.toggle('font-medium', active);
+                btn.classList.toggle('text-infra-300', !active);
+                btn.classList.toggle('border-veg-500', active);
+                btn.classList.toggle('border-transparent', !active);
+            });
+        };
+
+        window.clearDashboardFilters = function() {
+            AppState.dashboard.searchQuery = '';
+            AppState.dashboard.filters.severity = { high: true, medium: true, low: true };
+            const searchEl = document.getElementById('dashboardSearch');
+            if (searchEl) searchEl.value = '';
+            document.querySelectorAll('.severity-filter').forEach(cb => { cb.checked = true; });
+            updateDashboardDisplay();
+            if (typeof setDashboardSubNavFilter === 'function') setDashboardSubNavFilter('all');
+        };
+        
+        // Demo-only actions: show a brief message
+        window.showDemoMessage = function(message) {
+            const toast = document.createElement('div');
+            toast.setAttribute('role', 'status');
+            toast.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 bg-infra-800 text-white px-4 py-2 rounded-lg shadow-lg text-sm z-[100] border border-infra-700';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(function() {
+                toast.remove();
+            }, 2500);
+        };
+
+        window.handleExportClick = function() {
+            showDemoMessage('Export is not available in demo mode.');
+        };
+
+        window.resetMapView = function() {
+            if (map) {
+                const center = { lat: 26.4592, lng: -80.1254 };
+                map.setCenter(center);
+                map.setZoom(14);
+            }
+        };
+        
+        // Initialize dashboard on load
+        window.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                if (typeof Render !== 'undefined' && Render.renderDetectionList) {
+                    updateDashboardDisplay();
+                }
+            }, 100);
+        });
 
         // Map Zoom Function
-        function zoomMap(direction) {
+        window.zoomMap = function(direction) {
             if (map) {
                 const currentZoom = map.getZoom();
                 map.setZoom(currentZoom + (direction > 0 ? 1 : -1));
             }
-        }
+        };
 
         // Fallback initialization if callback doesn't work
         window.addEventListener('load', function() {
@@ -1441,3 +1981,315 @@
         });
 
         // Smooth Scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // Tab Switching (Architecture: Workflow, Hardware, Software, Data Pipeline)
+        function switchTab(tabName) {
+            var panels = document.querySelectorAll('.tab-panel');
+            var buttons = document.querySelectorAll('.tab-button');
+            if (!panels.length || !buttons.length) return;
+
+            panels.forEach(function(panel) {
+                panel.classList.remove('active');
+                panel.setAttribute('aria-hidden', 'true');
+            });
+
+            buttons.forEach(function(btn) {
+                btn.classList.remove('active');
+                btn.setAttribute('aria-selected', 'false');
+                btn.setAttribute('tabindex', '-1');
+            });
+
+            var panel = document.getElementById('panel-' + tabName);
+            if (panel) {
+                panel.classList.add('active');
+                panel.setAttribute('aria-hidden', 'false');
+            }
+
+            var button = document.getElementById('tab-' + tabName);
+            if (button) {
+                button.classList.add('active');
+                button.setAttribute('aria-selected', 'true');
+                button.setAttribute('tabindex', '0');
+                try { button.focus(); } catch (e) {}
+            }
+
+            if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+        }
+        window.switchTab = switchTab;
+
+        // Ensure Architecture tab buttons work (click binding)
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.tab-button').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var id = btn.id || '';
+                    if (id.indexOf('tab-') === 0) {
+                        var tabName = id.slice(4);
+                        switchTab(tabName);
+                    }
+                });
+            });
+        });
+
+        // Accordion Toggle
+        function toggleAccordion(id) {
+            const header = document.getElementById('accordion-' + id);
+            const content = document.getElementById('content-' + id);
+            const icon = document.getElementById('icon-' + id);
+            const isExpanded = header.getAttribute('aria-expanded') === 'true';
+            
+            // Close all accordions first (optional - remove if you want multiple open)
+            document.querySelectorAll('.accordion-header').forEach(h => {
+                if (h.id !== 'accordion-' + id) {
+                    h.setAttribute('aria-expanded', 'false');
+                    const cId = h.id.replace('accordion-', 'content-');
+                    const c = document.getElementById(cId);
+                    const i = document.getElementById('icon-' + h.id.replace('accordion-', ''));
+                    if (c) c.classList.remove('active');
+                    if (i) i.style.transform = 'rotate(0deg)';
+                }
+            });
+            
+            // Toggle current
+            header.setAttribute('aria-expanded', !isExpanded);
+            if (!isExpanded) {
+                content.classList.add('active');
+                if (icon) icon.style.transform = 'rotate(180deg)';
+            } else {
+                content.classList.remove('active');
+                if (icon) icon.style.transform = 'rotate(0deg)';
+            }
+            
+            lucide.createIcons();
+        }
+
+        // Keyboard navigation for tabs (Arrow keys + Enter/Space)
+        document.querySelectorAll('.tab-button').forEach((button, index, buttons) => {
+            button.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    const tabName = this.id.replace('tab-', '');
+                    switchTab(tabName);
+                } else if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    const prevIndex = index === 0 ? buttons.length - 1 : index - 1;
+                    const prevTabName = buttons[prevIndex].id.replace('tab-', '');
+                    switchTab(prevTabName);
+                } else if (e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    const nextIndex = index === buttons.length - 1 ? 0 : index + 1;
+                    const nextTabName = buttons[nextIndex].id.replace('tab-', '');
+                    switchTab(nextTabName);
+                } else if (e.key === 'Home') {
+                    e.preventDefault();
+                    switchTab('workflow');
+                } else if (e.key === 'End') {
+                    e.preventDefault();
+                    switchTab('pipeline');
+                }
+            });
+        });
+        
+        // ============================================
+        // ORGANIZED JAVASCRIPT - STATE MANAGEMENT
+        // ============================================
+        
+        // Application State
+        const AppState = {
+            dashboard: {
+                searchQuery: '',
+                selectedSeverity: null,
+                sortBy: 'newest',
+                selectedVehicle: null,
+                filters: {
+                    severity: {
+                        high: true,
+                        medium: true,
+                        low: true
+                    }
+                }
+            },
+            navigation: {
+                activeSection: 'overview',
+                mobileMenuOpen: false
+            }
+        };
+        
+        // DOM References
+        const DOMRefs = {
+            navbar: document.getElementById('navbar'),
+            mobileMenu: document.getElementById('mobileMenu'),
+            mobileMenuButton: document.getElementById('mobileMenuButton'),
+            mapContainer: document.getElementById('mapContainer'),
+            vehicleDetail: document.getElementById('vehicleDetail'),
+            navLinks: document.querySelectorAll('.nav-link')
+        };
+        
+        // Render Functions
+        const Render = {
+            updateVehicleDetail: function(vehicleId) {
+                const data = vehicleData[vehicleId];
+                if (!data || !DOMRefs.vehicleDetail) return;
+                
+                const severityColors = {
+                    'HIGH': { bg: 'bg-red-500/20', text: 'text-red-400', dot: 'bg-red-500' },
+                    'MEDIUM': { bg: 'bg-orange-500/20', text: 'text-orange-400', dot: 'bg-orange-500' },
+                    'LOW': { bg: 'bg-green-500/20', text: 'text-green-400', dot: 'bg-green-500' }
+                };
+                const colors = severityColors[data.risk] || severityColors['LOW'];
+                
+                DOMRefs.vehicleDetail.innerHTML = `
+                    <div class="space-y-4">
+                        <div>
+                            <h4 class="text-sm font-semibold text-white mb-3 flex items-center gap-2">
+                                <i data-lucide="info" class="h-4 w-4 text-utility-400"></i>
+                                Overview
+                            </h4>
+                            <div class="flex gap-3 mb-4">
+                                <div class="w-20 h-20 bg-infra-700 rounded-lg overflow-hidden flex-shrink-0">
+                                    <img src="${data.image}" alt="Vegetation detection for ${vehicleId}" class="w-full h-full object-cover">
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <span class="font-mono font-bold text-white text-lg">${vehicleId}</span>
+                                        <span class="text-xs ${colors.text} font-semibold px-2 py-1 rounded ${colors.bg}">${data.risk}</span>
+                                    </div>
+                                    <div class="text-xs text-infra-300 space-y-1">
+                                        <div class="flex items-center gap-2">
+                                            <i data-lucide="map-pin" class="h-3 w-3"></i>
+                                            <span>${data.location}</span>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <i data-lucide="ruler" class="h-3 w-3"></i>
+                                            <span>Clearance: ${data.clearance}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h4 class="text-sm font-semibold text-white mb-2 flex items-center gap-2">
+                                <i data-lucide="map-pin" class="h-4 w-4 text-utility-400"></i>
+                                Location
+                            </h4>
+                            <div class="text-xs text-infra-300 bg-infra-800 p-2 rounded-lg">
+                                ${data.lat}, ${data.lng}
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h4 class="text-sm font-semibold text-white mb-2 flex items-center gap-2">
+                                <i data-lucide="leaf" class="h-4 w-4 text-utility-400"></i>
+                                Vegetation
+                            </h4>
+                            <div class="space-y-2 text-xs">
+                                <div class="flex justify-between bg-infra-800 p-2 rounded-lg">
+                                    <span class="text-infra-400">Species:</span>
+                                    <span class="text-white">${data.species}</span>
+                                </div>
+                                <div class="flex justify-between bg-infra-800 p-2 rounded-lg">
+                                    <span class="text-infra-400">Timestamp:</span>
+                                    <span class="text-white">${data.timestamp}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h4 class="text-sm font-semibold text-white mb-2 flex items-center gap-2">
+                                <i data-lucide="wrench" class="h-4 w-4 text-utility-400"></i>
+                                Actions
+                            </h4>
+                            <button class="w-full py-2 bg-utility-600 hover:bg-utility-700 rounded-lg text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-utility-500 disabled:opacity-50 disabled:cursor-not-allowed" onclick="handleGenerateWorkOrder('${vehicleId}')" title="Demo only - Work order generation not implemented">
+                                <i data-lucide="file-text" class="h-3 w-3 inline mr-1.5"></i>
+                                Create Work Order
+                            </button>
+                            <p class="text-xs text-infra-500 mt-1 text-center">Demo only</p>
+                        </div>
+                    </div>
+                `;
+                lucide.createIcons();
+            },
+            
+            renderDetectionList: function(filteredData) {
+                const listContainer = document.getElementById('detectionList');
+                const countElement = document.getElementById('detectionCount');
+                if (!listContainer) return;
+                
+                if (filteredData.length === 0) {
+                    listContainer.innerHTML = `
+                        <div class="p-8 text-center">
+                            <i data-lucide="filter-x" class="h-12 w-12 text-infra-500 mx-auto mb-3"></i>
+                            <p class="text-sm text-infra-400 mb-1">No detections match filters</p>
+                            <button onclick="clearDashboardFilters()" class="text-xs text-utility-400 hover:text-utility-300 mt-2">Clear filters</button>
+                        </div>
+                    `;
+                    if (countElement) countElement.textContent = '0';
+                    lucide.createIcons();
+                    return;
+                }
+                
+                const severityColors = {
+                    'HIGH': { bg: 'bg-red-500/20', text: 'text-red-400', dot: 'bg-red-500' },
+                    'MEDIUM': { bg: 'bg-orange-500/20', text: 'text-orange-400', dot: 'bg-orange-500' },
+                    'LOW': { bg: 'bg-green-500/20', text: 'text-green-400', dot: 'bg-green-500' }
+                };
+                
+                listContainer.innerHTML = filteredData.map((item, index) => {
+                    const colors = severityColors[item.risk] || severityColors['LOW'];
+                    const isSelected = AppState.dashboard.selectedVehicle === item.id;
+                    return `
+                        <div class="detection-item p-3 mx-4 my-2 rounded-lg border transition-all cursor-pointer ${isSelected ? 'bg-infra-700 border-utility-500' : 'bg-infra-700/50 border-infra-600 hover:border-utility-500/50'}" 
+                             onclick="selectVehicle('${item.id}')" 
+                             data-vehicle-id="${item.id}">
+                            <div class="flex items-start gap-3">
+                                <div class="w-2 h-2 ${colors.dot} rounded-full mt-1.5 flex-shrink-0"></div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex justify-between items-start mb-1">
+                                        <span class="font-mono font-semibold text-utility-400 text-sm">${item.id}</span>
+                                        <span class="text-xs ${colors.text} font-semibold px-2 py-0.5 rounded ${colors.bg}">${item.risk}</span>
+                                    </div>
+                                    <div class="space-y-1 text-xs text-infra-300">
+                                        <div class="flex items-center gap-1.5">
+                                            <i data-lucide="clock" class="h-3 w-3 flex-shrink-0"></i>
+                                            <span class="truncate">${item.timestamp}</span>
+                                        </div>
+                                        <div class="flex items-center gap-1.5">
+                                            <i data-lucide="map-pin" class="h-3 w-3 flex-shrink-0"></i>
+                                            <span class="truncate">${item.location}</span>
+                                        </div>
+                                        <div class="flex items-center gap-1.5">
+                                            <i data-lucide="ruler" class="h-3 w-3 flex-shrink-0"></i>
+                                            <span>${item.clearance}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+                if (countElement) countElement.textContent = filteredData.length.toString();
+                lucide.createIcons();
+            }
+        };
+        
+        // Event Handlers
+        const Handlers = {
+            generateWorkOrder: function(vehicleId) {
+                if (typeof showDemoMessage === 'function') {
+                    showDemoMessage('Work order generation is demo only.');
+                }
+            }
+        };
+        
+        // Expose handlers globally
+        window.handleGenerateWorkOrder = Handlers.generateWorkOrder;
