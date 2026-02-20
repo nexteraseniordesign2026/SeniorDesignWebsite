@@ -90,14 +90,35 @@ For GitHub Pages, you have two options:
 
 **Security Note:** Even though the key is in the repo, these restrictions ensure it only works on your GitHub Pages domain, preventing unauthorized use.
 
+## DynamoDB Integration
+
+This project now integrates with AWS DynamoDB to fetch real-time location data. See [DYNAMODB_SETUP.md](./DYNAMODB_SETUP.md) for detailed setup instructions.
+
+### Quick Setup
+
+1. **Set up API Gateway endpoint** that queries your DynamoDB table
+2. **Update `config.js`** with your API endpoint:
+   ```javascript
+   window.DYNAMODB_API_ENDPOINT = 'https://your-api-id.execute-api.region.amazonaws.com/stage/locations';
+   ```
+
+The website will automatically:
+- Fetch location data from DynamoDB
+- Display markers on the map based on GPS coordinates
+- Show risk levels based on `predicted_class` field
+- Update the sidebar with recent detections
+- Refresh data every 5 minutes
+
 ## Features
 
+- **DynamoDB Integration**: Real-time data fetching from AWS DynamoDB
 - Interactive Google Maps integration with dark theme
 - Real-time vegetation detection markers (High/Medium/Low risk)
 - Clickable markers with detailed information windows
 - Vehicle selection from sidebar centers map on selected location
 - Custom styled markers with color coding by risk level
 - Clean map view showing only essential geographic information (no POI)
+- Automatic data refresh every 5 minutes
 
 ## Usage
 
@@ -110,8 +131,10 @@ For GitHub Pages, you have two options:
 ```
 SeniorDesignWebsite/
 ├── index.html              # Main website file
-├── config.js              # API key (gitignored - create from example)
+├── dynamodb-service.js     # DynamoDB integration service
+├── config.js               # API keys (gitignored - create from example)
 ├── config.example.js      # Example config file
-├── .gitignore             # Excludes config.js
-└── README.md              # This file
+├── DYNAMODB_SETUP.md      # DynamoDB setup guide
+├── .gitignore              # Excludes config.js
+└── README.md               # This file
 ```
