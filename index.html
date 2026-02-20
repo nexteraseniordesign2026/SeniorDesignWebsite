@@ -72,7 +72,46 @@
         let infoWindows = window.infoWindows;
         let pendingLocations = window.pendingLocations;
         let dynamoDBService = window.dynamoDBService;
-        // vehicleData is now loaded from DynamoDB - see loadLocations() function
+
+        // Vehicle data with coordinates
+        const vehicleData = {
+            'V-104': {
+                lat: 26.4583,
+                lng: -80.1234,
+                risk: 'HIGH',
+                color: 'text-red-400',
+                bgColor: '#dc2626',
+                location: 'NW Sector A-12',
+                clearance: '0.8 ft',
+                species: 'Melaleuca Quinquenervia',
+                image: 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+                timestamp: '14:23:05 EST'
+            },
+            'V-102': {
+                lat: 26.4591,
+                lng: -80.1251,
+                risk: 'MEDIUM',
+                color: 'text-orange-400',
+                bgColor: '#ea580c',
+                location: 'NW Sector A-14',
+                clearance: '2.1 ft',
+                species: 'Casuarina Equisetifolia',
+                image: 'https://images.unsplash.com/photo-1513836279014-a89f7a76ae78?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+                timestamp: '14:15:22 EST'
+            },
+            'V-103': {
+                lat: 26.4602,
+                lng: -80.1278,
+                risk: 'LOW',
+                color: 'text-green-400',
+                bgColor: '#16a34a',
+                location: 'NW Sector A-15',
+                clearance: '4.5 ft',
+                species: 'Ficus Aurea',
+                image: 'https://images.unsplash.com/photo-1446575983799-470c50cfdd22?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+                timestamp: '14:08:44 EST'
+            }
+        };
 
         // Show map error message - graceful placeholder UI
         window.showMapError = function(message) {
@@ -429,11 +468,12 @@
                     console.log(`   Showing ${filteredLocations.length} of ${(window.allLocations || []).length} detections`);
                     
                     // Update the panel with filtered results
-                    updateDetectionsPanel(filteredLocations);
+                    window.updateDetectionsPanel(filteredLocations);
                 };
                 
                 // Simple function to update detections panel - NEW IMPLEMENTATION
-                function updateDetectionsPanel(locations) {
+                // Make it globally accessible
+                window.updateDetectionsPanel = function(locations) {
                     console.log(`📋 Updating detections panel with ${locations ? locations.length : 0} locations`);
                     const listContainer = document.getElementById('detectionsList');
                     if (!listContainer) {
@@ -598,7 +638,7 @@
                         // Update sidebar with current filter
                         const filtered = window.currentFilter === 'ALL' ? locations : 
                                        locations.filter(loc => loc.risk === window.currentFilter);
-                        updateDetectionsPanel(filtered);
+                        window.updateDetectionsPanel(filtered);
                         
                         // Update dashboard statistics
                         if (typeof window.updateDashboardStats === 'function') {
@@ -674,6 +714,10 @@
                             markers[loc.captureId] = marker;
                             infoWindows[loc.captureId] = infoWindow;
                         });
+                        
+                        // Update window references
+                        window.markers = markers;
+                        window.infoWindows = infoWindows;
                         
                         console.log(`✅ Created ${Object.keys(markers).length} markers on map`);
                         
@@ -1141,7 +1185,6 @@
                     <a href="#overview" class="nav-link text-sm font-medium text-infra-600 hover:text-veg-600 transition-colors focus:outline-none focus:ring-2 focus:ring-veg-500 focus:ring-offset-2 rounded px-2 py-1" data-section="overview">Overview</a>
                     <a href="#architecture" class="nav-link text-sm font-medium text-infra-600 hover:text-veg-600 transition-colors focus:outline-none focus:ring-2 focus:ring-veg-500 focus:ring-offset-2 rounded px-2 py-1" data-section="architecture">Architecture</a>
                     <a href="#dashboard" class="nav-link text-sm font-medium text-infra-600 hover:text-veg-600 transition-colors focus:outline-none focus:ring-2 focus:ring-veg-500 focus:ring-offset-2 rounded px-2 py-1" data-section="dashboard">Dashboard</a>
-                    <a href="#engineering" class="nav-link text-sm font-medium text-infra-600 hover:text-veg-600 transition-colors focus:outline-none focus:ring-2 focus:ring-veg-500 focus:ring-offset-2 rounded px-2 py-1" data-section="engineering">Engineering</a>
                     <a href="#status" class="nav-link text-sm font-medium text-infra-600 hover:text-veg-600 transition-colors focus:outline-none focus:ring-2 focus:ring-veg-500 focus:ring-offset-2 rounded px-2 py-1" data-section="status">Status</a>
                     <a href="#impact" class="nav-link text-sm font-medium text-infra-600 hover:text-veg-600 transition-colors focus:outline-none focus:ring-2 focus:ring-veg-500 focus:ring-offset-2 rounded px-2 py-1" data-section="impact">Impact</a>
                     <a href="#team" class="nav-link text-sm font-medium text-infra-600 hover:text-veg-600 transition-colors focus:outline-none focus:ring-2 focus:ring-veg-500 focus:ring-offset-2 rounded px-2 py-1" data-section="team">Team</a>
@@ -1168,7 +1211,6 @@
                 <a href="#overview" class="nav-link block px-3 py-2 text-base font-medium text-infra-600 hover:text-veg-600 hover:bg-infra-50 rounded-md focus:outline-none focus:ring-2 focus:ring-veg-500 focus:ring-inset" data-section="overview">Overview</a>
                 <a href="#architecture" class="nav-link block px-3 py-2 text-base font-medium text-infra-600 hover:text-veg-600 hover:bg-infra-50 rounded-md focus:outline-none focus:ring-2 focus:ring-veg-500 focus:ring-inset" data-section="architecture">Architecture</a>
                 <a href="#dashboard" class="nav-link block px-3 py-2 text-base font-medium text-infra-600 hover:text-veg-600 hover:bg-infra-50 rounded-md focus:outline-none focus:ring-2 focus:ring-veg-500 focus:ring-inset" data-section="dashboard">Dashboard</a>
-                <a href="#engineering" class="nav-link block px-3 py-2 text-base font-medium text-infra-600 hover:text-veg-600 hover:bg-infra-50 rounded-md focus:outline-none focus:ring-2 focus:ring-veg-500 focus:ring-inset" data-section="engineering">Engineering</a>
                 <a href="#status" class="nav-link block px-3 py-2 text-base font-medium text-infra-600 hover:text-veg-600 hover:bg-infra-50 rounded-md focus:outline-none focus:ring-2 focus:ring-veg-500 focus:ring-inset" data-section="status">Status</a>
                 <a href="#impact" class="nav-link block px-3 py-2 text-base font-medium text-infra-600 hover:text-veg-600 hover:bg-infra-50 rounded-md focus:outline-none focus:ring-2 focus:ring-veg-500 focus:ring-inset" data-section="impact">Impact</a>
                 <a href="#team" class="nav-link block px-3 py-2 text-base font-medium text-infra-600 hover:text-veg-600 hover:bg-infra-50 rounded-md focus:outline-none focus:ring-2 focus:ring-veg-500 focus:ring-inset" data-section="team">Team</a>
@@ -1183,28 +1225,28 @@
         <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
             <div class="text-center mb-12">
                 <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white text-sm font-medium mb-6">
-                    <i data-lucide="award" class="h-4 w-4 text-veg-400"></i>
+                <i data-lucide="award" class="h-4 w-4 text-veg-400"></i>
                     Senior Design Engineering Project 2025–2026
-                </div>
-                
+            </div>
+            
                 <h1 class="text-3xl md:text-5xl lg:text-6xl font-bold text-white tracking-tight mb-4 leading-tight">
-                    Integrated Vehicular<br>
-                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-veg-400 to-utility-400">Vegetation Monitor</span>
-                </h1>
-                
+                Integrated Vehicular<br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-veg-400 to-utility-400">Vegetation Monitor</span>
+            </h1>
+            
                 <p class="text-lg md:text-xl text-infra-100 max-w-2xl mx-auto mb-8">
-                    Automated geotagged roadside vegetation analysis for utility infrastructure protection during routine vehicle operations.
-                </p>
-                
-                <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                Automated geotagged roadside vegetation analysis for utility infrastructure protection during routine vehicle operations.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
                     <a href="#architecture" class="btn-primary px-8 py-3 text-white flex items-center gap-2">
-                        <i data-lucide="layers" class="h-5 w-5"></i>
-                        View System Overview
-                    </a>
+                    <i data-lucide="layers" class="h-5 w-5"></i>
+                    View System Overview
+                </a>
                     <a href="#dashboard" class="px-8 py-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white border border-white/30 rounded-lg font-semibold transition-all flex items-center gap-2">
-                        <i data-lucide="layout-dashboard" class="h-5 w-5"></i>
-                        View Dashboard
-                    </a>
+                    <i data-lucide="layout-dashboard" class="h-5 w-5"></i>
+                    View Dashboard
+                </a>
                 </div>
             </div>
 
@@ -1214,18 +1256,18 @@
                     <div class="flex items-center gap-3 mb-2">
                         <div class="w-10 h-10 bg-utility-100 rounded-lg flex items-center justify-center flex-shrink-0">
                             <i data-lucide="building-2" class="h-5 w-5 text-utility-600"></i>
-                        </div>
+                </div>
                         <div>
                             <div class="text-xs text-infra-500 uppercase tracking-wide">Sponsor</div>
                             <div class="text-lg font-bold text-infra-900">NextEra Energy</div>
-                        </div>
-                    </div>
                 </div>
+                </div>
+            </div>
                 <div class="card bg-white/95 backdrop-blur-sm">
                     <div class="flex items-center gap-3 mb-2">
                         <div class="w-10 h-10 bg-veg-100 rounded-lg flex items-center justify-center flex-shrink-0">
                             <i data-lucide="activity" class="h-5 w-5 text-veg-600"></i>
-                        </div>
+        </div>
                         <div>
                             <div class="text-xs text-infra-500 uppercase tracking-wide">Status</div>
                             <div class="text-lg font-bold text-infra-900">Prototype</div>
@@ -1260,7 +1302,7 @@
                     <div class="flex items-center gap-3 mb-4">
                         <div class="w-10 h-10 bg-infra-100 rounded-lg flex items-center justify-center">
                             <i data-lucide="alert-triangle" class="h-5 w-5 text-infra-600"></i>
-                        </div>
+                    </div>
                         <h3 class="text-xl font-bold text-infra-900">The Problem</h3>
                     </div>
                     <p class="text-infra-700 mb-4 leading-relaxed">
@@ -1286,7 +1328,7 @@
                     <div class="flex items-center gap-3 mb-4">
                         <div class="w-10 h-10 bg-infra-100 rounded-lg flex items-center justify-center">
                             <i data-lucide="check-circle" class="h-5 w-5 text-infra-600"></i>
-                        </div>
+                    </div>
                         <h3 class="text-xl font-bold text-infra-900">Our Solution</h3>
                     </div>
                     <p class="text-infra-700 mb-4 leading-relaxed">
@@ -1364,48 +1406,48 @@
                 <div id="panel-workflow" class="tab-panel active" role="tabpanel" aria-labelledby="tab-workflow">
                     <div class="overflow-x-auto">
                         <div class="flex items-center justify-between min-w-max px-4 gap-4 py-4">
-                            <div class="flex flex-col items-center w-48">
-                                <div class="w-16 h-16 bg-utility-600 rounded-full flex items-center justify-center text-white shadow-lg mb-3">
-                                    <i data-lucide="truck" class="h-8 w-8"></i>
-                                </div>
-                                <h4 class="font-semibold text-infra-900 text-center">Fleet Vehicle</h4>
-                                <p class="text-xs text-infra-500 text-center mt-1">Data Collection Unit</p>
-                            </div>
-                            <div class="flex-1 h-1 bg-gradient-to-r from-utility-500 to-veg-500 rounded"></div>
-                            <div class="flex flex-col items-center w-48">
-                                <div class="w-16 h-16 bg-veg-600 rounded-full flex items-center justify-center text-white shadow-lg mb-3">
-                                    <i data-lucide="gps" class="h-8 w-8"></i>
-                                </div>
-                                <h4 class="font-semibold text-infra-900 text-center">GPS Integration</h4>
-                                <p class="text-xs text-infra-500 text-center mt-1">Geotagging & Sync</p>
-                            </div>
-                            <div class="flex-1 h-1 bg-gradient-to-r from-veg-500 to-utility-500 rounded"></div>
-                            <div class="flex flex-col items-center w-48">
-                                <div class="w-16 h-16 bg-utility-600 rounded-full flex items-center justify-center text-white shadow-lg mb-3">
-                                    <i data-lucide="upload-cloud" class="h-8 w-8"></i>
-                                </div>
-                                <h4 class="font-semibold text-infra-900 text-center">Wireless TX</h4>
-                                <p class="text-xs text-infra-500 text-center mt-1">Cellular/Wi‑Fi Upload</p>
-                            </div>
-                            <div class="flex-1 h-1 bg-gradient-to-r from-utility-500 to-veg-500 rounded"></div>
-                            <div class="flex flex-col items-center w-48">
-                                <div class="w-16 h-16 bg-veg-600 rounded-full flex items-center justify-center text-white shadow-lg mb-3">
-                                    <i data-lucide="server" class="h-8 w-8"></i>
-                                </div>
-                                <h4 class="font-semibold text-infra-900 text-center">Cloud AI</h4>
-                                <p class="text-xs text-infra-500 text-center mt-1">Processing & Analysis</p>
-                            </div>
-                            <div class="flex-1 h-1 bg-gradient-to-r from-veg-500 to-utility-500 rounded"></div>
-                            <div class="flex flex-col items-center w-48">
-                                <div class="w-16 h-16 bg-utility-600 rounded-full flex items-center justify-center text-white shadow-lg mb-3">
-                                    <i data-lucide="layout-dashboard" class="h-8 w-8"></i>
-                                </div>
-                                <h4 class="font-semibold text-infra-900 text-center">Dashboard</h4>
-                                <p class="text-xs text-infra-500 text-center mt-1">Visualization & Alerts</p>
-                            </div>
+                    <div class="flex flex-col items-center w-48">
+                        <div class="w-16 h-16 bg-utility-600 rounded-full flex items-center justify-center text-white shadow-lg mb-3">
+                            <i data-lucide="truck" class="h-8 w-8"></i>
                         </div>
+                        <h4 class="font-semibold text-infra-900 text-center">Fleet Vehicle</h4>
+                        <p class="text-xs text-infra-500 text-center mt-1">Data Collection Unit</p>
+                    </div>
+                    <div class="flex-1 h-1 bg-gradient-to-r from-utility-500 to-veg-500 rounded"></div>
+                    <div class="flex flex-col items-center w-48">
+                        <div class="w-16 h-16 bg-veg-600 rounded-full flex items-center justify-center text-white shadow-lg mb-3">
+                            <i data-lucide="gps" class="h-8 w-8"></i>
+                        </div>
+                        <h4 class="font-semibold text-infra-900 text-center">GPS Integration</h4>
+                        <p class="text-xs text-infra-500 text-center mt-1">Geotagging & Sync</p>
+                    </div>
+                    <div class="flex-1 h-1 bg-gradient-to-r from-veg-500 to-utility-500 rounded"></div>
+                    <div class="flex flex-col items-center w-48">
+                        <div class="w-16 h-16 bg-utility-600 rounded-full flex items-center justify-center text-white shadow-lg mb-3">
+                            <i data-lucide="upload-cloud" class="h-8 w-8"></i>
+                        </div>
+                        <h4 class="font-semibold text-infra-900 text-center">Wireless TX</h4>
+                                <p class="text-xs text-infra-500 text-center mt-1">Cellular/Wi‑Fi Upload</p>
+                    </div>
+                    <div class="flex-1 h-1 bg-gradient-to-r from-utility-500 to-veg-500 rounded"></div>
+                    <div class="flex flex-col items-center w-48">
+                        <div class="w-16 h-16 bg-veg-600 rounded-full flex items-center justify-center text-white shadow-lg mb-3">
+                            <i data-lucide="server" class="h-8 w-8"></i>
+                        </div>
+                        <h4 class="font-semibold text-infra-900 text-center">Cloud AI</h4>
+                        <p class="text-xs text-infra-500 text-center mt-1">Processing & Analysis</p>
+                    </div>
+                    <div class="flex-1 h-1 bg-gradient-to-r from-veg-500 to-utility-500 rounded"></div>
+                    <div class="flex flex-col items-center w-48">
+                        <div class="w-16 h-16 bg-utility-600 rounded-full flex items-center justify-center text-white shadow-lg mb-3">
+                            <i data-lucide="layout-dashboard" class="h-8 w-8"></i>
+                        </div>
+                        <h4 class="font-semibold text-infra-900 text-center">Dashboard</h4>
+                        <p class="text-xs text-infra-500 text-center mt-1">Visualization & Alerts</p>
                     </div>
                 </div>
+            </div>
+                        </div>
 
                 <div id="panel-hardware" class="tab-panel" role="tabpanel" aria-labelledby="tab-hardware">
                     <div class="space-y-4">
@@ -1476,164 +1518,40 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h2 class="text-3xl font-bold mb-2">Monitoring Dashboard</h2>
-                    <p class="text-infra-300">Prototype visualization using demo data</p>
+                    <h2 class="text-3xl font-bold mb-2">Live Monitoring Dashboard</h2>
+                    <p class="text-infra-300">Real-time vegetation analysis from active fleet vehicles</p>
                 </div>
                 <div class="flex items-center gap-3">
                     <span class="flex items-center gap-2 text-sm" id="systemStatus">
                         <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                        Demo Data Loaded
+                        System Online
                     </span>
-<<<<<<< HEAD
-                    <span class="font-mono text-sm bg-infra-800 px-3 py-1 rounded">Demo Fleet: 3 Sample Vehicles</span>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Sticky Sub-Nav -->
-        <div class="sticky-sub-nav border-b border-infra-700 py-3">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex items-center gap-6 text-sm" role="tablist" aria-label="Filter by risk">
-                    <button type="button" class="dashboard-subnav-btn text-white font-medium border-b-2 border-veg-500 pb-1" data-filter="all" onclick="setDashboardSubNavFilter('all')">All Detections</button>
-                    <button type="button" class="dashboard-subnav-btn text-infra-300 hover:text-white transition-colors border-b-2 border-transparent pb-1" data-filter="high" onclick="setDashboardSubNavFilter('high')">High Risk</button>
-                    <button type="button" class="dashboard-subnav-btn text-infra-300 hover:text-white transition-colors border-b-2 border-transparent pb-1" data-filter="medium" onclick="setDashboardSubNavFilter('medium')">Medium Risk</button>
-                    <button type="button" class="dashboard-subnav-btn text-infra-300 hover:text-white transition-colors border-b-2 border-transparent pb-1" data-filter="low" onclick="setDashboardSubNavFilter('low')">Low Risk</button>
-=======
                     <span class="font-mono text-sm bg-infra-800 px-3 py-1 rounded" id="fleetStatus">Fleet: Loading...</span>
                     <span class="font-mono text-sm bg-infra-800 px-3 py-1 rounded" id="todayDetections">Today: Loading...</span>
->>>>>>> 3c7c761ca021d8fc76da2c380967ad92e0d88c18
                 </div>
             </div>
         </div>
 
         <!-- Dashboard Interface -->
-        <div class="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="bg-infra-800 rounded-xl overflow-hidden border border-infra-700 shadow-lg">
-                <!-- Top Bar -->
-                <div class="bg-infra-800 border-b border-infra-700 px-6 py-3 flex items-center justify-between flex-wrap gap-3">
-                    <div class="flex items-center gap-4 text-sm">
-                        <div class="flex items-center gap-2 text-infra-300">
-                            <i data-lucide="refresh-cw" class="h-4 w-4"></i>
-                            <span>Last sync: <span class="text-white font-mono">14:23:05 EST</span></span>
-                        </div>
-                        <div class="h-4 w-px bg-infra-700"></div>
-                        <div class="flex items-center gap-2 text-infra-300">
-                            <i data-lucide="database" class="h-4 w-4"></i>
-                            <span>Data source: <span class="text-white">Demo</span></span>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button type="button" class="px-3 py-1.5 bg-infra-700 hover:bg-infra-600 text-infra-300 text-xs font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-utility-500" onclick="handleExportClick()" title="Export not available in demo">
-                            <i data-lucide="download" class="h-3 w-3 inline mr-1.5"></i>
-                            Export
-                        </button>
-                        <button class="px-3 py-1.5 bg-infra-700 hover:bg-infra-600 text-infra-300 text-xs font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-utility-500" onclick="resetMapView()" title="Reset map view">
-                            <i data-lucide="rotate-ccw" class="h-3 w-3 inline mr-1.5"></i>
-                            Reset View
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="flex flex-col lg:flex-row h-[700px]">
-                    <!-- Left Sidebar Filters -->
-                    <div class="w-full lg:w-72 bg-infra-800 border-r border-infra-700 flex flex-col">
-                        <div class="p-4 border-b border-infra-700">
-                            <h3 class="font-semibold text-white mb-4 flex items-center gap-2">
-                                <i data-lucide="filter" class="h-4 w-4 text-utility-400"></i>
-                                Filters
-                            </h3>
-                            
-                            <!-- Search -->
-                            <div class="mb-4">
-                                <label class="block text-xs font-medium text-infra-300 mb-2">Search Vehicle ID</label>
-                                <div class="relative">
-                                    <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-infra-400"></i>
-                                    <input type="text" id="dashboardSearch" placeholder="V-104, V-102..." class="w-full pl-10 pr-4 py-2 bg-infra-900 border border-infra-700 rounded-lg text-white text-sm placeholder-infra-500 focus:outline-none focus:ring-2 focus:ring-utility-500" oninput="handleDashboardSearch(this.value)">
-                                </div>
-                            </div>
-                            
-                            <!-- Severity Multi-Select -->
-                            <div class="mb-4">
-                                <label class="block text-xs font-medium text-infra-300 mb-2">Severity</label>
-                                <div class="space-y-2">
-                                    <label class="flex items-center gap-2 cursor-pointer">
-                                        <input type="checkbox" class="severity-filter" data-severity="high" checked onchange="handleSeverityFilter()" class="w-4 h-4 rounded border-infra-600 bg-infra-900 text-red-500 focus:ring-2 focus:ring-red-500">
-                                        <div class="w-2 h-2 bg-red-500 rounded-full"></div>
-                                        <span class="text-sm text-infra-300">High</span>
-                                    </label>
-                                    <label class="flex items-center gap-2 cursor-pointer">
-                                        <input type="checkbox" class="severity-filter" data-severity="medium" checked onchange="handleSeverityFilter()" class="w-4 h-4 rounded border-infra-600 bg-infra-900 text-orange-500 focus:ring-2 focus:ring-orange-500">
-                                        <div class="w-2 h-2 bg-orange-500 rounded-full"></div>
-                                        <span class="text-sm text-infra-300">Medium</span>
-                                    </label>
-                                    <label class="flex items-center gap-2 cursor-pointer">
-                                        <input type="checkbox" class="severity-filter" data-severity="low" checked onchange="handleSeverityFilter()" class="w-4 h-4 rounded border-infra-600 bg-infra-900 text-green-500 focus:ring-2 focus:ring-green-500">
-                                        <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-                                        <span class="text-sm text-infra-300">Low</span>
-                                    </label>
-                                </div>
-                            </div>
-                            
-                            <!-- Date/Time Range (Placeholder) -->
-                            <div class="mb-4">
-                                <label class="block text-xs font-medium text-infra-300 mb-2">Date Range</label>
-                                <div class="text-xs text-infra-500 bg-infra-900 p-2 rounded-lg border border-infra-700">
-                                    All dates (demo)
-                                </div>
-                            </div>
-                            
-                            <!-- Species Dropdown (Placeholder) -->
-                            <div class="mb-4">
-                                <label class="block text-xs font-medium text-infra-300 mb-2">Species</label>
-                                <select class="w-full px-3 py-2 bg-infra-900 border border-infra-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-utility-500" disabled>
-                                    <option>All species</option>
-                                </select>
-                            </div>
-                            
-                            <!-- Clear Filters -->
-                            <button onclick="clearDashboardFilters()" class="w-full px-3 py-2 bg-infra-700 hover:bg-infra-600 text-infra-300 text-xs font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-utility-500">
-                                <i data-lucide="x" class="h-3 w-3 inline mr-1.5"></i>
-                                Clear Filters
-                            </button>
-                        </div>
-                    </div>
-                    
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-infra-800 rounded-xl overflow-hidden border border-infra-700 shadow-2xl">
+                <div class="flex flex-col lg:flex-row h-[600px]">
                     <!-- Map Area -->
-                    <div class="flex-1 relative bg-infra-900" id="mapContainer" style="min-height: 700px;">
-                        <!-- Map placeholder for graceful failure -->
-                        <div id="mapPlaceholder" class="hidden absolute inset-0 flex items-center justify-center bg-infra-900">
-                            <div class="text-center p-8 max-w-md">
-                                <div class="w-16 h-16 mx-auto mb-4 bg-infra-800 rounded-full flex items-center justify-center">
-                                    <i data-lucide="map" class="h-8 w-8 text-infra-400"></i>
-                                </div>
-                                <h3 class="text-lg font-semibold text-white mb-2">Map Unavailable</h3>
-                                <p class="text-sm text-infra-400 mb-4">Google Maps API is not configured. Detection data is still available in the sidebar.</p>
-                                <div class="text-xs text-infra-500 bg-infra-800 p-3 rounded-lg text-left">
-                                    <p class="font-medium mb-1">To enable maps:</p>
-                                    <ul class="list-disc list-inside space-y-1">
-                                        <li>Create config.js with your API key</li>
-                                        <li>Enable Maps JavaScript API in Google Cloud</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="flex-1 relative bg-infra-900" id="mapContainer" style="min-height: 600px;">
+                        <!-- Google Map will be rendered here -->
                         
                         <!-- Map Controls -->
                         <div class="absolute bottom-4 left-4 z-10 flex gap-2">
-                            <button class="bg-white/10 backdrop-blur-sm p-2 rounded-lg hover:bg-white/20 transition-colors text-white focus:outline-none focus:ring-2 focus:ring-white/50" onclick="zoomMap(1)" aria-label="Zoom in">
+                            <button class="bg-white/10 backdrop-blur-sm p-2 rounded hover:bg-white/20 transition-colors text-white" onclick="zoomMap(1)">
                                 <i data-lucide="plus" class="h-5 w-5"></i>
                             </button>
-                            <button class="bg-white/10 backdrop-blur-sm p-2 rounded-lg hover:bg-white/20 transition-colors text-white focus:outline-none focus:ring-2 focus:ring-white/50" onclick="zoomMap(-1)" aria-label="Zoom out">
+                            <button class="bg-white/10 backdrop-blur-sm p-2 rounded hover:bg-white/20 transition-colors text-white" onclick="zoomMap(-1)">
                                 <i data-lucide="minus" class="h-5 w-5"></i>
                             </button>
                         </div>
 
                         <!-- Legend -->
-<<<<<<< HEAD
-                        <div class="absolute top-4 right-4 bg-black/80 backdrop-blur-sm p-4 rounded-lg border border-infra-700 text-xs z-10">
-=======
                         <div id="vegetationSeverityLegend" class="absolute top-4 right-4 z-20 bg-black/80 backdrop-blur-sm p-4 rounded-lg border border-infra-700 text-xs shadow-lg">
->>>>>>> 3c7c761ca021d8fc76da2c380967ad92e0d88c18
                             <h4 class="font-semibold mb-3 text-white">Vegetation Severity</h4>
                             <div class="space-y-2">
                                 <div class="flex items-center gap-2">
@@ -1642,17 +1560,6 @@
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <div class="w-3 h-3 bg-red-500 rounded-full"></div>
-<<<<<<< HEAD
-                                    <span class="text-infra-300">High (≤ 1ft clearance)</span>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <div class="w-3 h-3 bg-orange-500 rounded-full"></div>
-                                    <span class="text-infra-300">Medium (1–3ft)</span>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <div class="w-3 h-3 bg-green-500 rounded-full"></div>
-                                    <span class="text-infra-300">Low (≥ 3ft)</span>
-=======
                                     <span class="text-infra-300">High (lot_vegetation)</span>
                                 </div>
                                 <div class="flex items-center gap-2">
@@ -1662,28 +1569,14 @@
                                 <div class="flex items-center gap-2">
                                     <div class="w-3 h-3 bg-green-500 rounded-full"></div>
                                     <span class="text-infra-300">No Vegetation (no_vegetation)</span>
->>>>>>> 3c7c761ca021d8fc76da2c380967ad92e0d88c18
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Right Sidebar - Detection List -->
-                    <div class="w-full lg:w-88 bg-infra-800 border-l border-infra-700 flex flex-col">
+                    <!-- Sidebar -->
+                    <div class="w-full lg:w-80 bg-infra-800 border-l border-infra-700 flex flex-col">
                         <div class="p-4 border-b border-infra-700">
-<<<<<<< HEAD
-                            <div class="flex items-center justify-between mb-1">
-                                <h3 class="font-semibold text-white flex items-center gap-2">
-                                    <i data-lucide="activity" class="h-4 w-4 text-utility-400"></i>
-                                    Recent Detections
-                                </h3>
-                                <span id="detectionCount" class="text-xs text-infra-400 font-mono">3</span>
-                            </div>
-                            <p class="text-xs text-infra-500">Click to view details</p>
-                        </div>
-                        <div class="flex-1 overflow-y-auto" id="detectionList">
-                            <!-- Detection items rendered by JS -->
-=======
                             <h3 class="font-semibold flex items-center gap-2 mb-3">
                                 <i data-lucide="activity" class="h-4 w-4 text-utility-400"></i>
                                 Recent Detections
@@ -1713,190 +1606,12 @@
                                 <i data-lucide="loader" class="h-6 w-6 mx-auto mb-2 animate-spin"></i>
                                 <p>Loading detections...</p>
                             </div>
->>>>>>> 3c7c761ca021d8fc76da2c380967ad92e0d88c18
                         </div>
                         
-                        <!-- Selected Vehicle Detail Panel -->
-                        <div class="p-4 border-t border-infra-700 bg-infra-900/50 min-h-[200px]" id="vehicleDetail">
-                            <div class="text-center py-8">
-                                <i data-lucide="mouse-pointer-click" class="h-8 w-8 text-infra-500 mx-auto mb-2"></i>
-                                <p class="text-sm text-infra-400">Select a detection to view details</p>
-                            </div>
+                        <!-- Selected Vehicle Detail -->
+                        <div class="p-4 border-t border-infra-700 bg-infra-900/50" id="vehicleDetail">
+                            <p class="text-sm text-infra-400 text-center">Select a detection to view details</p>
                         </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Engineering Design -->
-    <section id="engineering" class="py-24 bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl md:text-4xl font-bold text-infra-900 mb-4">Engineering Design</h2>
-                <p class="text-lg text-infra-600">Multi-disciplinary approach addressing mechanical, electrical, and software systems integration</p>
-            </div>
-
-            <div class="max-w-3xl mx-auto space-y-3">
-                <div class="accordion-item">
-                    <button class="accordion-header w-full" onclick="toggleAccordion('mechanical')" aria-expanded="false" id="accordion-mechanical">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 bg-utility-100 rounded-lg flex items-center justify-center">
-                                <i data-lucide="cog" class="h-5 w-5 text-utility-600"></i>
-                            </div>
-                            <h3 class="font-bold text-infra-900 text-left">Mechanical</h3>
-                        </div>
-                        <i data-lucide="chevron-down" class="h-5 w-5 text-infra-500 transition-transform" id="icon-mechanical"></i>
-                    </button>
-                    <div class="accordion-content" id="content-mechanical">
-                        <div class="accordion-body">
-                            <p class="text-sm text-infra-600 mb-4">Vibration-isolated mounting system with weather-resistant enclosure considerations (prototype).</p>
-                            <ul class="text-sm text-infra-500 space-y-2">
-                                <li class="flex items-start gap-2">
-                                    <i data-lucide="check" class="h-4 w-4 mt-0.5 text-veg-600"></i>
-                                    <span>Anti-vibration dampeners</span>
-                                </li>
-                                <li class="flex items-start gap-2">
-                                    <i data-lucide="check" class="h-4 w-4 mt-0.5 text-veg-600"></i>
-                                    <span>Thermal management</span>
-                                </li>
-                                <li class="flex items-start gap-2">
-                                    <i data-lucide="check" class="h-4 w-4 mt-0.5 text-veg-600"></i>
-                                    <span>Aerodynamic housing</span>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="accordion-item">
-                    <button class="accordion-header w-full" onclick="toggleAccordion('electrical')" aria-expanded="false" id="accordion-electrical">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 bg-veg-100 rounded-lg flex items-center justify-center">
-                                <i data-lucide="zap" class="h-5 w-5 text-veg-600"></i>
-                            </div>
-                            <h3 class="font-bold text-infra-900 text-left">Electrical</h3>
-                        </div>
-                        <i data-lucide="chevron-down" class="h-5 w-5 text-infra-500 transition-transform" id="icon-electrical"></i>
-                    </button>
-                    <div class="accordion-content" id="content-electrical">
-                        <div class="accordion-body">
-                            <p class="text-sm text-infra-600 mb-4">12V automotive power regulation with backup battery and surge protection.</p>
-                            <ul class="text-sm text-infra-500 space-y-2">
-                                <li class="flex items-start gap-2">
-                                    <i data-lucide="check" class="h-4 w-4 mt-0.5 text-veg-600"></i>
-                                    <span>Voltage regulation</span>
-                                </li>
-                                <li class="flex items-start gap-2">
-                                    <i data-lucide="check" class="h-4 w-4 mt-0.5 text-veg-600"></i>
-                                    <span>Power filtering</span>
-                                </li>
-                                <li class="flex items-start gap-2">
-                                    <i data-lucide="check" class="h-4 w-4 mt-0.5 text-veg-600"></i>
-                                    <span>ESD protection</span>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="accordion-item">
-                    <button class="accordion-header w-full" onclick="toggleAccordion('computer')" aria-expanded="false" id="accordion-computer">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 bg-utility-100 rounded-lg flex items-center justify-center">
-                                <i data-lucide="chip" class="h-5 w-5 text-utility-600"></i>
-                            </div>
-                            <h3 class="font-bold text-infra-900 text-left">Computer</h3>
-                        </div>
-                        <i data-lucide="chevron-down" class="h-5 w-5 text-infra-500 transition-transform" id="icon-computer"></i>
-                    </button>
-                    <div class="accordion-content" id="content-computer">
-                        <div class="accordion-body">
-                            <p class="text-sm text-infra-600 mb-4">On-vehicle compute for data buffering and optional preprocessing (prototype).</p>
-                            <ul class="text-sm text-infra-500 space-y-2">
-                                <li class="flex items-start gap-2">
-                                    <i data-lucide="check" class="h-4 w-4 mt-0.5 text-veg-600"></i>
-                                    <span>Edge AI processing</span>
-                                </li>
-                                <li class="flex items-start gap-2">
-                                    <i data-lucide="check" class="h-4 w-4 mt-0.5 text-veg-600"></i>
-                                    <span>Data buffering</span>
-                                </li>
-                                <li class="flex items-start gap-2">
-                                    <i data-lucide="check" class="h-4 w-4 mt-0.5 text-veg-600"></i>
-                                    <span>LTE connectivity</span>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="accordion-item">
-                    <button class="accordion-header w-full" onclick="toggleAccordion('systems')" aria-expanded="false" id="accordion-systems">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 bg-veg-100 rounded-lg flex items-center justify-center">
-                                <i data-lucide="link" class="h-5 w-5 text-veg-600"></i>
-                            </div>
-                            <h3 class="font-bold text-infra-900 text-left">Systems Integration</h3>
-                        </div>
-                        <i data-lucide="chevron-down" class="h-5 w-5 text-infra-500 transition-transform" id="icon-systems"></i>
-                    </button>
-                    <div class="accordion-content" id="content-systems">
-                        <div class="accordion-body">
-                            <p class="text-sm text-infra-600 mb-4">Unified control architecture ensuring subsystem interoperability.</p>
-                            <ul class="text-sm text-infra-500 space-y-2">
-                                <li class="flex items-start gap-2">
-                                    <i data-lucide="check" class="h-4 w-4 mt-0.5 text-veg-600"></i>
-                                    <span>API gateway</span>
-                                </li>
-                                <li class="flex items-start gap-2">
-                                    <i data-lucide="check" class="h-4 w-4 mt-0.5 text-veg-600"></i>
-                                    <span>Data pipeline</span>
-                                </li>
-                                <li class="flex items-start gap-2">
-                                    <i data-lucide="check" class="h-4 w-4 mt-0.5 text-veg-600"></i>
-                                    <span>Dashboard integration</span>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Design Constraints -->
-            <div class="card bg-infra-900 text-white mt-8">
-                <h3 class="text-xl font-bold mb-6 flex items-center gap-3">
-                    <i data-lucide="alert-circle" class="h-5 w-5 text-utility-400"></i>
-                    Design Constraints & Considerations
-                </h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div class="p-4 bg-infra-800 rounded-lg border border-infra-700">
-                        <h4 class="font-semibold text-utility-300 mb-2 flex items-center gap-2">
-                            <i data-lucide="battery-warning" class="h-4 w-4"></i>
-                            Power
-                        </h4>
-                        <p class="text-sm text-infra-300">Designed to fit within typical auxiliary power budgets on a vehicle 12V system, with sleep modes for parked vehicles (prototype).</p>
-                    </div>
-                    <div class="p-4 bg-infra-800 rounded-lg border border-infra-700">
-                        <h4 class="font-semibold text-veg-300 mb-2 flex items-center gap-2">
-                            <i data-lucide="activity" class="h-4 w-4"></i>
-                            Vibration
-                        </h4>
-                        <p class="text-sm text-infra-300">Vehicle-mount vibration tolerance through mechanical isolation and validation during prototyping.</p>
-                    </div>
-                    <div class="p-4 bg-infra-800 rounded-lg border border-infra-700">
-                        <h4 class="font-semibold text-utility-300 mb-2 flex items-center gap-2">
-                            <i data-lucide="wifi-off" class="h-4 w-4"></i>
-                            Bandwidth
-                        </h4>
-                        <p class="text-sm text-infra-300">Edge compression required for rural areas with limited 4G coverage. Store-and-forward capability.</p>
-                    </div>
-                    <div class="p-4 bg-infra-800 rounded-lg border border-infra-700">
-                        <h4 class="font-semibold text-veg-300 mb-2 flex items-center gap-2">
-                            <i data-lucide="thermometer-sun" class="h-4 w-4"></i>
-                            Environment
-                        </h4>
-                        <p class="text-sm text-infra-300">Outdoor automotive operating conditions (heat/rain/dust) with weather-hardening considerations for future iterations.</p>
                     </div>
                 </div>
             </div>
@@ -1945,8 +1660,8 @@
                             <tr><td class="py-2 px-3 text-infra-700">Mock Data Pipeline Validation</td><td class="py-2 px-3 text-infra-600">Week of 01/16 → 01/23</td><td class="py-2 px-3"><span class="badge badge-success">Completed</span></td></tr>
                         </tbody>
                     </table>
-                </div>
-            </div>
+                        </div>
+                    </div>
 
             <!-- In Progress -->
             <div class="card mb-8">
@@ -1971,8 +1686,8 @@
                             <tr><td class="py-2 px-3 text-infra-700">Edge-to-Cloud Connectivity Validation</td><td class="py-2 px-3 text-infra-600">Week of 01/30 → 02/13</td><td class="py-2 px-3"><span class="badge badge-warning">In Progress</span></td></tr>
                         </tbody>
                     </table>
-                </div>
-            </div>
+                        </div>
+                    </div>
 
             <!-- Upcoming -->
             <div class="card">
@@ -2008,7 +1723,7 @@
                             <tr><td class="py-2 px-3 text-infra-700">Final Documentation &amp; Presentation Preparation</td><td class="py-2 px-3 text-infra-600">Week of 03/20 → 03/27</td><td class="py-2 px-3"><span class="badge badge-neutral">Upcoming</span></td></tr>
                         </tbody>
                     </table>
-                </div>
+                        </div>
             </div>
         </div>
     </section>
@@ -2081,21 +1796,21 @@
                         AA
                     </div>
                     <h4 class="font-bold text-infra-900">Adeoluwa Adekanmbi</h4>
-                </div>
+            </div>
 
                 <div class="bg-infra-50 rounded-xl p-6 border border-infra-200 hover:shadow-lg transition-all text-center group">
                     <div class="w-24 h-24 mx-auto bg-gradient-to-br from-veg-200 to-veg-300 rounded-full mb-4 flex items-center justify-center text-2xl text-veg-800 font-bold group-hover:scale-110 transition-transform">
                         IA
                     </div>
                     <h4 class="font-bold text-infra-900">Ibukunoluwa Adeloye</h4>
-                </div>
+                    </div>
 
                 <div class="bg-infra-50 rounded-xl p-6 border border-infra-200 hover:shadow-lg transition-all text-center group">
                     <div class="w-24 h-24 mx-auto bg-gradient-to-br from-utility-200 to-veg-200 rounded-full mb-4 flex items-center justify-center text-2xl text-infra-800 font-bold group-hover:scale-110 transition-transform">
                         IA
-                    </div>
-                    <h4 class="font-bold text-infra-900">Itunuoluwa Akarakiri</h4>
                 </div>
+                    <h4 class="font-bold text-infra-900">Itunuoluwa Akarakiri</h4>
+            </div>
 
                 <div class="bg-infra-50 rounded-xl p-6 border border-infra-200 hover:shadow-lg transition-all text-center group">
                     <div class="w-24 h-24 mx-auto bg-gradient-to-br from-infra-200 to-infra-300 rounded-full mb-4 flex items-center justify-center text-2xl text-infra-800 font-bold group-hover:scale-110 transition-transform">
@@ -2158,7 +1873,6 @@
                         <li><a href="#overview" class="hover:text-veg-400 transition-colors">Overview</a></li>
                         <li><a href="#architecture" class="hover:text-veg-400 transition-colors">Architecture</a></li>
                         <li><a href="#dashboard" class="hover:text-veg-400 transition-colors">Dashboard</a></li>
-                        <li><a href="#engineering" class="hover:text-veg-400 transition-colors">Engineering</a></li>
                     </ul>
                 </div>
                 <div>
@@ -2192,7 +1906,7 @@
         lucide.createIcons();
 
         // Mobile Menu Toggle
-        function toggleMobileMenu() {
+        window.toggleMobileMenu = function() {
             const menu = document.getElementById('mobileMenu');
             const icon = document.getElementById('menuIcon');
             const button = document.getElementById('mobileMenuButton');
@@ -2213,7 +1927,7 @@
             }
             lucide.createIcons();
         }
-        
+
         // Close mobile menu when clicking a link
         document.querySelectorAll('#mobileMenu .nav-link').forEach(link => {
             link.addEventListener('click', () => {
@@ -2260,7 +1974,6 @@
         // Initial call to set active link on page load
         updateActiveNavLink();
 
-<<<<<<< HEAD
         // Select Vehicle Function
         window.selectVehicle = function(vehicleId) {
             const data = vehicleData[vehicleId];
@@ -2270,124 +1983,20 @@
             AppState.dashboard.selectedVehicle = vehicleId;
             
             // Update map if available
-            if (map) {
-                const marker = markers[vehicleId];
+            const currentMap = window.map || map;
+            const currentMarkers = window.markers || markers;
+            const currentInfoWindows = window.infoWindows || infoWindows;
+            if (currentMap) {
+                const marker = currentMarkers[vehicleId];
                 if (marker) {
-                    map.setCenter(marker.getPosition());
-                    map.setZoom(16);
-                    if (infoWindows[vehicleId]) {
-                        infoWindows[vehicleId].open(map, marker);
+                    currentMap.setCenter(marker.getPosition());
+                    currentMap.setZoom(16);
+                    if (currentInfoWindows[vehicleId]) {
+                        currentInfoWindows[vehicleId].open(currentMap, marker);
                     }
-=======
-        // Global variables for DynamoDB data
-        // dynamoDBService is already declared in global scope above
-        window.vehicleDataMap = {}; // Map of captureId -> data (make it global)
-        let vehicleDataMap = window.vehicleDataMap; // Alias for easier access
-        // pendingLocations is already declared in global scope above
-
-        // Local alias for initDynamoDBService (already defined in global scope above)
-        function initDynamoDBService() {
-            return window.initDynamoDBService();
-        }
-
-        // Load locations from DynamoDB and update UI - must be global for map initialization
-        window.loadLocations = async function() {
-            console.log('🔄 loadLocations() called');
-            
-            const service = window.dynamoDBService || dynamoDBService;
-            if (!service) {
-                console.error('❌ DynamoDB service not initialized');
-                // Try to initialize it
-                if (typeof window.initDynamoDBService === 'function') {
-                    window.initDynamoDBService();
-                    const retryService = window.dynamoDBService || dynamoDBService;
-                    if (!retryService) {
-                        console.error('❌ Failed to initialize DynamoDB service');
-                        // Show error in UI
-                        const listContainer = document.getElementById('detectionsList');
-                        if (listContainer) {
-                            listContainer.innerHTML = `
-                                <div class="text-center text-red-400 text-sm py-8">
-                                    <i data-lucide="alert-circle" class="h-6 w-6 mx-auto mb-2"></i>
-                                    <p>Failed to initialize DynamoDB service</p>
-                                    <p class="text-xs mt-2">Check console for details</p>
-                                </div>
-                            `;
-                        }
-                        return;
-                    }
-                    // Retry after initialization
-                    setTimeout(() => window.loadLocations(), 500);
-                    return;
-                } else {
-                    console.error('❌ initDynamoDBService function not available');
-                    return;
                 }
             }
 
-            console.log('✅ Service available, fetching locations...');
-            
-            try {
-                // Add timeout to API call
-                const fetchPromise = service.fetchLocations({ limit: 100 });
-                const timeoutPromise = new Promise((_, reject) => 
-                    setTimeout(() => reject(new Error('API call timed out after 10 seconds')), 10000)
-                );
-                
-                const locations = await Promise.race([fetchPromise, timeoutPromise]);
-                console.log(`✅ Fetched ${locations.length} locations from API`);
-                
-                // Check if using mock data
-                const isUsingMock = service.isUsingMockData();
-                const lastError = service.getLastError();
-                
-                // Show/hide warning banner
-                showMockDataWarning(isUsingMock, lastError);
-                
-                // Store in map for quick lookup
-                vehicleDataMap = {};
-                locations.forEach(loc => {
-                    vehicleDataMap[loc.captureId] = loc;
-                });
-
-                // Update sidebar
-                console.log('📋 Updating detections list in sidebar...');
-                updateDetectionsList(locations);
-                console.log('✅ Sidebar updated');
-                
-                // Update map markers
-                const currentMap = window.map || map;
-                console.log(`📍 Attempting to update map with ${locations.length} locations...`);
-                console.log(`   Map ready: ${!!currentMap}, Google Maps ready: ${typeof google !== 'undefined' && !!google.maps}`);
-                console.log(`   window.map: ${!!window.map}, local map: ${!!map}`);
-                
-                // Store locations for later if map isn't ready
-                window.pendingLocations = locations;
-                pendingLocations = locations;
-                
-                if (typeof google !== 'undefined' && google.maps) {
-                    if (currentMap) {
-                        console.log('✅ Map is ready, creating markers now');
-                        updateMapMarkers(locations);
-                    } else {
-                        console.warn('⚠️ Map not initialized yet, storing locations for when map is ready');
-                        // Wait for map to be ready - will be handled by map initialization
-                        // Check again after a short delay
-                        setTimeout(() => {
-                            const retryMap = window.map || map;
-                            if (retryMap && locations && locations.length > 0) {
-                                console.log('🔄 Map ready on retry, creating markers');
-                                updateMapMarkers(locations);
-                            }
-                        }, 1000);
-                    }
-                } else {
-                    console.warn('⚠️ Google Maps API not loaded yet');
->>>>>>> 3c7c761ca021d8fc76da2c380967ad92e0d88c18
-                }
-            }
-
-<<<<<<< HEAD
             // Update detail panel
             if (typeof Render !== 'undefined' && Render.updateVehicleDetail) {
                 Render.updateVehicleDetail(vehicleId);
@@ -2442,53 +2051,17 @@
             }
             
             // Update markers visibility
-            if (map && markers) {
+            const currentMap = window.map || map;
+            const currentMarkers = window.markers || markers;
+            if (currentMap && currentMarkers) {
                 Object.keys(vehicleData).forEach(id => {
-                    const marker = markers[id];
+                    const marker = currentMarkers[id];
                     if (marker) {
                         const isVisible = filtered.some(item => item.id === id);
                         marker.setVisible(isVisible);
                     }
                 });
-=======
-                if (isUsingMock) {
-                    console.warn(`⚠️ Using mock data (${locations.length} items). API error: ${lastError || 'Unknown'}`);
-                } else {
-                    console.log(`✅ Loaded ${locations.length} locations from DynamoDB`);
-                }
-            } catch (error) {
-                console.error('❌ Error loading locations:', error);
-                console.error('Error details:', {
-                    message: error.message,
-                    stack: error.stack,
-                    name: error.name
-                });
-                showMockDataWarning(true, error.message);
-                
-                // Show error in sidebar
-                const listContainer = document.getElementById('detectionsList');
-                if (listContainer) {
-                    listContainer.innerHTML = `
-                        <div class="text-center text-red-400 text-sm py-8">
-                            <i data-lucide="alert-circle" class="h-6 w-6 mx-auto mb-2"></i>
-                            <p class="font-semibold">Error loading detections</p>
-                            <p class="text-xs mt-2 text-infra-400">${error.message || 'Unknown error'}</p>
-                            <button onclick="window.loadLocations()" class="mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 rounded text-white text-xs transition-colors">
-                                Retry
-                            </button>
-                        </div>
-                    `;
-                    // Re-initialize icons
-                    if (typeof lucide !== 'undefined') {
-                        lucide.createIcons();
-                    }
-                }
             }
-        };
-        
-        // Also create local alias
-        async function loadLocations() {
-            return window.loadLocations();
         }
 
         // Show warning banner when using mock data - make it globally accessible
@@ -2805,6 +2378,7 @@
             // Update window references
             window.markers = markers;
             window.infoWindows = infoWindows;
+            window.infoWindows = infoWindows;
 
             console.log(`✅ Created ${createdCount} markers on map (${errorCount} errors)`);
             console.log(`   Total markers in object: ${Object.keys(markers).length}`);
@@ -2935,14 +2509,8 @@
                 `;
             } else {
                 console.error('❌ Detail panel not found');
->>>>>>> 3c7c761ca021d8fc76da2c380967ad92e0d88c18
             }
         };
-        
-        // Also create local alias
-        function selectVehicle(captureId) {
-            return window.selectVehicle(captureId);
-        }
         
         // Dashboard Event Handlers
         window.handleDashboardSearch = function(query) {
@@ -3019,10 +2587,11 @@
         };
 
         window.resetMapView = function() {
-            if (map) {
+            const currentMap = window.map || map;
+            if (currentMap) {
                 const center = { lat: 26.4592, lng: -80.1254 };
-                map.setCenter(center);
-                map.setZoom(14);
+                currentMap.setCenter(center);
+                currentMap.setZoom(14);
             }
         };
         
@@ -3036,18 +2605,11 @@
         });
 
         // Map Zoom Function
-<<<<<<< HEAD
         window.zoomMap = function(direction) {
-            if (map) {
-                const currentZoom = map.getZoom();
-                map.setZoom(currentZoom + (direction > 0 ? 1 : -1));
-=======
-        function zoomMap(direction) {
             const currentMap = window.map || map;
             if (currentMap) {
                 const currentZoom = currentMap.getZoom();
                 currentMap.setZoom(currentZoom + (direction > 0 ? 1 : -1));
->>>>>>> 3c7c761ca021d8fc76da2c380967ad92e0d88c18
             }
         };
 
@@ -3091,7 +2653,6 @@
             }, 2000);
         });
 
-<<<<<<< HEAD
         // Smooth Scroll
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
@@ -3152,7 +2713,7 @@
         });
 
         // Accordion Toggle
-        function toggleAccordion(id) {
+        window.toggleAccordion = function(id) {
             const header = document.getElementById('accordion-' + id);
             const content = document.getElementById('content-' + id);
             const icon = document.getElementById('icon-' + id);
@@ -3360,7 +2921,7 @@
                     const isSelected = AppState.dashboard.selectedVehicle === item.id;
                     return `
                         <div class="detection-item p-3 mx-4 my-2 rounded-lg border transition-all cursor-pointer ${isSelected ? 'bg-infra-700 border-utility-500' : 'bg-infra-700/50 border-infra-600 hover:border-utility-500/50'}" 
-                             onclick="selectVehicle('${item.id}')" 
+                             onclick="window.selectVehicle('${item.id}')" 
                              data-vehicle-id="${item.id}">
                             <div class="flex items-start gap-3">
                                 <div class="w-2 h-2 ${colors.dot} rounded-full mt-1.5 flex-shrink-0"></div>
@@ -3405,57 +2966,3 @@
         
         // Expose handlers globally
         window.handleGenerateWorkOrder = Handlers.generateWorkOrder;
-=======
-        // Debug function - manually refresh markers (for testing)
-        window.debugRefreshMarkers = function() {
-            console.log('🔧 Manual marker refresh triggered');
-            const currentMap = window.map || map;
-            const currentMarkers = window.markers || markers;
-            console.log('Map state:', {
-                mapExists: !!currentMap,
-                windowMapExists: !!window.map,
-                markersCount: Object.keys(currentMarkers).length,
-                googleMapsReady: typeof google !== 'undefined' && !!google.maps
-            });
-            
-            if (dynamoDBService && currentMap) {
-                console.log('✅ Both service and map ready, loading locations...');
-                loadLocations();
-            } else if (!currentMap) {
-                console.error('❌ Map not initialized');
-                console.log('   window.map:', window.map);
-                console.log('   local map:', map);
-            } else if (!dynamoDBService) {
-                console.error('❌ DynamoDB service not initialized');
-                initDynamoDBService();
-                setTimeout(loadLocations, 500);
-            }
-        };
-        
-        // Debug function - test marker creation directly
-        window.debugCreateTestMarker = function() {
-            const currentMap = window.map || map;
-            if (!currentMap) {
-                console.error('❌ Map not ready');
-                return;
-            }
-            
-            console.log('🧪 Creating test marker at (38.921574, -83.123456)...');
-            const testMarker = new google.maps.Marker({
-                position: { lat: 38.921574, lng: -83.123456 },
-                map: currentMap,
-                title: 'Test Marker',
-                animation: google.maps.Animation.DROP
-            });
-            
-            if (testMarker) {
-                console.log('✅ Test marker created:', testMarker);
-                console.log('   Marker on map:', testMarker.getMap());
-                console.log('   Marker position:', testMarker.getPosition());
-            } else {
-                console.error('❌ Failed to create test marker');
-            }
-        };
-
-        // Smooth Scroll
->>>>>>> 3c7c761ca021d8fc76da2c380967ad92e0d88c18

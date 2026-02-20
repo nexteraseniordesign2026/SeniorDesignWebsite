@@ -227,3 +227,4 @@ The frontend automatically maps `predicted_class` to risk levels:
 4. Update `config.js` with your endpoint
 5. Test the integration
 
+

@@ -61,3 +61,4 @@ echo "  aws dynamodb batch-write-item --request-items file://batch-request.json 
 echo ""
 echo "Or use the Python script with admin credentials."
 
+

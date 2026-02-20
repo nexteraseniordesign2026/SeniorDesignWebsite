@@ -91,3 +91,4 @@ Once the table is accessible, the API should return:
 3. Verify Lambda execution role has DynamoDB permissions
 4. Test again using `test-api.html` or the main website
 
+
