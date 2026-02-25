@@ -512,15 +512,23 @@
                         'NO_VEGETATION': 'NO VEG'
                     };
 
+                    const placeholderImg = 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80';
                     listContainer.innerHTML = sorted.map(loc => {
                         return `
                             <div class="bg-infra-700/50 p-3 rounded-lg border border-infra-600 hover:border-utility-500 transition-colors cursor-pointer" onclick="window.selectVehicle('${loc.captureId}')">
-                                <div class="flex justify-between items-start mb-2">
-                                    <div class="flex-1">
-                                        <div class="font-mono font-semibold text-utility-400 text-sm">${loc.deviceName || loc.vehicleId || 'Unknown Device'}</div>
-                                        <div class="font-mono text-xs text-infra-400 mt-0.5">${loc.captureId || 'N/A'}</div>
+                                <div class="flex gap-3 mb-2">
+                                    <div class="w-14 h-14 rounded overflow-hidden flex-shrink-0 bg-infra-600">
+                                        <img src="${loc.image || placeholderImg}" alt="Capture" class="w-full h-full object-cover" onerror="this.src='${placeholderImg}'; this.onerror=null;">
                                     </div>
-                                    <span class="text-xs ${riskColors[loc.risk]} px-2 py-0.5 rounded font-semibold">${riskLabel[loc.risk]}</span>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex justify-between items-start gap-2">
+                                            <div>
+                                                <div class="font-mono font-semibold text-utility-400 text-sm">${loc.deviceName || loc.vehicleId || 'Unknown Device'}</div>
+                                                <div class="font-mono text-xs text-infra-400 mt-0.5">${loc.captureId || 'N/A'}</div>
+                                            </div>
+                                            <span class="text-xs ${riskColors[loc.risk]} px-2 py-0.5 rounded font-semibold flex-shrink-0">${riskLabel[loc.risk]}</span>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="space-y-1.5 text-xs text-infra-300 mt-2">
                                     <div class="flex items-center gap-2">
@@ -688,16 +696,19 @@
 
                     const infoWindow = new google.maps.InfoWindow({
                         content: `
-                            <div style="font-family: 'Inter', sans-serif; min-width: 200px;">
+                            <div style="font-family: 'Inter', sans-serif; min-width: 220px;">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                                            <h3 style="margin: 0; font-weight: 600; font-size: 14px; color: #0f172a;">${loc.deviceName || loc.captureId}</h3>
-                                            <span style="background-color: ${loc.bgColor}20; color: ${loc.bgColor}; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">${loc.risk}</span>
+                                    <h3 style="margin: 0; font-weight: 600; font-size: 14px; color: #0f172a;">${loc.deviceName || loc.captureId}</h3>
+                                    <span style="background-color: ${loc.bgColor}20; color: ${loc.bgColor}; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">${loc.risk}</span>
+                                </div>
+                                <div style="width: 100%; max-width: 200px; height: 120px; overflow: hidden; border-radius: 6px; margin-bottom: 8px; background: #f1f5f9;">
+                                    <img src="${loc.image}" alt="Capture" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='https://images.unsplash.com/photo-1502082553048-f009c37129b9?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'; this.onerror=null;">
                                 </div>
                                 <div style="font-size: 12px; color: #475569; line-height: 1.6;">
-                                            <div><strong>Location:</strong> ${loc.location}</div>
-                                            <div><strong>Class:</strong> ${loc.species}</div>
-                                            <div><strong>Confidence:</strong> ${(loc.confidence * 100).toFixed(1)}%</div>
-                                            <div><strong>Time:</strong> ${loc.timestamp}</div>
+                                    <div><strong>Location:</strong> ${loc.location}</div>
+                                    <div><strong>Class:</strong> ${loc.species}</div>
+                                    <div><strong>Confidence:</strong> ${(loc.confidence * 100).toFixed(1)}%</div>
+                                    <div><strong>Time:</strong> ${loc.timestamp}</div>
                                 </div>
                             </div>
                         `
@@ -1598,8 +1609,8 @@
                                 <button onclick="filterDetections('NO_VEGETATION')" id="filter-no-veg" class="px-3 py-1.5 text-xs rounded bg-infra-700 text-infra-300 hover:bg-green-500/20 hover:text-green-400 font-medium transition-colors">
                                     No Veg
                                 </button>
-                            </div>
                         </div>
+                                </div>
                         <div class="flex-1 overflow-y-auto p-4 space-y-3" id="detectionsList">
                             <!-- DynamoDB data will be loaded here -->
                             <div class="text-center text-infra-400 text-sm py-8">
@@ -1660,8 +1671,8 @@
                             <tr><td class="py-2 px-3 text-infra-700">Mock Data Pipeline Validation</td><td class="py-2 px-3 text-infra-600">Week of 01/16 → 01/23</td><td class="py-2 px-3"><span class="badge badge-success">Completed</span></td></tr>
                         </tbody>
                     </table>
-                        </div>
                     </div>
+                </div>
 
             <!-- In Progress -->
             <div class="card mb-8">
@@ -1686,8 +1697,8 @@
                             <tr><td class="py-2 px-3 text-infra-700">Edge-to-Cloud Connectivity Validation</td><td class="py-2 px-3 text-infra-600">Week of 01/30 → 02/13</td><td class="py-2 px-3"><span class="badge badge-warning">In Progress</span></td></tr>
                         </tbody>
                     </table>
-                        </div>
                     </div>
+                </div>
 
             <!-- Upcoming -->
             <div class="card">
@@ -1723,7 +1734,7 @@
                             <tr><td class="py-2 px-3 text-infra-700">Final Documentation &amp; Presentation Preparation</td><td class="py-2 px-3 text-infra-600">Week of 03/20 → 03/27</td><td class="py-2 px-3"><span class="badge badge-neutral">Upcoming</span></td></tr>
                         </tbody>
                     </table>
-                        </div>
+                    </div>
             </div>
         </div>
     </section>
@@ -1995,9 +2006,9 @@
                         currentInfoWindows[vehicleId].open(currentMap, marker);
                     }
                 }
-            }
+                }
 
-            // Update detail panel
+                // Update detail panel
             if (typeof Render !== 'undefined' && Render.updateVehicleDetail) {
                 Render.updateVehicleDetail(vehicleId);
             }
@@ -2347,10 +2358,13 @@
                 if (marker) {
                     const infoWindow = new google.maps.InfoWindow({
                         content: `
-                            <div style="font-family: 'Inter', sans-serif; min-width: 200px;">
+                            <div style="font-family: 'Inter', sans-serif; min-width: 220px;">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                                     <h3 style="margin: 0; font-weight: 600; font-size: 14px; color: #0f172a;">${loc.deviceName || loc.captureId}</h3>
                                     <span style="background-color: ${loc.bgColor}20; color: ${loc.bgColor}; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">${loc.risk}</span>
+                                </div>
+                                <div style="width: 100%; max-width: 200px; height: 120px; overflow: hidden; border-radius: 6px; margin-bottom: 8px; background: #f1f5f9;">
+                                    <img src="${loc.image}" alt="Capture" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='https://images.unsplash.com/photo-1502082553048-f009c37129b9?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'; this.onerror=null;">
                                 </div>
                                 <div style="font-size: 12px; color: #475569; line-height: 1.6;">
                                     <div><strong>Location:</strong> ${loc.location}</div>
@@ -2828,7 +2842,7 @@
                             </h4>
                             <div class="flex gap-3 mb-4">
                                 <div class="w-20 h-20 bg-infra-700 rounded-lg overflow-hidden flex-shrink-0">
-                                    <img src="${data.image}" alt="Vegetation detection for ${vehicleId}" class="w-full h-full object-cover">
+                                    <img src="${data.image}" alt="Vegetation detection for ${vehicleId}" class="w-full h-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1502082553048-f009c37129b9?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'; this.onerror=null;">
                                 </div>
                                 <div class="flex-1">
                                     <div class="flex justify-between items-start mb-2">

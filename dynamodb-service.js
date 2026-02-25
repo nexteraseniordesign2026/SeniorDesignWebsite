@@ -40,12 +40,14 @@ class DynamoDBService {
     }
 
     /**
-     * Generate S3 image URL
+     * Generate S3 image URL.
+     * Uses region-specific URL (us-east-2) for compatibility.
+     * Requires captures/ folder to be public via bucket policy - see S3_IMAGE_ACCESS_SETUP.md
      */
     getImageUrl(item) {
         if (item.image_s3_bucket && item.image_s3_key) {
-            // If using CloudFront or public S3 bucket
-            return `https://${item.image_s3_bucket}.s3.amazonaws.com/${item.image_s3_key}`;
+            const region = item.image_s3_region || 'us-east-2';
+            return `https://${item.image_s3_bucket}.s3.${region}.amazonaws.com/${item.image_s3_key}`;
         }
         // Fallback to placeholder
         return 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80';
