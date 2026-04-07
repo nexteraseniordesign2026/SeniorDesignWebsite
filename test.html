@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>System Tests | IVVMS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              infra: {
+                300: "#cbd5e1",
+                400: "#94a3b8",
+                600: "#475569",
+                700: "#334155",
+                800: "#1e293b",
+                900: "#0f172a",
+              },
+              utility: { 400: "#38bdf8", 600: "#0284c7" },
+              veg: { 400: "#4ade80", 600: "#16a34a" },
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .result-pass {
+        color: #4ade80;
+      }
+      .result-fail {
+        color: #f87171;
+      }
+      .result-info {
+        color: #94a3b8;
+      }
+      .log-entry {
+        font-family: monospace;
+        font-size: 0.8rem;
+        padding: 2px 0;
+        border-bottom: 1px solid #1e293b;
+      }
+    </style>
+  </head>
+  <body class="bg-infra-900 text-infra-300 min-h-screen p-8 font-mono">
+    <div class="max-w-4xl mx-auto">
+      <div class="flex items-center justify-between mb-8">
+        <div>
+          <h1 class="text-2xl font-bold text-white">IVVMS System Tests</h1>
+          <p class="text-infra-400 text-sm mt-1">API · Map · Integration</p>
+        </div>
+        <a
+          href="index.html"
+          class="text-utility-400 hover:text-white text-sm transition-colors"
+          >← Back to dashboard</a
+        >
+      </div>
+
+      <!-- Test suite selector -->
+      <div class="flex gap-3 mb-8 flex-wrap">
+        <button
+          onclick="runSuite('api')"
+          class="px-4 py-2 bg-infra-700 hover:bg-infra-600 rounded text-sm transition-colors"
+        >
+          API Tests
+        </button>
+        <button
+          onclick="runSuite('map')"
+          class="px-4 py-2 bg-infra-700 hover:bg-infra-600 rounded text-sm transition-colors"
+        >
+          Map Tests
+        </button>
+        <button
+          onclick="runSuite('integration')"
+          class="px-4 py-2 bg-infra-700 hover:bg-infra-600 rounded text-sm transition-colors"
+        >
+          Integration Tests
+        </button>
+        <button
+          onclick="runSuite('all')"
+          class="px-4 py-2 bg-veg-600 hover:bg-veg-400 text-white rounded text-sm transition-colors font-semibold"
+        >
+          Run All
+        </button>
+        <button
+          onclick="clearLog()"
+          class="px-4 py-2 bg-infra-800 hover:bg-infra-700 rounded text-sm transition-colors ml-auto"
+        >
+          Clear
+        </button>
+      </div>
+
+      <!-- Summary bar -->
+      <div
+        id="summary"
+        class="hidden mb-6 p-4 rounded-lg bg-infra-800 border border-infra-700 flex gap-8 text-sm"
+      >
+        <span>Total: <strong id="s-total" class="text-white">0</strong></span>
+        <span>Passed: <strong id="s-pass" class="result-pass">0</strong></span>
+        <span>Failed: <strong id="s-fail" class="result-fail">0</strong></span>
+        <span>Duration: <strong id="s-dur" class="text-white">—</strong></span>
+      </div>
+
+      <!-- Log output -->
+      <div
+        id="log"
+        class="bg-infra-800 rounded-lg border border-infra-700 p-4 min-h-64 space-y-0.5"
+      >
+        <div class="result-info log-entry">
+          Ready. Select a test suite above.
+        </div>
+      </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="dynamodb-service.js"></script>
+    <script>
+      // ── Minimal test harness ───────────────────────────────────────────────────
+
+      const results = { total: 0, pass: 0, fail: 0 };
+      let startTime = null;
+
+      function log(msg, type = "info") {
+        const el = document.createElement("div");
+        el.className = `log-entry result-${type}`;
+        el.textContent = msg;
+        document.getElementById("log").appendChild(el);
+        el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+
+      function clearLog() {
+        document.getElementById("log").innerHTML =
+          '<div class="result-info log-entry">Log cleared.</div>';
+        Object.assign(results, { total: 0, pass: 0, fail: 0 });
+        document.getElementById("summary").classList.add("hidden");
+      }
+
+      function assert(label, condition, detail = "") {
+        results.total++;
+        if (condition) {
+          results.pass++;
+          log(`✅ PASS  ${label}${detail ? " — " + detail : ""}`, "pass");
+        } else {
+          results.fail++;
+          log(`❌ FAIL  ${label}${detail ? " — " + detail : ""}`, "fail");
+        }
+      }
+
+      function section(title) {
+        log("");
+        log(
+          `── ${title} ${"─".repeat(Math.max(0, 50 - title.length))}`,
+          "info",
+        );
+      }
+
+      function updateSummary() {
+        const dur = startTime
+          ? ((Date.now() - startTime) / 1000).toFixed(2) + "s"
+          : "—";
+        document.getElementById("s-total").textContent = results.total;
+        document.getElementById("s-pass").textContent = results.pass;
+        document.getElementById("s-fail").textContent = results.fail;
+        document.getElementById("s-dur").textContent = dur;
+        document.getElementById("summary").classList.remove("hidden");
+      }
+
+      // ── Test suites ────────────────────────────────────────────────────────────
+
+      const Suites = {
+        async api() {
+          section("API / DynamoDB Service");
+
+          // Config presence
+          assert(
+            "GOOGLE_MAPS_API_KEY defined",
+            !!window.GOOGLE_MAPS_API_KEY,
+            window.GOOGLE_MAPS_API_KEY ? "key present" : "missing",
+          );
+          assert(
+            "DYNAMODB_API_ENDPOINT defined",
+            !!window.DYNAMODB_API_ENDPOINT,
+            window.DYNAMODB_API_ENDPOINT || "missing",
+          );
+          assert(
+            "DynamoDBService class available",
+            typeof DynamoDBService !== "undefined",
+          );
+
+          if (typeof DynamoDBService === "undefined") {
+            log(
+              "⚠ Skipping API fetch tests — DynamoDBService not loaded",
+              "fail",
+            );
+            return;
+          }
+
+          const service = new DynamoDBService(
+            window.DYNAMODB_API_ENDPOINT || "",
+          );
+
+          try {
+            log("  Fetching locations (limit 10)…", "info");
+            const locations = await service.fetchLocations({ limit: 10 });
+
+            // Ensure we know if we are looking at real or fake data
+            const isMock = service.isUsingMockData();
+            const lastErr = service.getLastError();
+            assert(
+              "Data Source Check",
+              true,
+              isMock ? `MOCKING (Error: ${lastErr})` : "LIVE DYNAMODB",
+            );
+
+            // Detailed Data Validation (from the first file's results view)
+            if (locations.length > 0) {
+              log(
+                `  Sample Data: ${JSON.stringify(locations[0]).substring(0, 80)}...`,
+                "info",
+              );
+            }
+            assert("fetchLocations returns array", Array.isArray(locations));
+            assert(
+              "fetchLocations returns data",
+              locations.length > 0,
+              `${locations.length} records`,
+            );
+
+            if (locations.length > 0) {
+              const sample = locations[0];
+              assert("Record has captureId", !!sample.captureId);
+              assert(
+                "Record has lat/lng",
+                typeof sample.lat === "number" &&
+                  typeof sample.lng === "number",
+                `lat=${sample.lat}, lng=${sample.lng}`,
+              );
+              assert("Record has risk field", !!sample.risk, sample.risk);
+              assert(
+                "Record has confidence",
+                typeof sample.confidence === "number",
+              );
+              assert(
+                "lat is in valid range",
+                sample.lat >= -90 && sample.lat <= 90,
+              );
+              assert(
+                "lng is in valid range",
+                sample.lng >= -180 && sample.lng <= 180,
+              );
+            }
+
+            assert(
+              "isUsingMockData() returns boolean",
+              typeof service.isUsingMockData() === "boolean",
+              service.isUsingMockData() ? "mock" : "live",
+            );
+          } catch (err) {
+            log(`  Error: ${err.message}`, "fail");
+            assert("API fetch completed without error", false, err.message);
+          }
+        },
+
+        map() {
+          section("Map Configuration");
+
+          assert("GOOGLE_MAPS_API_KEY present", !!window.GOOGLE_MAPS_API_KEY);
+          assert(
+            "google object available",
+            typeof google !== "undefined" && !!google.maps,
+            typeof google !== "undefined"
+              ? "loaded"
+              : "not loaded — Maps API not injected on test page",
+          );
+
+          if (typeof google === "undefined" || !google.maps) {
+            log(
+              "  Note: Map API not loaded on test.html by design. Test map init via index.html.",
+              "info",
+            );
+            return;
+          }
+
+          // Map options validation
+          const validStyles = ["roadmap", "satellite", "hybrid", "terrain"];
+          log(
+            "  google.maps available — basic API checks only (no DOM map rendered here)",
+            "info",
+          );
+
+          assert(
+            "LatLngBounds constructor works",
+            (() => {
+              try {
+                new google.maps.LatLngBounds();
+                return true;
+              } catch {
+                return false;
+              }
+            })(),
+          );
+
+          assert(
+            "SymbolPath.CIRCLE available",
+            typeof google.maps.SymbolPath.CIRCLE !== "undefined",
+          );
+        },
+
+        async integration() {
+          section("Integration — Data → State → UI");
+
+          // State module
+          assert("State object available", typeof State !== "undefined");
+
+          if (typeof State === "undefined") {
+            log("  Skipping — js/state.js not loaded on test page", "fail");
+            return;
+          }
+
+          // setLocations + filter
+          const mockData = [
+            {
+              captureId: "c001",
+              lat: 38.9,
+              lng: -83.1,
+              risk: "HIGH",
+              confidence: 0.9,
+              species: "TestA",
+              deviceName: "DEV-1",
+              timestamp: "10:00",
+              fullTimestamp: new Date().toISOString(),
+            },
+            {
+              captureId: "c002",
+              lat: 38.8,
+              lng: -83.2,
+              risk: "MEDIUM",
+              confidence: 0.7,
+              species: "TestB",
+              deviceName: "DEV-2",
+              timestamp: "11:00",
+              fullTimestamp: new Date().toISOString(),
+            },
+            {
+              captureId: "c003",
+              lat: 38.7,
+              lng: -83.3,
+              risk: "HIGH",
+              confidence: 0.8,
+              species: "TestC",
+              deviceName: "DEV-1",
+              timestamp: "12:00",
+              fullTimestamp: null,
+            },
+          ];
+
+          State.setLocations(mockData);
+          assert(
+            "State.data.all populated",
+            State.data.all.length === 3,
+            `${State.data.all.length} records`,
+          );
+          assert("State.data.lookup built", !!State.data.lookup["c001"]);
+          assert(
+            "getLocation() works",
+            State.getLocation("c001")?.risk === "HIGH",
+          );
+          assert(
+            "getLocation() returns null miss",
+            State.getLocation("c999") === null,
+          );
+
+          State.setFilter("HIGH");
+          assert(
+            "setFilter HIGH yields 2",
+            State.data.filtered.length === 2,
+            `${State.data.filtered.length}`,
+          );
+
+          State.setFilter("MEDIUM");
+          assert(
+            "setFilter MEDIUM yields 1",
+            State.data.filtered.length === 1,
+            `${State.data.filtered.length}`,
+          );
+
+          State.setFilter("ALL");
+          assert(
+            "setFilter ALL restores 3",
+            State.data.filtered.length === 3,
+            `${State.data.filtered.length}`,
+          );
+
+          // UIModule
+          assert("UIModule available", typeof UIModule !== "undefined");
+
+          if (typeof UIModule !== "undefined") {
+            // Inject a detectionsList container for test
+            let testEl = document.getElementById("_testList");
+            if (!testEl) {
+              testEl = document.createElement("div");
+              testEl.id = "detectionsList";
+              testEl.style.display = "none";
+              document.body.appendChild(testEl);
+            }
+
+            UIModule.renderDetectionsList(State.data.filtered);
+            assert(
+              "renderDetectionsList populates DOM",
+              testEl.children.length > 0,
+              `${testEl.children.length} cards`,
+            );
+
+            UIModule.renderDetectionsList([]);
+            assert(
+              "renderDetectionsList handles empty",
+              testEl.innerHTML.includes("No detections"),
+            );
+
+            UIModule.toast("Test toast");
+            assert(
+              "toast() creates element",
+              !!document.querySelector('[role="status"]'),
+            );
+          }
+        },
+      };
+
+      // ── Runner ─────────────────────────────────────────────────────────────────
+
+      async function runSuite(name) {
+        clearLog();
+        startTime = Date.now();
+
+        log(
+          `Starting test suite: ${name === "all" ? "ALL" : name.toUpperCase()}`,
+          "info",
+        );
+        log(`Time: ${new Date().toLocaleTimeString()}`, "info");
+
+        try {
+          if (name === "all" || name === "api") await Suites.api();
+          if (name === "all" || name === "map") Suites.map();
+          if (name === "all" || name === "integration")
+            await Suites.integration();
+        } catch (err) {
+          log(`Unexpected error: ${err.message}`, "fail");
+        }
+
+        log("");
+        log(
+          `Done. ${results.pass}/${results.total} passed.`,
+          results.fail === 0 ? "pass" : "fail",
+        );
+        updateSummary();
+      }
+    </script>
+
+    <!-- Load app modules so integration tests can use them -->
+    <script src="js/state.js"></script>
+    <script
+      src="js/ui.js"
+      onerror="
+        console.warn(
+          'ui.js requires MapModule — some integration tests may skip',
+        )
+      "
+    ></script>
+  </body>
+</html>
