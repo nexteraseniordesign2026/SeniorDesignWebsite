@@ -25,7 +25,7 @@ window.State = {
   // ── UI ────────────────────────────────────────────────────────────────
   ui: {
     selectedCaptureId: null,
-    activeFilter: "ALL", // 'ALL' | 'BAD_IMAGE' | 'HIGH' | 'MEDIUM' | 'NO_VEGETATION'
+    activeFilter: "ALL", // 'ALL' | 'NO_VEGETATION' | 'VEGETATION' | 'OTHER'
   },
 
   // ── Config ────────────────────────────────────────────────────────────

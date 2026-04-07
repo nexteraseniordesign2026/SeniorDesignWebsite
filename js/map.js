@@ -78,7 +78,7 @@ window.MapModule = (() => {
             <div style="font-family:'Inter',sans-serif;min-width:220px;">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
                     <h3 style="margin:0;font-weight:600;font-size:14px;color:#0f172a;">${loc.deviceName || loc.captureId}</h3>
-                    <span style="background:${loc.bgColor}20;color:${loc.bgColor};padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">${loc.risk}</span>
+                    <span style="background:${loc.bgColor}20;color:${loc.bgColor};padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">${loc.riskLabel || loc.risk}</span>
                 </div>
                 <div style="width:100%;max-width:200px;height:120px;overflow:hidden;border-radius:6px;margin-bottom:8px;background:#f1f5f9;">
                     <img src="${loc.image || placeholderImg}" alt="Capture"
@@ -157,7 +157,7 @@ window.MapModule = (() => {
       const marker = new google.maps.Marker({
         position: { lat: parseFloat(loc.lat), lng: parseFloat(loc.lng) },
         map: mapInstance,
-        title: `${loc.deviceName || loc.captureId} — ${loc.risk}`,
+        title: `${loc.deviceName || loc.captureId} — ${loc.riskLabel || loc.risk}`,
         icon: markerIcon(loc.bgColor),
         animation: google.maps.Animation.DROP,
       });

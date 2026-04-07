@@ -14,29 +14,44 @@ class DynamoDBService {
     }
 
     /**
-     * Map predicted_class to risk level
+     * Map predicted_class (SageMaker / DynamoDB) to UI category.
+     * Current 3-class: no_vegetation, vegetation, other.
+     * Legacy 4-class rows map into the same three buckets for filters/markers.
      */
     mapPredictedClassToRisk(predictedClass) {
+        if (predictedClass == null || predictedClass === '') {
+            return 'OTHER';
+        }
         const riskMap = {
             'no_vegetation': 'NO_VEGETATION',
-            'little_vegetation': 'MEDIUM',
-            'lot_vegetation': 'HIGH',
-            'back_of_panel': 'BAD_IMAGE'
+            'vegetation': 'VEGETATION',
+            'other': 'OTHER',
+            'little_vegetation': 'VEGETATION',
+            'lot_vegetation': 'VEGETATION',
+            'back_of_panel': 'OTHER',
         };
-        return riskMap[predictedClass] || 'NO_VEGETATION';
+        return riskMap[predictedClass] || 'OTHER';
     }
 
     /**
-     * Map risk level to color
+     * Map UI category to marker / list colors
      */
     getRiskColor(risk) {
         const colorMap = {
-            'BAD_IMAGE': { text: 'text-gray-400', bg: '#6b7280' },      // Grey for back_of_panel
-            'HIGH': { text: 'text-red-400', bg: '#dc2626' },            // Red for lot_vegetation
-            'MEDIUM': { text: 'text-orange-400', bg: '#ea580c' },       // Orange for little_vegetation
-            'NO_VEGETATION': { text: 'text-green-400', bg: '#16a34a' }  // Green for no_vegetation
+            'NO_VEGETATION': { text: 'text-green-400', bg: '#16a34a' },
+            'VEGETATION': { text: 'text-orange-400', bg: '#ea580c' },
+            'OTHER': { text: 'text-gray-400', bg: '#6b7280' },
         };
-        return colorMap[risk] || colorMap['NO_VEGETATION'];
+        return colorMap[risk] || colorMap['OTHER'];
+    }
+
+    getRiskLabel(risk) {
+        const labels = {
+            'NO_VEGETATION': 'No vegetation',
+            'VEGETATION': 'Vegetation',
+            'OTHER': 'Other',
+        };
+        return labels[risk] || 'Other';
     }
 
     /**
@@ -72,6 +87,7 @@ class DynamoDBService {
             lat: parseFloat(item.latitude),
             lng: parseFloat(item.longitude),
             risk: risk,
+            riskLabel: this.getRiskLabel(risk),
             color: colors.text,
             bgColor: colors.bg,
             location: `${item.latitude?.toFixed(4)}, ${item.longitude?.toFixed(4)}`,
@@ -201,13 +217,14 @@ class DynamoDBService {
                 vehicleId: 'raspberry_pi',
                 lat: 38.921574,
                 lng: -83.123456,
-                risk: 'HIGH',
-                color: 'text-red-400',
-                bgColor: '#dc2626',
+                risk: 'VEGETATION',
+                riskLabel: 'Vegetation',
+                color: 'text-orange-400',
+                bgColor: '#ea580c',
                 location: '38.9216, -83.1235',
                 clearance: '250.5 ft',
-                species: 'back_of_panel',
-                confidence: 0.5306,
+                species: 'vegetation',
+                confidence: 0.87,
                 image: 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
                 timestamp: '17:50:34',
                 fullTimestamp: '2026-02-03T17:50:34Z',

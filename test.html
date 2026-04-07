@@ -200,6 +200,25 @@
             window.DYNAMODB_API_ENDPOINT || "",
           );
 
+          assert(
+            "mapPredictedClassToRisk (3-class)",
+            service.mapPredictedClassToRisk("vegetation") === "VEGETATION" &&
+              service.mapPredictedClassToRisk("no_vegetation") ===
+                "NO_VEGETATION" &&
+              service.mapPredictedClassToRisk("other") === "OTHER",
+          );
+          assert(
+            "mapPredictedClassToRisk (legacy 4-class)",
+            service.mapPredictedClassToRisk("lot_vegetation") === "VEGETATION" &&
+              service.mapPredictedClassToRisk("little_vegetation") ===
+                "VEGETATION" &&
+              service.mapPredictedClassToRisk("back_of_panel") === "OTHER",
+          );
+          assert(
+            "mapPredictedClassToRisk (missing → OTHER)",
+            service.mapPredictedClassToRisk(undefined) === "OTHER",
+          );
+
           try {
             log("  Fetching locations (limit 10)…", "info");
             const locations = await service.fetchLocations({ limit: 10 });
@@ -324,9 +343,9 @@
               captureId: "c001",
               lat: 38.9,
               lng: -83.1,
-              risk: "HIGH",
+              risk: "VEGETATION",
               confidence: 0.9,
-              species: "TestA",
+              species: "vegetation",
               deviceName: "DEV-1",
               timestamp: "10:00",
               fullTimestamp: new Date().toISOString(),
@@ -335,9 +354,9 @@
               captureId: "c002",
               lat: 38.8,
               lng: -83.2,
-              risk: "MEDIUM",
+              risk: "NO_VEGETATION",
               confidence: 0.7,
-              species: "TestB",
+              species: "no_vegetation",
               deviceName: "DEV-2",
               timestamp: "11:00",
               fullTimestamp: new Date().toISOString(),
@@ -346,9 +365,9 @@
               captureId: "c003",
               lat: 38.7,
               lng: -83.3,
-              risk: "HIGH",
+              risk: "VEGETATION",
               confidence: 0.8,
-              species: "TestC",
+              species: "lot_vegetation",
               deviceName: "DEV-1",
               timestamp: "12:00",
               fullTimestamp: null,
@@ -364,23 +383,23 @@
           assert("State.data.lookup built", !!State.data.lookup["c001"]);
           assert(
             "getLocation() works",
-            State.getLocation("c001")?.risk === "HIGH",
+            State.getLocation("c001")?.risk === "VEGETATION",
           );
           assert(
             "getLocation() returns null miss",
             State.getLocation("c999") === null,
           );
 
-          State.setFilter("HIGH");
+          State.setFilter("VEGETATION");
           assert(
-            "setFilter HIGH yields 2",
+            "setFilter VEGETATION yields 2",
             State.data.filtered.length === 2,
             `${State.data.filtered.length}`,
           );
 
-          State.setFilter("MEDIUM");
+          State.setFilter("NO_VEGETATION");
           assert(
-            "setFilter MEDIUM yields 1",
+            "setFilter NO_VEGETATION yields 1",
             State.data.filtered.length === 1,
             `${State.data.filtered.length}`,
           );

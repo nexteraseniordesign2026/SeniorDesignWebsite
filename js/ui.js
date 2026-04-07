@@ -16,25 +16,20 @@ window.UIModule = (() => {
   // ── Constants ─────────────────────────────────────────────────────────
 
   const RISK_CONFIG = {
-    BAD_IMAGE: {
-      label: "BAD IMG",
-      badge: "bg-gray-500/20 text-gray-400",
-      dot: "#6b7280",
-    },
-    HIGH: {
-      label: "HIGH",
-      badge: "bg-red-500/20 text-red-400",
-      dot: "#dc2626",
-    },
-    MEDIUM: {
-      label: "MED",
-      badge: "bg-orange-500/20 text-orange-400",
-      dot: "#ea580c",
-    },
     NO_VEGETATION: {
       label: "NO VEG",
       badge: "bg-green-500/20 text-green-400",
       dot: "#16a34a",
+    },
+    VEGETATION: {
+      label: "VEG",
+      badge: "bg-orange-500/20 text-orange-400",
+      dot: "#ea580c",
+    },
+    OTHER: {
+      label: "OTHER",
+      badge: "bg-gray-500/20 text-gray-400",
+      dot: "#6b7280",
     },
   };
 
@@ -64,7 +59,7 @@ window.UIModule = (() => {
   }
 
   function _detectionCard(loc) {
-    const cfg = RISK_CONFIG[loc.risk] || RISK_CONFIG.HIGH;
+    const cfg = RISK_CONFIG[loc.risk] || RISK_CONFIG.OTHER;
     const dateStr = loc.fullTimestamp
       ? new Date(loc.fullTimestamp).toLocaleDateString()
       : "";
@@ -151,7 +146,7 @@ window.UIModule = (() => {
     const panel = document.getElementById("vehicleDetail");
     if (!panel) return;
 
-    const cfg = RISK_CONFIG[loc.risk] || RISK_CONFIG.HIGH;
+    const cfg = RISK_CONFIG[loc.risk] || RISK_CONFIG.OTHER;
 
     panel.innerHTML = `
             <div class="flex gap-3">
@@ -165,7 +160,7 @@ window.UIModule = (() => {
                         <span class="font-mono font-bold text-white truncate">
                             ${loc.deviceName || loc.captureId}
                         </span>
-                        <span class="text-xs ${cfg.badge} font-semibold ml-2 flex-shrink-0">${loc.risk}</span>
+                        <span class="text-xs ${cfg.badge} font-semibold ml-2 flex-shrink-0">${cfg.label}</span>
                     </div>
                     <div class="text-xs text-infra-300 space-y-1">
                         <div>Class: ${loc.species}</div>
