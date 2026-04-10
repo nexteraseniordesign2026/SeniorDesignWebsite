@@ -3,9 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>
-      Integrated Vehicular Vegetation Monitoring System | Senior Design
-    </title>
+    <meta
+      name="description"
+      content="AgriSight (Team 7) — software &amp; GIS dashboard for NextEra Energy solar vegetation mapping. NextVision (Team 3) — truck-mounted capture hardware. EECE404 Senior Design II."
+    />
+    <title>AgriSight | Solar Field Vegetation Mapping | Senior Design</title>
 
     <!-- Styles -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -178,9 +180,13 @@
     >
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
-          <div class="flex items-center gap-2">
-            <i data-lucide="cpu" class="h-6 w-6 text-veg-600"></i>
-          </div>
+          <a
+            href="#overview"
+            class="flex items-center gap-2 text-infra-900 font-semibold tracking-tight"
+          >
+            <i data-lucide="leaf" class="h-6 w-6 text-veg-600"></i>
+            <span class="hidden sm:inline">AgriSight</span>
+          </a>
 
           <!-- Desktop nav -->
           <nav
@@ -313,20 +319,29 @@
             class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white text-sm font-medium mb-6"
           >
             <i data-lucide="award" class="h-4 w-4 text-veg-400"></i>
-            Senior Design Engineering Project 2025–2026
+            EECE404 Senior Design II · 2025–2026
           </div>
+          <p
+            class="text-sm text-infra-200 mb-4 font-medium tracking-wide uppercase"
+          >
+            AgriSight · Team 7 (software) · NextVision · Team 3 (hardware)
+          </p>
           <h1
             class="text-3xl md:text-5xl lg:text-6xl font-bold text-white tracking-tight mb-4 leading-tight"
           >
-            Integrated Vehicular<br />
-            <span
-              class="text-transparent bg-clip-text bg-gradient-to-r from-veg-400 to-utility-400"
-              >Vegetation Monitor</span
-            >
+            AgriSight
           </h1>
-          <p class="text-lg md:text-xl text-infra-100 max-w-2xl mx-auto mb-8">
-            Automated geotagged roadside vegetation analysis for utility
-            infrastructure protection during routine vehicle operations.
+          <p
+            class="text-xl md:text-2xl text-infra-100 font-medium max-w-3xl mx-auto mb-4"
+          >
+            Optimizing solar field operations through autonomous vegetation
+            mapping
+          </p>
+          <p class="text-base md:text-lg text-infra-200 max-w-2xl mx-auto mb-8">
+            Sponsored by NextEra Energy — <strong>NextVision</strong> (Team 3)
+            captures geotagged panel imagery on the truck;
+            <strong>AgriSight</strong> (Team 7) runs cloud ML and this live GIS
+            dashboard for mowing and maintenance decisions.
           </p>
           <div
             class="flex flex-col sm:flex-row gap-4 justify-center items-center"
@@ -397,7 +412,7 @@
                 <div class="text-xs text-infra-500 uppercase tracking-wide">
                   Last Updated
                 </div>
-                <div class="text-lg font-bold text-infra-900">Feb 2026</div>
+                <div class="text-lg font-bold text-infra-900">Apr 2026</div>
               </div>
             </div>
           </div>
@@ -433,10 +448,10 @@
               <h3 class="text-xl font-bold text-infra-900">The Problem</h3>
             </div>
             <p class="text-infra-700 mb-4 leading-relaxed">
-              Utility companies often rely on manual inspections or specialized
-              surveys to monitor vegetation encroachment on transmission lines.
-              These methods can be labor-intensive, costly, and reactive rather
-              than preventative.
+              Excessive plant growth shades solar panels and cuts energy output.
+              Keeping rows clear is essential — yet manual vegetation assessment
+              across hundreds of acres is slow, uneven, and expensive. Mowing is
+              among the highest recurring costs in solar operations.
             </p>
             <ul class="space-y-2 text-infra-600 text-sm">
               <li class="flex items-start gap-2">
@@ -444,21 +459,23 @@
                   data-lucide="x-circle"
                   class="h-4 w-4 mt-0.5 flex-shrink-0 text-infra-400"
                 ></i
-                ><span>Vegetation-related outages can be costly annually</span>
+                ><span>Time-consuming, labor-heavy walk or drive surveys</span>
               </li>
               <li class="flex items-start gap-2">
                 <i
                   data-lucide="x-circle"
                   class="h-4 w-4 mt-0.5 flex-shrink-0 text-infra-400"
                 ></i
-                ><span>Manual inspections limited by terrain and weather</span>
+                ><span>Inconsistent coverage across very large sites</span>
               </li>
               <li class="flex items-start gap-2">
                 <i
                   data-lucide="x-circle"
                   class="h-4 w-4 mt-0.5 flex-shrink-0 text-infra-400"
                 ></i
-                ><span>Reactive maintenance increases wildfire risk</span>
+                ><span
+                  >Repeated visits and crew time drive up mowing budgets</span
+                >
               </li>
             </ul>
           </div>
@@ -476,9 +493,12 @@
               <h3 class="text-xl font-bold text-infra-900">Our Solution</h3>
             </div>
             <p class="text-infra-700 mb-4 leading-relaxed">
-              A vehicle-mounted monitoring prototype that captures geotagged
-              imagery during routine operations, processes data through an AI
-              analytics pipeline, and visualizes vegetation risk on a dashboard.
+              <strong>NextVision</strong> (Team 3) is the vehicle rig: dual
+              cameras, GPS, and edge storage. <strong>AgriSight</strong>
+              (Team 7) ingests those images in AWS, runs ResNet-50
+              classification, and serves maps and field scores — cutting mowing
+              cost and manual survey labor through data-driven maintenance
+              planning.
             </p>
             <ul class="space-y-2 text-infra-600 text-sm">
               <li class="flex items-start gap-2">
@@ -487,8 +507,8 @@
                   class="h-4 w-4 mt-0.5 flex-shrink-0 text-veg-600"
                 ></i
                 ><span
-                  >Scalable: convert existing fleet vehicles into data
-                  collectors</span
+                  >Fleet trucks become survey vehicles — no dedicated inspection
+                  fleet required</span
                 >
               </li>
               <li class="flex items-start gap-2">
@@ -497,7 +517,8 @@
                   class="h-4 w-4 mt-0.5 flex-shrink-0 text-veg-600"
                 ></i
                 ><span
-                  >Automated capture with minimal operator interaction</span
+                  >GPS-tagged captures synced to AWS for ResNet-50
+                  inference</span
                 >
               </li>
               <li class="flex items-start gap-2">
@@ -505,7 +526,10 @@
                   data-lucide="check"
                   class="h-4 w-4 mt-0.5 flex-shrink-0 text-veg-600"
                 ></i
-                ><span>Risk scoring to prioritize maintenance planning</span>
+                ><span
+                  >Dashboard maps + field score for crew dispatch and weekly
+                  reporting</span
+                >
               </li>
             </ul>
           </div>
@@ -520,7 +544,8 @@
             </div>
             <h4 class="font-semibold text-infra-900 mb-2">Scalable</h4>
             <p class="text-sm text-infra-600">
-              Fleet-wide deployment without dedicated inspection vehicles
+              Same NextVision rig on many trucks — scale uploads and inference
+              with AWS
             </p>
           </div>
           <div class="card text-center">
@@ -531,7 +556,7 @@
             </div>
             <h4 class="font-semibold text-infra-900 mb-2">Automated</h4>
             <p class="text-sm text-infra-600">
-              Runs during normal fleet activities (prototype)
+              Capture while driving rows; Wi-Fi triggers sync to the cloud
             </p>
           </div>
           <div class="card text-center">
@@ -542,18 +567,18 @@
             </div>
             <h4 class="font-semibold text-infra-900 mb-2">Cost-Effective</h4>
             <p class="text-sm text-infra-600">
-              Reduce inspection effort and cost through automation
+              Target mowing where the model shows vegetation — fewer wasted cuts
             </p>
           </div>
           <div class="card text-center">
             <div
               class="w-12 h-12 mx-auto bg-veg-100 rounded-lg flex items-center justify-center mb-4"
             >
-              <i data-lucide="shield-check" class="h-6 w-6 text-veg-600"></i>
+              <i data-lucide="map-pin" class="h-6 w-6 text-veg-600"></i>
             </div>
-            <h4 class="font-semibold text-infra-900 mb-2">Preventative</h4>
+            <h4 class="font-semibold text-infra-900 mb-2">Actionable</h4>
             <p class="text-sm text-infra-600">
-              Proactive risk mitigation before outages occur
+              GIS map + maintenance score to route crews to hot spots
             </p>
           </div>
         </div>
@@ -565,13 +590,50 @@
 ════════════════════════════════════════════════ -->
     <section id="architecture" class="py-24 bg-infra-50">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-16">
+        <div class="text-center mb-12">
           <h2 class="text-3xl md:text-4xl font-bold text-infra-900 mb-4">
             System Architecture
           </h2>
           <p class="text-lg text-infra-600 max-w-2xl mx-auto">
-            Prototype workflow from vehicle-mounted data capture to AI-assisted
-            analysis and dashboard visualization.
+            <strong>NextVision</strong> (Team 3) on the truck → NVMe &amp; S3 →
+            SageMaker → DynamoDB → <strong>AgriSight</strong> (Team 7) in the
+            browser — built for NextEra-scale solar fields.
+          </p>
+        </div>
+
+        <div class="mb-10">
+          <h3 class="text-lg font-bold text-infra-900 mb-4 text-center">
+            Design concepts explored
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="card text-sm">
+              <h4 class="font-semibold text-infra-900 mb-2">
+                Dual-camera truck system
+              </h4>
+              <p class="text-infra-600">
+                Two synchronized cameras + GPS on a work truck driving solar
+                rows — high-resolution panel imagery.
+              </p>
+            </div>
+            <div class="card text-sm">
+              <h4 class="font-semibold text-infra-900 mb-2">Sensor rig</h4>
+              <p class="text-infra-600">
+                Camera, GPS, and environmental sensors (light, temperature,
+                humidity) for richer context.
+              </p>
+            </div>
+            <div class="card text-sm">
+              <h4 class="font-semibold text-infra-900 mb-2">360° geotracked</h4>
+              <p class="text-infra-600">
+                Panoramic camera with geofencing while driving — wide context in
+                one pass.
+              </p>
+            </div>
+          </div>
+          <p class="text-center text-sm text-infra-500 mt-4 max-w-2xl mx-auto">
+            <strong>Shipped direction (NextVision, Team 3):</strong> dual
+            global-shutter cameras, Raspberry Pi 5, NVMe logging, and F-250 rail
+            mount — detailed in the NextVision tab below.
           </p>
         </div>
 
@@ -600,7 +662,7 @@
               aria-controls="panel-hardware"
               tabindex="-1"
             >
-              Hardware
+              NextVision (Team 3)
             </button>
             <button
               class="tab-button"
@@ -611,7 +673,7 @@
               aria-controls="panel-software"
               tabindex="-1"
             >
-              Software
+              AgriSight (Team 7)
             </button>
             <button
               class="tab-button"
@@ -623,6 +685,17 @@
               tabindex="-1"
             >
               Data Pipeline
+            </button>
+            <button
+              class="tab-button"
+              data-tab="ml"
+              id="tab-ml"
+              aria-selected="false"
+              role="tab"
+              aria-controls="panel-ml"
+              tabindex="-1"
+            >
+              ML &amp; performance
             </button>
           </div>
 
@@ -644,10 +717,10 @@
                     <i data-lucide="truck" class="h-8 w-8"></i>
                   </div>
                   <h4 class="font-semibold text-infra-900 text-center">
-                    Fleet Vehicle
+                    NextVision truck
                   </h4>
                   <p class="text-xs text-infra-500 text-center mt-1">
-                    Data Collection Unit
+                    Team 3 capture unit
                   </p>
                 </div>
                 <div
@@ -676,10 +749,10 @@
                     <i data-lucide="upload-cloud" class="h-8 w-8"></i>
                   </div>
                   <h4 class="font-semibold text-infra-900 text-center">
-                    Wireless TX
+                    NVMe &amp; upload
                   </h4>
                   <p class="text-xs text-infra-500 text-center mt-1">
-                    Cellular / Wi-Fi Upload
+                    Offline buffer → Wi-Fi → S3
                   </p>
                 </div>
                 <div
@@ -692,10 +765,10 @@
                     <i data-lucide="server" class="h-8 w-8"></i>
                   </div>
                   <h4 class="font-semibold text-infra-900 text-center">
-                    Cloud AI
+                    SageMaker ML
                   </h4>
                   <p class="text-xs text-infra-500 text-center mt-1">
-                    Processing &amp; Analysis
+                    ResNet-50 inference
                   </p>
                 </div>
                 <div
@@ -726,57 +799,41 @@
             aria-labelledby="tab-hardware"
             aria-hidden="true"
           >
-            <div class="space-y-4">
-              <div
-                class="flex items-start gap-4 p-4 bg-infra-50 rounded-lg border border-infra-100"
-              >
-                <i
-                  data-lucide="camera"
-                  class="h-5 w-5 text-utility-600 mt-0.5"
-                ></i>
-                <div>
-                  <h4 class="font-semibold text-infra-900">
-                    Stereoscopic Camera Array
-                  </h4>
-                  <p class="text-sm text-infra-600">
-                    Vehicle-mounted camera system for image capture and
-                    proximity estimation (prototype).
-                  </p>
-                </div>
-              </div>
-              <div
-                class="flex items-start gap-4 p-4 bg-infra-50 rounded-lg border border-infra-100"
-              >
-                <i
-                  data-lucide="navigation"
-                  class="h-5 w-5 text-utility-600 mt-0.5"
-                ></i>
-                <div>
-                  <h4 class="font-semibold text-infra-900">GPS Module</h4>
-                  <p class="text-sm text-infra-600">
-                    GPS-based geotagging for mapping context and timestamp
-                    alignment (prototype).
-                  </p>
-                </div>
-              </div>
-              <div
-                class="flex items-start gap-4 p-4 bg-infra-50 rounded-lg border border-infra-100"
-              >
-                <i
-                  data-lucide="battery"
-                  class="h-5 w-5 text-utility-600 mt-0.5"
-                ></i>
-                <div>
-                  <h4 class="font-semibold text-infra-900">
-                    Power Management Unit
-                  </h4>
-                  <p class="text-sm text-infra-600">
-                    Automotive-grade voltage regulation with vibration-resistant
-                    solid-state design.
-                  </p>
-                </div>
-              </div>
-            </div>
+            <p class="text-sm text-infra-600 mb-4">
+              <strong>NextVision</strong> is the EECE404 <strong>Team 3</strong>
+              hardware platform — everything mounted on the vehicle before the
+              cloud.
+            </p>
+            <ul class="space-y-3 text-sm text-infra-700 list-disc pl-5">
+              <li>
+                <strong>Imaging:</strong> 2× global-shutter MIPI cameras —
+                distortion-free, synchronized capture
+              </li>
+              <li>
+                <strong>Compute:</strong> Raspberry Pi 5 (dual-stream capture +
+                headroom)
+              </li>
+              <li>
+                <strong>Storage:</strong> 500GB NVMe SSD via PCIe HAT — offline
+                buffer when network is unavailable
+              </li>
+              <li>
+                <strong>GPS:</strong> u-blox NEO-M8T — sub-meter geo-tags on
+                every image
+              </li>
+              <li>
+                <strong>Power:</strong> LiFePO₄ 12.8V / 50Ah + DC-DC → stable 5V
+                for Pi (XT60 + harness)
+              </li>
+              <li>
+                <strong>Environmental:</strong> IP67 enclosure, cable glands,
+                anti-vibration pads
+              </li>
+              <li>
+                <strong>Mounting:</strong> Stainless hardware + aluminum bracket
+                — F-250 truck rail
+              </li>
+            </ul>
           </div>
 
           <!-- Software -->
@@ -787,33 +844,54 @@
             aria-labelledby="tab-software"
             aria-hidden="true"
           >
-            <div class="space-y-4">
-              <div
-                class="flex items-start gap-4 p-4 bg-infra-50 rounded-lg border border-infra-100"
-              >
-                <i data-lucide="brain" class="h-5 w-5 text-veg-600 mt-0.5"></i>
-                <div>
-                  <h4 class="font-semibold text-infra-900">
-                    Computer Vision Engine
-                  </h4>
-                  <p class="text-sm text-infra-600">
-                    Prototype vegetation detection and severity classification
-                    using an object-detection model and domain-specific training
-                    data.
-                  </p>
-                </div>
+            <div class="space-y-4 text-sm text-infra-700">
+              <p class="text-infra-600">
+                <strong>AgriSight</strong> is the EECE404
+                <strong>Team 7</strong>
+                software stack: inference, APIs, data store integration, and
+                this website.
+              </p>
+              <div class="p-4 bg-infra-50 rounded-lg border border-infra-100">
+                <h4 class="font-semibold text-infra-900 mb-2">
+                  Cloud inference (AWS SageMaker)
+                </h4>
+                <p class="mb-2">
+                  <strong>ResNet-50</strong> classifier (transfer learning) on
+                  field-collected imagery. Ingestion via
+                  <strong>REST / JSON</strong>
+                  aligned with enterprise GIS and reporting tools.
+                </p>
+                <p class="text-infra-600">
+                  <strong>Classes:</strong>
+                  <code class="text-xs bg-white px-1 rounded"
+                    >no_vegetation</code
+                  >
+                  — panel surface clear;
+                  <code class="text-xs bg-white px-1 rounded">vegetation</code>
+                  — plant coverage on/near panel;
+                  <code class="text-xs bg-white px-1 rounded">other</code> —
+                  non-target / robustness.
+                </p>
               </div>
-              <div
-                class="flex items-start gap-4 p-4 bg-infra-50 rounded-lg border border-infra-100"
-              >
-                <i data-lucide="globe" class="h-5 w-5 text-veg-600 mt-0.5"></i>
-                <div>
-                  <h4 class="font-semibold text-infra-900">Web Dashboard</h4>
-                  <p class="text-sm text-infra-600">
-                    Single-page HTML + Tailwind CSS + vanilla JavaScript with
-                    Google Maps JavaScript API for interactive visualization.
-                  </p>
-                </div>
+              <div class="p-4 bg-infra-50 rounded-lg border border-infra-100">
+                <h4 class="font-semibold text-infra-900 mb-2">
+                  AgriSight web dashboard (Team 7)
+                </h4>
+                <p>
+                  This site: HTML, Tailwind CSS, and vanilla JavaScript with the
+                  Google Maps JavaScript API — filters, Eastern Time timestamps,
+                  camera ID, and a field score derived from loaded detections.
+                </p>
+              </div>
+              <div class="p-4 bg-infra-50 rounded-lg border border-infra-100">
+                <h4 class="font-semibold text-infra-900 mb-2">
+                  Privacy &amp; compliance (design intent)
+                </h4>
+                <p class="text-infra-600">
+                  GDPR-aligned handling of imagery; geofencing to disable
+                  capture in sensitive zones; NERC CIP–style secured AWS paths;
+                  truck-mounted operation only (no UAS).
+                </p>
               </div>
             </div>
           </div>
@@ -826,31 +904,84 @@
             aria-labelledby="tab-pipeline"
             aria-hidden="true"
           >
-            <div class="space-y-4">
-              <div
-                class="flex items-start gap-4 p-4 bg-infra-50 rounded-lg border border-infra-100"
-              >
-                <i
-                  data-lucide="database"
-                  class="h-5 w-5 text-veg-600 mt-0.5"
-                ></i>
-                <div>
-                  <h4 class="font-semibold text-infra-900">
-                    Geospatial Database
-                  </h4>
-                  <p class="text-sm text-infra-600">
-                    Structured geotagged detection records suitable for mapping,
-                    filtering, and historical review.
-                  </p>
-                </div>
-              </div>
+            <div class="space-y-4 text-sm text-infra-700">
               <div class="p-4 bg-infra-50 rounded-lg border border-infra-100">
-                <h4 class="font-semibold text-infra-900 mb-2">Data Flow</h4>
-                <p class="text-sm text-infra-600">
-                  Vehicle sensors → GPS geotagging → Edge preprocessing →
-                  Wireless transmission → Cloud AI → Database → Dashboard
+                <h4 class="font-semibold text-infra-900 mb-2">
+                  End-to-end flow
+                </h4>
+                <p>
+                  Dual capture → NVMe logging → automated
+                  <strong>S3</strong> sync on Wi-Fi →
+                  <strong>SageMaker</strong> inference → records in
+                  <strong>DynamoDB</strong> → AgriSight (Team 7) map &amp; API.
                 </p>
               </div>
+              <div class="p-4 bg-infra-50 rounded-lg border border-infra-100">
+                <h4 class="font-semibold text-infra-900 mb-2">
+                  Immutable audit trail
+                </h4>
+                <p class="text-infra-600">
+                  Each classification stores GPS coordinates, camera ID, S3
+                  object path, and ML model version — supporting compliance,
+                  validation, and retraining.
+                </p>
+              </div>
+              <div class="p-4 bg-infra-50 rounded-lg border border-infra-100">
+                <h4 class="font-semibold text-infra-900 mb-2">
+                  Decision loop (operations)
+                </h4>
+                <p class="text-infra-600">
+                  Weekly-style field scores from vegetation density in the data;
+                  threshold breaches highlight map pins so crews can target
+                  mowing and trimming.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- ML -->
+          <div
+            id="panel-ml"
+            class="tab-panel"
+            role="tabpanel"
+            aria-labelledby="tab-ml"
+            aria-hidden="true"
+          >
+            <div class="space-y-4 text-sm text-infra-700">
+              <p class="text-infra-600">
+                Model training and validation are led by
+                <strong>AgriSight</strong> (EECE404 <strong>Team 7</strong>),
+                using imagery from <strong>NextVision</strong> (Team 3)
+                deployments.
+              </p>
+              <p>
+                <strong>ResNet-50</strong> on AWS SageMaker — chosen for
+                residual blocks (stable training vs. very deep CNNs), strong
+                accuracy-to-parameter ratio, and transfer learning on a
+                specialized dataset (<strong>938</strong> labeled field images).
+              </p>
+              <div class="p-4 bg-infra-50 rounded-lg border border-infra-100">
+                <h4 class="font-semibold text-infra-900 mb-2">
+                  Validation snapshot
+                </h4>
+                <ul class="list-disc pl-5 space-y-1 text-infra-600">
+                  <li>
+                    <code class="text-xs">no_vegetation</code> — strong F1
+                    (~0.94); majority class in validation
+                  </li>
+                  <li><code class="text-xs">other</code> — F1 ~0.91</li>
+                  <li>
+                    <code class="text-xs">vegetation</code> — F1 ~0.57, recall
+                    ~0.55; small training/val count — priority for more labeled
+                    vegetation samples
+                  </li>
+                </ul>
+              </div>
+              <p class="text-infra-600">
+                Class imbalance (few vegetation examples vs. clear panels) is
+                the main limiter; expanding vegetation diversity in the dataset
+                is the next accuracy lever.
+              </p>
             </div>
           </div>
         </div>
@@ -861,17 +992,93 @@
      DASHBOARD
 ════════════════════════════════════════════════ -->
     <section id="dashboard" class="py-24 bg-infra-900 text-white">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6 space-y-6">
         <div
-          class="flex flex-col md:flex-row md:items-center justify-between gap-4"
+          class="flex flex-col lg:flex-row lg:items-start justify-between gap-6"
         >
-          <div>
+          <div class="min-w-0">
             <h2 class="text-3xl font-bold mb-2">Live Monitoring Dashboard</h2>
-            <p class="text-infra-300">
-              Real-time vegetation analysis from active fleet vehicles
+            <p class="text-infra-300 text-sm max-w-xl">
+              <strong>AgriSight</strong> (Team 7) — GIS view of captures from
+              <strong>NextVision</strong> (Team 3) truck rigs. Times in Eastern
+              Time (America/New_York). Filter by class and date range; field
+              score is vegetation share in the current view.
             </p>
           </div>
-          <div class="flex items-center gap-3 flex-wrap">
+          <div
+            class="flex-shrink-0 bg-infra-800/90 border border-infra-600 rounded-lg p-4 text-xs w-full lg:w-auto lg:max-w-xs"
+            id="mapLegendKey"
+            aria-label="Map key"
+          >
+            <h4 class="font-semibold mb-3 text-white text-sm">Map key</h4>
+            <div class="space-y-2">
+              <div class="flex items-center gap-2">
+                <div
+                  class="w-3 h-3 rounded-full flex-shrink-0"
+                  style="background: #16a34a"
+                ></div>
+                <span class="text-infra-300">No vegetation</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <div
+                  class="w-3 h-3 rounded-full flex-shrink-0"
+                  style="background: #ea580c"
+                ></div>
+                <span class="text-infra-300">Vegetation</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <div
+                  class="w-3 h-3 rounded-full flex-shrink-0"
+                  style="background: #6b7280"
+                ></div>
+                <span class="text-infra-300">Other</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="flex flex-col xl:flex-row flex-wrap gap-4 items-stretch xl:items-end"
+        >
+          <div class="flex flex-wrap items-end gap-3">
+            <label class="text-xs text-infra-400 flex flex-col gap-1">
+              Start date
+              <input
+                type="date"
+                id="filterDateStart"
+                class="bg-infra-800 border border-infra-600 rounded px-2 py-1.5 text-sm text-white"
+              />
+            </label>
+            <label class="text-xs text-infra-400 flex flex-col gap-1">
+              End date
+              <input
+                type="date"
+                id="filterDateEnd"
+                class="bg-infra-800 border border-infra-600 rounded px-2 py-1.5 text-sm text-white"
+              />
+            </label>
+            <button
+              type="button"
+              id="filterDateApply"
+              class="px-3 py-2 rounded bg-utility-600 hover:bg-utility-500 text-sm font-medium"
+            >
+              Apply range
+            </button>
+            <button
+              type="button"
+              id="filterDateClear"
+              class="px-3 py-2 rounded bg-infra-700 hover:bg-infra-600 text-sm text-infra-200"
+            >
+              Clear dates
+            </button>
+          </div>
+          <div
+            class="font-mono text-sm bg-infra-800 px-3 py-2 rounded border border-infra-600 text-utility-300 flex-1 min-w-[12rem]"
+            id="maintenanceScoreField"
+          >
+            Field score: —
+          </div>
+          <div class="flex flex-wrap items-center gap-3">
             <span class="flex items-center gap-2 text-sm" id="systemStatus">
               <span
                 class="w-2 h-2 bg-green-500 rounded-full animate-pulse"
@@ -879,12 +1086,12 @@
               System Online
             </span>
             <span
-              class="font-mono text-sm bg-infra-800 px-3 py-1 rounded"
+              class="font-mono text-sm bg-infra-800 px-3 py-1 rounded border border-infra-600"
               id="fleetStatus"
               >Fleet: —</span
             >
             <span
-              class="font-mono text-sm bg-infra-800 px-3 py-1 rounded"
+              class="font-mono text-sm bg-infra-800 px-3 py-1 rounded border border-infra-600"
               id="todayDetections"
               >Today: —</span
             >
@@ -921,35 +1128,6 @@
                 >
                   <i data-lucide="minus" class="h-5 w-5"></i>
                 </button>
-              </div>
-
-              <!-- Legend -->
-              <div
-                class="absolute top-4 right-4 z-20 bg-black/80 backdrop-blur-sm p-4 rounded-lg border border-infra-700 text-xs shadow-lg"
-              >
-                <h4 class="font-semibold mb-3 text-white">
-                  Vegetation Severity
-                </h4>
-                <div class="space-y-2">
-                  <div class="flex items-center gap-2">
-                    <div class="w-3 h-3 bg-gray-500 rounded-full"></div>
-                    <span class="text-infra-300">Bad image</span>
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <div class="w-3 h-3 bg-red-500 rounded-full"></div>
-                    <span class="text-infra-300">High (lot_vegetation)</span>
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <div class="w-3 h-3 bg-orange-500 rounded-full"></div>
-                    <span class="text-infra-300"
-                      >Medium (little_vegetation)</span
-                    >
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <div class="w-3 h-3 bg-green-500 rounded-full"></div>
-                    <span class="text-infra-300">No Vegetation</span>
-                  </div>
-                </div>
               </div>
             </div>
 
@@ -1028,315 +1206,174 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
           <h2 class="text-3xl md:text-4xl font-bold text-infra-900 mb-4">
-            Progress Report &amp; Timeline
+            Sprint timeline
           </h2>
           <p class="text-lg text-infra-600">
-            Project schedule and milestone status
+            EECE404 Senior Design II — joint NextEra project
           </p>
           <p class="text-sm text-infra-500 mt-2">
-            Overall schedule: Week of 11/21 → Week of 03/27
+            Spring 2026 (Jan 27 → Apr 2026): <strong>NextVision</strong> (Team
+            3) hardware sprints with <strong>AgriSight</strong> (Team 7) cloud,
+            model, and dashboard work — aligned with sponsor milestones
           </p>
         </div>
 
-        <!-- Completed -->
-        <div class="card mb-8">
-          <h3 class="font-bold text-infra-900 mb-4 flex items-center gap-2">
-            <span class="w-2 h-2 bg-veg-500 rounded-full"></span> Completed
-          </h3>
-          <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-              <thead>
-                <tr class="border-b border-infra-200">
-                  <th class="text-left py-2 px-3 font-semibold text-infra-900">
-                    Phase / Task
-                  </th>
-                  <th class="text-left py-2 px-3 font-semibold text-infra-900">
-                    Date Range
-                  </th>
-                  <th class="text-left py-2 px-3 font-semibold text-infra-900">
-                    Status
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-infra-100">
-                <tr>
-                  <td class="py-2 px-3 text-infra-600 font-medium" colspan="3">
-                    Planning &amp; Design
-                  </td>
-                </tr>
-                <tr>
-                  <td class="py-2 px-3 text-infra-700">
-                    System Requirements &amp; Scope Finalization
-                  </td>
-                  <td class="py-2 px-3 text-infra-600">11/21 → 12/05</td>
-                  <td class="py-2 px-3">
-                    <span class="badge badge-success">Completed</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="py-2 px-3 text-infra-700">
-                    Hardware Architecture &amp; Design Decisions
-                  </td>
-                  <td class="py-2 px-3 text-infra-600">11/28 → 12/05</td>
-                  <td class="py-2 px-3">
-                    <span class="badge badge-success">Completed</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="py-2 px-3 text-infra-700">
-                    Prototype Design (CAD + Mechanical Layout)
-                  </td>
-                  <td class="py-2 px-3 text-infra-600">11/28 → 12/12</td>
-                  <td class="py-2 px-3">
-                    <span class="badge badge-success">Completed</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="py-2 px-3 text-infra-700">
-                    Bill of Materials &amp; Vendor Selection
-                  </td>
-                  <td class="py-2 px-3 text-infra-600">12/05 → 12/19</td>
-                  <td class="py-2 px-3">
-                    <span class="badge badge-success">Completed</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="py-2 px-3 text-infra-600 font-medium" colspan="3">
-                    Cloud &amp; Infrastructure
-                  </td>
-                </tr>
-                <tr>
-                  <td class="py-2 px-3 text-infra-700">
-                    Cloud Architecture Design
-                  </td>
-                  <td class="py-2 px-3 text-infra-600">01/02 → 01/16</td>
-                  <td class="py-2 px-3">
-                    <span class="badge badge-success">Completed</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="py-2 px-3 text-infra-700">
-                    AWS Account, IAM &amp; Security
-                  </td>
-                  <td class="py-2 px-3 text-infra-600">01/09 → 01/23</td>
-                  <td class="py-2 px-3">
-                    <span class="badge badge-success">Completed</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="py-2 px-3 text-infra-700">
-                    S3 Bucket &amp; DynamoDB Schema Setup
-                  </td>
-                  <td class="py-2 px-3 text-infra-600">01/09 → 01/23</td>
-                  <td class="py-2 px-3">
-                    <span class="badge badge-success">Completed</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="py-2 px-3 text-infra-700">
-                    API Gateway &amp; Secure Ingestion Setup
-                  </td>
-                  <td class="py-2 px-3 text-infra-600">01/16 → 01/23</td>
-                  <td class="py-2 px-3">
-                    <span class="badge badge-success">Completed</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="py-2 px-3 text-infra-700">
-                    Mock Data Pipeline Validation
-                  </td>
-                  <td class="py-2 px-3 text-infra-600">01/16 → 01/23</td>
-                  <td class="py-2 px-3">
-                    <span class="badge badge-success">Completed</span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+        <div class="space-y-8">
+          <div class="card mb-0">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+              <h3 class="font-bold text-infra-900">
+                Sprint 1 — NextVision integration &amp; connectivity (Team 3 &
+                7)
+              </h3>
+              <span class="badge badge-success">Completed</span>
+            </div>
+            <p class="text-sm text-infra-500 mb-3">
+              Weeks 1–3 · Jan 27 – Feb 17, 2026
+            </p>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="border-b border-infra-200">
+                    <th class="text-left py-2 px-2 font-semibold">Week</th>
+                    <th class="text-left py-2 px-2 font-semibold">Dates</th>
+                    <th class="text-left py-2 px-2 font-semibold">Outcomes</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-infra-100 text-infra-700">
+                  <tr>
+                    <td class="py-2 px-2">1</td>
+                    <td class="py-2 px-2">Jan 27 – Feb 3</td>
+                    <td class="py-2 px-2">
+                      Dual cameras &amp; GPS on Pi 5; NVMe via PCIe HAT
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="py-2 px-2">2</td>
+                    <td class="py-2 px-2">Feb 3 – Feb 10</td>
+                    <td class="py-2 px-2">
+                      Dual-capture script; NVMe write validation; battery + buck
+                      integration
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="py-2 px-2">3</td>
+                    <td class="py-2 px-2">Feb 10 – Feb 17</td>
+                    <td class="py-2 px-2">
+                      Automated S3 sync; GPS tagging on every image
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="text-xs text-infra-500 mt-3">
+              Highlights: NVMe sustained dual stream; GPS synced; images visible
+              in S3. Fixes: XT60 power connectors, silicone adhesive on
+              vibration-prone joints.
+            </p>
           </div>
-        </div>
 
-        <!-- In Progress -->
-        <div class="card mb-8">
-          <h3 class="font-bold text-infra-900 mb-4 flex items-center gap-2">
-            <span
-              class="w-2 h-2 bg-utility-500 rounded-full animate-pulse"
-            ></span>
-            In Progress
-          </h3>
-          <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-              <thead>
-                <tr class="border-b border-infra-200">
-                  <th class="text-left py-2 px-3 font-semibold text-infra-900">
-                    Phase / Task
-                  </th>
-                  <th class="text-left py-2 px-3 font-semibold text-infra-900">
-                    Date Range
-                  </th>
-                  <th class="text-left py-2 px-3 font-semibold text-infra-900">
-                    Status
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-infra-100">
-                <tr>
-                  <td class="py-2 px-3 text-infra-700">
-                    Initial Hardware Bring-Up
-                  </td>
-                  <td class="py-2 px-3 text-infra-600">01/16 → 01/23</td>
-                  <td class="py-2 px-3">
-                    <span class="badge badge-warning">In Progress</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="py-2 px-3 text-infra-700">
-                    Camera Integration &amp; Configuration
-                  </td>
-                  <td class="py-2 px-3 text-infra-600">01/23 → 02/06</td>
-                  <td class="py-2 px-3">
-                    <span class="badge badge-warning">In Progress</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="py-2 px-3 text-infra-700">
-                    Local Image Capture &amp; Storage Testing
-                  </td>
-                  <td class="py-2 px-3 text-infra-600">01/23 → 02/06</td>
-                  <td class="py-2 px-3">
-                    <span class="badge badge-warning">In Progress</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="py-2 px-3 text-infra-700">
-                    Cloud Upload Script Development
-                  </td>
-                  <td class="py-2 px-3 text-infra-600">01/23 → 02/13</td>
-                  <td class="py-2 px-3">
-                    <span class="badge badge-warning">In Progress</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="py-2 px-3 text-infra-700">
-                    Edge-to-Cloud Connectivity Validation
-                  </td>
-                  <td class="py-2 px-3 text-infra-600">01/30 → 02/13</td>
-                  <td class="py-2 px-3">
-                    <span class="badge badge-warning">In Progress</span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          <div class="card mb-0">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+              <h3 class="font-bold text-infra-900">
+                Sprint 2 — NextVision optics &amp; enclosure + AgriSight cloud
+                (Teams 3 &amp; 7)
+              </h3>
+              <span class="badge badge-success">Completed</span>
+            </div>
+            <p class="text-sm text-infra-500 mb-3">Feb 17 – Mar 10, 2026</p>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="border-b border-infra-200">
+                    <th class="text-left py-2 px-2 font-semibold">Week</th>
+                    <th class="text-left py-2 px-2 font-semibold">Dates</th>
+                    <th class="text-left py-2 px-2 font-semibold">Outcomes</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-infra-100 text-infra-700">
+                  <tr>
+                    <td class="py-2 px-2">4</td>
+                    <td class="py-2 px-2">Feb 17 – Feb 24</td>
+                    <td class="py-2 px-2">
+                      Edge-to-cloud architecture; AWS API ingestion endpoints
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="py-2 px-2">5</td>
+                    <td class="py-2 px-2">Feb 24 – Mar 3</td>
+                    <td class="py-2 px-2">
+                      Color camera install &amp; calibration; 3D-printed IP67
+                      mounts
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="py-2 px-2">6</td>
+                    <td class="py-2 px-2">Mar 3 – Mar 10</td>
+                    <td class="py-2 px-2">
+                      Dual-camera sync; offline NVMe; edge-to-cloud pipeline;
+                      geofencing in progress
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="text-xs text-infra-500 mt-3">
+              Training data: field + NextEra imagery sorted into
+              <code class="text-xs">no_vegetation</code> /
+              <code class="text-xs">vegetation</code> /
+              <code class="text-xs">other</code> — ResNet-50 on SageMaker.
+            </p>
           </div>
-        </div>
 
-        <!-- Upcoming -->
-        <div class="card">
-          <h3 class="font-bold text-infra-900 mb-4 flex items-center gap-2">
-            <span class="w-2 h-2 bg-infra-300 rounded-full"></span> Upcoming
-          </h3>
-          <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-              <thead>
-                <tr class="border-b border-infra-200">
-                  <th class="text-left py-2 px-3 font-semibold text-infra-900">
-                    Phase / Task
-                  </th>
-                  <th class="text-left py-2 px-3 font-semibold text-infra-900">
-                    Date Range
-                  </th>
-                  <th class="text-left py-2 px-3 font-semibold text-infra-900">
-                    Status
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-infra-100">
-                <tr>
-                  <td class="py-2 px-3 text-infra-600 font-medium" colspan="3">
-                    ML Pipeline
-                  </td>
-                </tr>
-                <tr>
-                  <td class="py-2 px-3 text-infra-700">
-                    Dataset Definition &amp; Labeling Strategy
-                  </td>
-                  <td class="py-2 px-3 text-infra-600">02/06 → 02/13</td>
-                  <td class="py-2 px-3">
-                    <span class="badge badge-neutral">Upcoming</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="py-2 px-3 text-infra-700">
-                    ML Labeling Round 1 + 2
-                  </td>
-                  <td class="py-2 px-3 text-infra-600">02/13 → 02/27</td>
-                  <td class="py-2 px-3">
-                    <span class="badge badge-neutral">Upcoming</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="py-2 px-3 text-infra-700">SageMaker Training</td>
-                  <td class="py-2 px-3 text-infra-600">02/13 → 02/27</td>
-                  <td class="py-2 px-3">
-                    <span class="badge badge-neutral">Upcoming</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="py-2 px-3 text-infra-600 font-medium" colspan="3">
-                    System Integration
-                  </td>
-                </tr>
-                <tr>
-                  <td class="py-2 px-3 text-infra-700">
-                    End-to-End Integration Test
-                  </td>
-                  <td class="py-2 px-3 text-infra-600">02/20 → 03/06</td>
-                  <td class="py-2 px-3">
-                    <span class="badge badge-neutral">Upcoming</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="py-2 px-3 text-infra-700">
-                    Inference Deployment &amp; API Integration
-                  </td>
-                  <td class="py-2 px-3 text-infra-600">02/20 → 03/06</td>
-                  <td class="py-2 px-3">
-                    <span class="badge badge-neutral">Upcoming</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="py-2 px-3 text-infra-700">
-                    Dashboard / UI Development
-                  </td>
-                  <td class="py-2 px-3 text-infra-600">02/27 → 03/13</td>
-                  <td class="py-2 px-3">
-                    <span class="badge badge-neutral">Upcoming</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="py-2 px-3 text-infra-600 font-medium" colspan="3">
-                    Validation &amp; Field Testing
-                  </td>
-                </tr>
-                <tr>
-                  <td class="py-2 px-3 text-infra-700">
-                    Vehicle-Based Field Testing
-                  </td>
-                  <td class="py-2 px-3 text-infra-600">03/20 → 03/27</td>
-                  <td class="py-2 px-3">
-                    <span class="badge badge-neutral">Upcoming</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="py-2 px-3 text-infra-700">
-                    Final Documentation &amp; Presentation
-                  </td>
-                  <td class="py-2 px-3 text-infra-600">03/20 → 03/27</td>
-                  <td class="py-2 px-3">
-                    <span class="badge badge-neutral">Upcoming</span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          <div class="card">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+              <h3 class="font-bold text-infra-900">
+                Sprint 3 — Field readiness &amp; full stack (Teams 3 &amp; 7)
+              </h3>
+              <span class="badge badge-warning">In progress</span>
+            </div>
+            <p class="text-sm text-infra-500 mb-3">Mar 10 – Apr 2026</p>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="border-b border-infra-200">
+                    <th class="text-left py-2 px-2 font-semibold">Week</th>
+                    <th class="text-left py-2 px-2 font-semibold">Dates</th>
+                    <th class="text-left py-2 px-2 font-semibold">Outcomes</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-infra-100 text-infra-700">
+                  <tr>
+                    <td class="py-2 px-2">7</td>
+                    <td class="py-2 px-2">Mar 10 – Mar 17</td>
+                    <td class="py-2 px-2">
+                      Final harness, power controller, IP67 sealing
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="py-2 px-2">8</td>
+                    <td class="py-2 px-2">Mar 17 – Mar 24</td>
+                    <td class="py-2 px-2">
+                      Geofenced capture area; F-250 rail bracket installed
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="py-2 px-2">9</td>
+                    <td class="py-2 px-2">Mar 24 – Apr</td>
+                    <td class="py-2 px-2">
+                      Vibration testing; final field collection; end-to-end
+                      validation — <strong>938-image</strong> training set
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="text-xs text-infra-500 mt-3">
+              Deliverables: <strong>NextVision</strong> (Team 3) — dual-cam +
+              NVMe + GPS + S3 sync + sealed enclosure on truck rail;
+              <strong>AgriSight</strong> (Team 7) — trained model + this
+              dashboard for dispatch decisions.
+            </p>
           </div>
         </div>
       </div>
@@ -1348,10 +1385,14 @@
     <section id="impact" class="py-24 bg-veg-900 text-white">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-16">
-          <h2 class="text-3xl md:text-4xl font-bold mb-4">Broader Impact</h2>
-          <p class="text-veg-100 text-lg">
-            Transforming utility infrastructure management through intelligent
-            automation
+          <h2 class="text-3xl md:text-4xl font-bold mb-4">
+            Outcomes &amp; impact
+          </h2>
+          <p class="text-veg-100 text-lg max-w-3xl mx-auto">
+            <strong>NextVision</strong> (Team 3) feeds the field;
+            <strong>AgriSight</strong> (Team 7) closes the loop to crew dispatch
+            — lowering mowing spend and manual survey burden for utility-scale
+            solar.
           </p>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
@@ -1359,49 +1400,50 @@
             <div
               class="w-16 h-16 mx-auto bg-white/10 rounded-full flex items-center justify-center mb-4"
             >
-              <i data-lucide="building-2" class="h-8 w-8 text-utility-300"></i>
+              <i data-lucide="cloud" class="h-8 w-8 text-utility-300"></i>
             </div>
-            <h3 class="text-xl font-semibold mb-2">Utility Operations</h3>
+            <h3 class="text-xl font-semibold mb-2">End-to-end pipeline</h3>
             <p class="text-veg-100 text-sm">
-              Reduce inspection labor and increase survey frequency during
-              routine operations.
+              Images to S3, SageMaker inference, DynamoDB records — automated
+              with no manual upload step in the loop.
             </p>
           </div>
           <div class="text-center">
             <div
               class="w-16 h-16 mx-auto bg-white/10 rounded-full flex items-center justify-center mb-4"
             >
-              <i data-lucide="flame" class="h-8 w-8 text-red-300"></i>
+              <i data-lucide="brain" class="h-8 w-8 text-utility-300"></i>
             </div>
-            <h3 class="text-xl font-semibold mb-2">Wildfire Prevention</h3>
+            <h3 class="text-xl font-semibold mb-2">
+              ResNet-50 in production path
+            </h3>
             <p class="text-veg-100 text-sm">
-              Earlier identification of high-risk vegetation contact points.
+              Transfer learning on 938 field images; strong F1 on clear-panel
+              and other classes — vegetation recall improving with more labels.
             </p>
           </div>
           <div class="text-center">
             <div
               class="w-16 h-16 mx-auto bg-white/10 rounded-full flex items-center justify-center mb-4"
             >
-              <i data-lucide="sun" class="h-8 w-8 text-yellow-300"></i>
+              <i data-lucide="shield-check" class="h-8 w-8 text-yellow-300"></i>
             </div>
-            <h3 class="text-xl font-semibold mb-2">Solar Efficiency</h3>
+            <h3 class="text-xl font-semibold mb-2">Audit-ready records</h3>
             <p class="text-veg-100 text-sm">
-              Potential extension to solar farm vegetation monitoring.
+              GPS, camera ID, S3 path, and model version on every row —
+              traceable for compliance and retraining.
             </p>
           </div>
           <div class="text-center">
             <div
               class="w-16 h-16 mx-auto bg-white/10 rounded-full flex items-center justify-center mb-4"
             >
-              <i
-                data-lucide="trending-down"
-                class="h-8 w-8 text-utility-300"
-              ></i>
+              <i data-lucide="map" class="h-8 w-8 text-utility-300"></i>
             </div>
-            <h3 class="text-xl font-semibold mb-2">Cost Savings</h3>
+            <h3 class="text-xl font-semibold mb-2">Actionable dashboard</h3>
             <p class="text-veg-100 text-sm">
-              Reduce emergency response and outage costs through earlier
-              detection.
+              GIS map plus field score translate ML output into maintenance
+              priorities for the field org.
             </p>
           </div>
         </div>
@@ -1410,19 +1452,21 @@
         >
           <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
             <div>
-              <div class="text-4xl font-bold text-utility-300 mb-2">TBD</div>
-              <div class="text-sm text-veg-100">Estimated Annual Savings</div>
-            </div>
-            <div>
-              <div class="text-4xl font-bold text-utility-300 mb-2">TBD</div>
-              <div class="text-sm text-veg-100">Risk Reduction Potential</div>
-            </div>
-            <div>
-              <div class="text-4xl font-bold text-utility-300 mb-2">
-                Routine
-              </div>
+              <div class="text-4xl font-bold text-utility-300 mb-2">Mowing</div>
               <div class="text-sm text-veg-100">
-                Monitoring During Operations
+                Targeted cuts where vegetation is detected — fewer wasted passes
+              </div>
+            </div>
+            <div>
+              <div class="text-4xl font-bold text-utility-300 mb-2">Labor</div>
+              <div class="text-sm text-veg-100">
+                Less time on foot or ad-hoc truck surveys across huge arrays
+              </div>
+            </div>
+            <div>
+              <div class="text-4xl font-bold text-utility-300 mb-2">Yield</div>
+              <div class="text-sm text-veg-100">
+                Fewer shaded modules — better energy output from the same asset
               </div>
             </div>
           </div>
@@ -1436,88 +1480,280 @@
     <section id="team" class="py-24 bg-white">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h2
-          class="text-3xl md:text-4xl font-bold text-infra-900 mb-12 text-center"
+          class="text-3xl md:text-4xl font-bold text-infra-900 mb-4 text-center"
         >
           Team
         </h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div
-            class="bg-infra-50 rounded-xl p-6 border border-infra-200 hover:shadow-lg transition-all text-center group"
+        <p class="text-center text-infra-600 text-sm mb-10 max-w-2xl mx-auto">
+          Sponsored by NextEra Energy —
+          <strong>AgriSight</strong> (EECE404 Team 7, software &amp; ML) and
+          <strong>NextVision</strong> (EECE404 Team 3, hardware engineering).
+        </p>
+
+        <h3 class="text-lg font-bold text-infra-900 mb-4">
+          Team 7 — AgriSight (software &amp; ML)
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+          <a
+            href="https://www.linkedin.com/in/ibukunoluwa-adeloye-895224225/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="bg-infra-50 rounded-xl p-6 border border-infra-200 hover:shadow-lg hover:border-veg-300 transition-all text-center group block no-underline text-inherit"
           >
-            <div
-              class="w-24 h-24 mx-auto bg-gradient-to-br from-utility-200 to-utility-300 rounded-full mb-4 flex items-center justify-center text-2xl text-utility-800 font-bold group-hover:scale-110 transition-transform"
-            >
-              AA
+            <div class="relative w-24 h-24 mx-auto mb-4">
+              <img
+                src="https://unavatar.io/linkedin.com/in/ibukunoluwa-adeloye-895224225"
+                alt=""
+                width="96"
+                height="96"
+                loading="lazy"
+                referrerpolicy="no-referrer"
+                class="w-24 h-24 rounded-full object-cover border-2 border-infra-200 group-hover:border-veg-500 transition-colors"
+                onerror="
+                  this.classList.add('hidden');
+                  this.nextElementSibling.classList.remove('hidden');
+                "
+              />
+              <div
+                class="hidden flex w-24 h-24 rounded-full bg-gradient-to-br from-veg-200 to-veg-300 items-center justify-center text-2xl text-veg-800 font-bold"
+              >
+                IA
+              </div>
             </div>
-            <h4 class="font-bold text-infra-900">Adeoluwa Adekanmbi</h4>
-          </div>
-          <div
-            class="bg-infra-50 rounded-xl p-6 border border-infra-200 hover:shadow-lg transition-all text-center group"
-          >
-            <div
-              class="w-24 h-24 mx-auto bg-gradient-to-br from-veg-200 to-veg-300 rounded-full mb-4 flex items-center justify-center text-2xl text-veg-800 font-bold group-hover:scale-110 transition-transform"
-            >
-              IA
-            </div>
-            <h4 class="font-bold text-infra-900">Ibukunoluwa Adeloye</h4>
-          </div>
-          <div
-            class="bg-infra-50 rounded-xl p-6 border border-infra-200 hover:shadow-lg transition-all text-center group"
-          >
-            <div
-              class="w-24 h-24 mx-auto bg-gradient-to-br from-utility-200 to-veg-200 rounded-full mb-4 flex items-center justify-center text-2xl text-infra-800 font-bold group-hover:scale-110 transition-transform"
-            >
-              IA
-            </div>
-            <h4 class="font-bold text-infra-900">Itunuoluwa Akarakiri</h4>
-          </div>
-          <div
-            class="bg-infra-50 rounded-xl p-6 border border-infra-200 hover:shadow-lg transition-all text-center group"
-          >
-            <div
-              class="w-24 h-24 mx-auto bg-gradient-to-br from-infra-200 to-infra-300 rounded-full mb-4 flex items-center justify-center text-2xl text-infra-800 font-bold group-hover:scale-110 transition-transform"
-            >
-              JM
-            </div>
-            <h4 class="font-bold text-infra-900">Jahmelia Mccarthy</h4>
-          </div>
-          <div
-            class="bg-infra-50 rounded-xl p-6 border border-infra-200 hover:shadow-lg transition-all text-center group"
-          >
-            <div
-              class="w-24 h-24 mx-auto bg-gradient-to-br from-utility-200 to-veg-200 rounded-full mb-4 flex items-center justify-center text-2xl text-infra-800 font-bold group-hover:scale-110 transition-transform"
-            >
-              JR
-            </div>
-            <h4 class="font-bold text-infra-900">Jessica Rubin</h4>
-          </div>
-          <div
-            class="bg-infra-50 rounded-xl p-6 border border-infra-200 hover:shadow-lg transition-all text-center group"
-          >
-            <div
-              class="w-24 h-24 mx-auto bg-gradient-to-br from-infra-200 to-utility-200 rounded-full mb-4 flex items-center justify-center text-2xl text-infra-800 font-bold group-hover:scale-110 transition-transform"
-            >
-              NA
-            </div>
-            <h4 class="font-bold text-infra-900">Noah Adeyeye</h4>
-          </div>
-          <div
-            class="bg-infra-50 rounded-xl p-6 border border-infra-200 hover:shadow-lg transition-all text-center group"
-          >
-            <div
-              class="w-24 h-24 mx-auto bg-gradient-to-br from-veg-200 to-utility-200 rounded-full mb-4 flex items-center justify-center text-2xl text-veg-800 font-bold group-hover:scale-110 transition-transform"
-            >
-              OU
-            </div>
-            <h4 class="font-bold text-infra-900">Odia Ubhimhinye</h4>
-          </div>
-        </div>
-        <div class="mt-12 text-center">
-          <div class="inline-flex items-center gap-2 text-infra-500 text-sm">
-            <i data-lucide="graduation-cap" class="h-4 w-4"></i>
+            <h4 class="font-bold text-infra-900 group-hover:text-veg-700">
+              Ibukunoluwa Adeloye
+            </h4>
             <span
-              >Senior Design Project 2025–2026 • Department of Engineering</span
+              class="inline-flex items-center justify-center gap-1 text-xs text-utility-600 mt-2"
+              ><i data-lucide="linkedin" class="h-3.5 w-3.5"></i> LinkedIn</span
             >
+          </a>
+          <a
+            href="https://www.linkedin.com/in/jessicajrubin/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="bg-infra-50 rounded-xl p-6 border border-infra-200 hover:shadow-lg hover:border-veg-300 transition-all text-center group block no-underline text-inherit"
+          >
+            <div class="relative w-24 h-24 mx-auto mb-4">
+              <img
+                src="https://unavatar.io/linkedin.com/in/jessicajrubin"
+                alt=""
+                width="96"
+                height="96"
+                loading="lazy"
+                referrerpolicy="no-referrer"
+                class="w-24 h-24 rounded-full object-cover border-2 border-infra-200 group-hover:border-veg-500 transition-colors"
+                onerror="
+                  this.classList.add('hidden');
+                  this.nextElementSibling.classList.remove('hidden');
+                "
+              />
+              <div
+                class="hidden flex w-24 h-24 rounded-full bg-gradient-to-br from-utility-200 to-veg-200 items-center justify-center text-2xl text-infra-800 font-bold"
+              >
+                JR
+              </div>
+            </div>
+            <h4 class="font-bold text-infra-900 group-hover:text-veg-700">
+              Jessica Rubin
+            </h4>
+            <span
+              class="inline-flex items-center justify-center gap-1 text-xs text-utility-600 mt-2"
+              ><i data-lucide="linkedin" class="h-3.5 w-3.5"></i> LinkedIn</span
+            >
+          </a>
+          <a
+            href="https://www.linkedin.com/in/itunuoluwa-akarakiri-a1647524b/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="bg-infra-50 rounded-xl p-6 border border-infra-200 hover:shadow-lg hover:border-veg-300 transition-all text-center group block no-underline text-inherit"
+          >
+            <div class="relative w-24 h-24 mx-auto mb-4">
+              <img
+                src="https://unavatar.io/linkedin.com/in/itunuoluwa-akarakiri-a1647524b"
+                alt=""
+                width="96"
+                height="96"
+                loading="lazy"
+                referrerpolicy="no-referrer"
+                class="w-24 h-24 rounded-full object-cover border-2 border-infra-200 group-hover:border-veg-500 transition-colors"
+                onerror="
+                  this.classList.add('hidden');
+                  this.nextElementSibling.classList.remove('hidden');
+                "
+              />
+              <div
+                class="hidden flex w-24 h-24 rounded-full bg-gradient-to-br from-utility-200 to-veg-200 items-center justify-center text-2xl text-infra-800 font-bold"
+              >
+                IA
+              </div>
+            </div>
+            <h4 class="font-bold text-infra-900 group-hover:text-veg-700">
+              Itunuoluwa Akarakiri
+            </h4>
+            <span
+              class="inline-flex items-center justify-center gap-1 text-xs text-utility-600 mt-2"
+              ><i data-lucide="linkedin" class="h-3.5 w-3.5"></i> LinkedIn</span
+            >
+          </a>
+          <a
+            href="https://www.linkedin.com/in/jahmelia-mccarthy/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="bg-infra-50 rounded-xl p-6 border border-infra-200 hover:shadow-lg hover:border-veg-300 transition-all text-center group block no-underline text-inherit"
+          >
+            <div class="relative w-24 h-24 mx-auto mb-4">
+              <img
+                src="https://unavatar.io/linkedin.com/in/jahmelia-mccarthy"
+                alt=""
+                width="96"
+                height="96"
+                loading="lazy"
+                referrerpolicy="no-referrer"
+                class="w-24 h-24 rounded-full object-cover border-2 border-infra-200 group-hover:border-veg-500 transition-colors"
+                onerror="
+                  this.classList.add('hidden');
+                  this.nextElementSibling.classList.remove('hidden');
+                "
+              />
+              <div
+                class="hidden flex w-24 h-24 rounded-full bg-gradient-to-br from-infra-200 to-infra-300 items-center justify-center text-2xl text-infra-800 font-bold"
+              >
+                JM
+              </div>
+            </div>
+            <h4 class="font-bold text-infra-900 group-hover:text-veg-700">
+              Jahmelia McCarthy
+            </h4>
+            <span
+              class="inline-flex items-center justify-center gap-1 text-xs text-utility-600 mt-2"
+              ><i data-lucide="linkedin" class="h-3.5 w-3.5"></i> LinkedIn</span
+            >
+          </a>
+        </div>
+
+        <h3 class="text-lg font-bold text-infra-900 mb-4">
+          Team 3 — NextVision (hardware engineering)
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
+          <a
+            href="https://www.linkedin.com/in/oluwaseun-adeyeye-84a2a7253/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="bg-infra-50 rounded-xl p-6 border border-infra-200 hover:shadow-lg hover:border-utility-400 transition-all text-center group block no-underline text-inherit"
+          >
+            <div class="relative w-24 h-24 mx-auto mb-4">
+              <img
+                src="https://unavatar.io/linkedin.com/in/oluwaseun-adeyeye-84a2a7253"
+                alt=""
+                width="96"
+                height="96"
+                loading="lazy"
+                referrerpolicy="no-referrer"
+                class="w-24 h-24 rounded-full object-cover border-2 border-infra-200 group-hover:border-utility-500 transition-colors"
+                onerror="
+                  this.classList.add('hidden');
+                  this.nextElementSibling.classList.remove('hidden');
+                "
+              />
+              <div
+                class="hidden flex w-24 h-24 rounded-full bg-gradient-to-br from-infra-200 to-utility-200 items-center justify-center text-2xl text-infra-800 font-bold"
+              >
+                OA
+              </div>
+            </div>
+            <h4 class="font-bold text-infra-900 group-hover:text-utility-700">
+              Adeyeye Oluwaseun
+            </h4>
+            <span
+              class="inline-flex items-center justify-center gap-1 text-xs text-utility-600 mt-2"
+              ><i data-lucide="linkedin" class="h-3.5 w-3.5"></i> LinkedIn</span
+            >
+          </a>
+          <a
+            href="https://www.linkedin.com/in/odia-ubhimhinye/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="bg-infra-50 rounded-xl p-6 border border-infra-200 hover:shadow-lg hover:border-utility-400 transition-all text-center group block no-underline text-inherit"
+          >
+            <div class="relative w-24 h-24 mx-auto mb-4">
+              <img
+                src="https://unavatar.io/linkedin.com/in/odia-ubhimhinye"
+                alt=""
+                width="96"
+                height="96"
+                loading="lazy"
+                referrerpolicy="no-referrer"
+                class="w-24 h-24 rounded-full object-cover border-2 border-infra-200 group-hover:border-utility-500 transition-colors"
+                onerror="
+                  this.classList.add('hidden');
+                  this.nextElementSibling.classList.remove('hidden');
+                "
+              />
+              <div
+                class="hidden flex w-24 h-24 rounded-full bg-gradient-to-br from-veg-200 to-utility-200 items-center justify-center text-2xl text-veg-800 font-bold"
+              >
+                OU
+              </div>
+            </div>
+            <h4 class="font-bold text-infra-900 group-hover:text-utility-700">
+              Ubhimhinye Odia
+            </h4>
+            <span
+              class="inline-flex items-center justify-center gap-1 text-xs text-utility-600 mt-2"
+              ><i data-lucide="linkedin" class="h-3.5 w-3.5"></i> LinkedIn</span
+            >
+          </a>
+          <a
+            href="https://www.linkedin.com/in/adeoluwa-adekanmbi/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="bg-infra-50 rounded-xl p-6 border border-infra-200 hover:shadow-lg hover:border-utility-400 transition-all text-center group block no-underline text-inherit"
+          >
+            <div class="relative w-24 h-24 mx-auto mb-4">
+              <img
+                src="https://unavatar.io/linkedin.com/in/adeoluwa-adekanmbi"
+                alt=""
+                width="96"
+                height="96"
+                loading="lazy"
+                referrerpolicy="no-referrer"
+                class="w-24 h-24 rounded-full object-cover border-2 border-infra-200 group-hover:border-utility-500 transition-colors"
+                onerror="
+                  this.classList.add('hidden');
+                  this.nextElementSibling.classList.remove('hidden');
+                "
+              />
+              <div
+                class="hidden flex w-24 h-24 rounded-full bg-gradient-to-br from-utility-200 to-utility-300 items-center justify-center text-2xl text-utility-800 font-bold"
+              >
+                AA
+              </div>
+            </div>
+            <h4 class="font-bold text-infra-900 group-hover:text-utility-700">
+              Adekanmbi Adeoluwa
+            </h4>
+            <span
+              class="inline-flex items-center justify-center gap-1 text-xs text-utility-600 mt-2"
+              ><i data-lucide="linkedin" class="h-3.5 w-3.5"></i> LinkedIn</span
+            >
+          </a>
+        </div>
+
+        <div class="card max-w-lg mx-auto text-center">
+          <h4 class="font-semibold text-infra-900 mb-1">Faculty advisor</h4>
+          <p class="text-infra-700">Dr. Charles Kim</p>
+        </div>
+
+        <div class="mt-12 text-center">
+          <div
+            class="inline-flex flex-col sm:flex-row items-center gap-2 text-infra-500 text-sm"
+          >
+            <span class="inline-flex items-center gap-2">
+              <i data-lucide="graduation-cap" class="h-4 w-4"></i>
+              EECE404 Senior Design II · Team 7 (AgriSight) · Team 3
+              (NextVision)
+            </span>
           </div>
         </div>
       </div>
@@ -1531,11 +1767,15 @@
         <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           <div class="col-span-2">
             <div class="flex items-center gap-2 mb-4">
-              <i data-lucide="cpu" class="h-6 w-6 text-veg-500"></i>
+              <i data-lucide="leaf" class="h-6 w-6 text-veg-500"></i>
+              <span class="text-white font-semibold">AgriSight</span>
+              <span class="text-infra-500 text-xs">Team 7</span>
             </div>
             <p class="text-sm text-infra-400 mb-4 max-w-md">
-              Integrated Vehicular Vegetation Monitoring System for Utility
-              Infrastructure. A senior design engineering prototype.
+              Software &amp; GIS dashboard for NextEra Energy solar vegetation
+              mapping. Capture hardware:
+              <strong class="text-infra-300">NextVision</strong> (Team 3).
+              EECE404 Senior Design II — Dr. Charles Kim, advisor.
             </p>
           </div>
           <div>
@@ -1624,6 +1864,31 @@
         </div>
       </div>
     </footer>
+
+    <!-- Full-screen capture image -->
+    <div
+      id="imageFullscreenModal"
+      class="hidden fixed inset-0 z-[200] bg-black/90 flex items-center justify-center p-4"
+      aria-hidden="true"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Full screen image"
+    >
+      <button
+        type="button"
+        id="imageModalClose"
+        class="absolute top-4 right-4 p-2 rounded-full bg-white/10 text-white hover:bg-white/20 z-10"
+        aria-label="Close"
+      >
+        <i data-lucide="x" class="h-6 w-6"></i>
+      </button>
+      <img
+        id="imageModalImg"
+        src=""
+        alt="Capture full size"
+        class="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
+      />
+    </div>
 
     <!-- ════════════════════════════════════════════════
      SCRIPTS  (load order matters)

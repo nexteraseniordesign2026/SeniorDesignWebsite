@@ -74,6 +74,16 @@ window.MapModule = (() => {
   function buildInfoWindowContent(loc) {
     const placeholderImg =
       "https://images.unsplash.com/photo-1502082553048-f009c37129b9?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80";
+    const timeEt =
+      typeof UIModule !== "undefined" && UIModule.formatCaptureTimeET
+        ? UIModule.formatCaptureTimeET(loc.fullTimestamp)
+        : loc.timestamp || "—";
+    const cam =
+      loc.cameraId === undefined ||
+      loc.cameraId === null ||
+      loc.cameraId === ""
+        ? "—"
+        : String(loc.cameraId);
     return `
             <div style="font-family:'Inter',sans-serif;min-width:220px;">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
@@ -88,8 +98,9 @@ window.MapModule = (() => {
                 <div style="font-size:12px;color:#475569;line-height:1.6;">
                     <div><strong>Location:</strong> ${loc.location}</div>
                     <div><strong>Class:</strong> ${loc.species}</div>
+                    <div><strong>Camera:</strong> ${cam}</div>
                     <div><strong>Confidence:</strong> ${(loc.confidence * 100).toFixed(1)}%</div>
-                    <div><strong>Time:</strong> ${loc.timestamp}</div>
+                    <div><strong>Time (ET):</strong> ${timeEt}</div>
                 </div>
             </div>`;
   }
@@ -220,12 +231,3 @@ window.MapModule = (() => {
   return { init, placeMarkers, focusMarker, zoom };
 })();
 
-// ── Google Maps API callback ───────────────────────────────────────────────
-// Must be on window — referenced in the <script src="...&callback=initMap">
-window.initMap = function () {
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", MapModule.init);
-  } else {
-    MapModule.init();
-  }
-};

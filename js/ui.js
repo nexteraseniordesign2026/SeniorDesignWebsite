@@ -5,6 +5,7 @@
  *   - Filter buttons
  *   - Selected-detection detail panel
  *   - Status bar (fleet count, today's detections, online/mock badge)
+ *   - Maintenance score, date filters, image fullscreen modal
  *   - Toast notifications
  *   - Mock-data warning banner
  *
@@ -13,7 +14,7 @@
  */
 
 window.UIModule = (() => {
-  // ── Constants ─────────────────────────────────────────────────────────
+  const ET_ZONE = "America/New_York";
 
   const RISK_CONFIG = {
     NO_VEGETATION: {
@@ -35,6 +36,27 @@ window.UIModule = (() => {
 
   const PLACEHOLDER_IMG =
     "https://images.unsplash.com/photo-1502082553048-f009c37129b9?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80";
+
+  function formatCaptureTimeET(isoString) {
+    if (!isoString) return "—";
+    try {
+      return (
+        new Date(isoString).toLocaleString("en-US", {
+          timeZone: ET_ZONE,
+          dateStyle: "medium",
+          timeStyle: "short",
+        }) + " ET"
+      );
+    } catch {
+      return "—";
+    }
+  }
+
+  function _cameraLabel(loc) {
+    if (loc.cameraId === undefined || loc.cameraId === null || loc.cameraId === "")
+      return "—";
+    return String(loc.cameraId);
+  }
 
   // ── Detections list ───────────────────────────────────────────────────
 
@@ -60,9 +82,8 @@ window.UIModule = (() => {
 
   function _detectionCard(loc) {
     const cfg = RISK_CONFIG[loc.risk] || RISK_CONFIG.OTHER;
-    const dateStr = loc.fullTimestamp
-      ? new Date(loc.fullTimestamp).toLocaleDateString()
-      : "";
+    const timeEt = formatCaptureTimeET(loc.fullTimestamp);
+    const imgEnc = encodeURIComponent(loc.image || PLACEHOLDER_IMG);
 
     return `
         <div class="bg-infra-700/50 p-3 rounded-lg border border-infra-600
@@ -70,10 +91,18 @@ window.UIModule = (() => {
              onclick="UIModule.selectDetection('${loc.captureId}')">
 
             <div class="flex gap-3 mb-2">
-                <div class="w-14 h-14 rounded overflow-hidden flex-shrink-0 bg-infra-600">
+                <div class="relative w-14 h-14 rounded overflow-hidden flex-shrink-0 bg-infra-600 group">
                     <img src="${loc.image || PLACEHOLDER_IMG}" alt="Capture"
                          class="w-full h-full object-cover"
                          onerror="this.src='${PLACEHOLDER_IMG}';this.onerror=null;">
+                    <button type="button"
+                            class="absolute bottom-0 right-0 p-1 bg-black/60 text-white rounded-tl hover:bg-black/80"
+                            title="Full screen"
+                            aria-label="View image full screen"
+                            data-fullsrc="${imgEnc}"
+                            onclick="event.stopPropagation(); UIModule.openImageFullscreenFromBtn(this)">
+                        <i data-lucide="maximize-2" class="h-3 w-3"></i>
+                    </button>
                 </div>
                 <div class="flex-1 min-w-0">
                     <div class="flex justify-between items-start gap-2">
@@ -95,8 +124,11 @@ window.UIModule = (() => {
             <div class="space-y-1 text-xs text-infra-300">
                 <div class="flex items-center gap-2">
                     <i data-lucide="clock" class="h-3 w-3 flex-shrink-0"></i>
-                    <span>${loc.timestamp || "N/A"}</span>
-                    ${dateStr ? `<span class="text-infra-400 text-[10px]">(${dateStr})</span>` : ""}
+                    <span>${timeEt}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <i data-lucide="video" class="h-3 w-3 flex-shrink-0"></i>
+                    <span>Camera: <strong>${_cameraLabel(loc)}</strong></span>
                 </div>
                 <div class="flex items-center gap-2">
                     <i data-lucide="map-pin" class="h-3 w-3 flex-shrink-0"></i>
@@ -147,15 +179,17 @@ window.UIModule = (() => {
     if (!panel) return;
 
     const cfg = RISK_CONFIG[loc.risk] || RISK_CONFIG.OTHER;
+    const timeEt = formatCaptureTimeET(loc.fullTimestamp);
+    const imgEnc = encodeURIComponent(loc.image || PLACEHOLDER_IMG);
 
     panel.innerHTML = `
             <div class="flex gap-3">
-                <div class="w-20 h-20 bg-infra-700 rounded overflow-hidden flex-shrink-0">
+                <div class="w-20 h-20 bg-infra-700 rounded overflow-hidden flex-shrink-0 relative">
                     <img src="${loc.image || PLACEHOLDER_IMG}" alt="Vegetation"
                          class="w-full h-full object-cover"
                          onerror="this.src='${PLACEHOLDER_IMG}'">
                 </div>
-                <div class="flex-1">
+                <div class="flex-1 min-w-0">
                     <div class="flex justify-between items-start mb-1">
                         <span class="font-mono font-bold text-white truncate">
                             ${loc.deviceName || loc.captureId}
@@ -163,15 +197,22 @@ window.UIModule = (() => {
                         <span class="text-xs ${cfg.badge} font-semibold ml-2 flex-shrink-0">${cfg.label}</span>
                     </div>
                     <div class="text-xs text-infra-300 space-y-1">
-                        <div>Class: ${loc.species}</div>
+                        <div>Class: ${loc.species || "—"}</div>
                         <div>Confidence: ${(loc.confidence * 100).toFixed(1)}%</div>
+                        <div>Camera: ${_cameraLabel(loc)}</div>
                         <div>Location: ${loc.location}</div>
-                        <div>Time: ${loc.timestamp}</div>
+                        <div>Time: ${timeEt}</div>
                         ${loc.numSatellites ? `<div>GPS Sats: ${loc.numSatellites}</div>` : ""}
                     </div>
                 </div>
             </div>
-            <button class="w-full mt-3 py-2 bg-utility-600 hover:bg-utility-700 rounded
+            <button type="button"
+                    class="w-full mt-2 py-2 bg-infra-700 hover:bg-infra-600 rounded text-xs font-medium transition-colors flex items-center justify-center gap-2"
+                    data-fullsrc="${imgEnc}"
+                    onclick="UIModule.openImageFullscreenFromBtn(this)">
+                <i data-lucide="maximize-2" class="h-3.5 w-3.5"></i> Full screen image
+            </button>
+            <button class="w-full mt-2 py-2 bg-utility-600 hover:bg-utility-700 rounded
                            text-xs font-medium transition-colors"
                     onclick="UIModule.toast('Work order generation is demo only.')">
                 Generate Work Order
@@ -180,12 +221,65 @@ window.UIModule = (() => {
     _refreshIcons();
   }
 
+  // ── Fullscreen image modal ────────────────────────────────────────────
+
+  function openImageFullscreen(imageUrl) {
+    const modal = document.getElementById("imageFullscreenModal");
+    const img = document.getElementById("imageModalImg");
+    if (!modal || !img) return;
+    img.src = imageUrl || PLACEHOLDER_IMG;
+    modal.classList.remove("hidden");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+    _refreshIcons();
+  }
+
+  function closeImageFullscreen() {
+    const modal = document.getElementById("imageFullscreenModal");
+    const img = document.getElementById("imageModalImg");
+    if (!modal) return;
+    modal.classList.add("hidden");
+    modal.setAttribute("aria-hidden", "true");
+    if (img) img.src = "";
+    document.body.style.overflow = "";
+  }
+
+  function openImageFullscreenFromBtn(btn) {
+    const raw = btn?.dataset?.fullsrc;
+    openImageFullscreen(
+      raw ? decodeURIComponent(raw) : PLACEHOLDER_IMG,
+    );
+  }
+
+  // ── Maintenance score ───────────────────────────────────────────────────
+
+  function updateMaintenanceScore() {
+    const el = document.getElementById("maintenanceScoreField");
+    if (!el) return;
+
+    const rows = State.data.filtered;
+    if (!rows.length) {
+      el.textContent = "Field score: —";
+      return;
+    }
+
+    const veg = rows.filter((l) => l.risk === "VEGETATION").length;
+    const pct = Math.round((veg / rows.length) * 100);
+    el.textContent = `Field score: ${pct}% vegetation (${veg}/${rows.length} in view)`;
+  }
+
+  /** After any filter change: list, map markers, score. */
+  function refreshDashboardView() {
+    renderDetectionsList(State.data.filtered);
+    MapModule.placeMarkers(State.data.filtered);
+    updateMaintenanceScore();
+  }
+
   // ── Filter buttons ────────────────────────────────────────────────────
 
   function setActiveFilter(filter) {
     State.setFilter(filter);
 
-    // Update button styles
     document.querySelectorAll("[data-filter]").forEach((btn) => {
       const isActive = btn.dataset.filter === filter;
       btn.classList.toggle("bg-utility-600", isActive);
@@ -194,8 +288,30 @@ window.UIModule = (() => {
       btn.classList.toggle("text-infra-300", !isActive);
     });
 
-    renderDetectionsList(State.data.filtered);
-    MapModule.placeMarkers(State.data.filtered);
+    refreshDashboardView();
+  }
+
+  function syncDateInputsFromState() {
+    const start = document.getElementById("filterDateStart");
+    const end = document.getElementById("filterDateEnd");
+    if (start) start.value = State.ui.dateStart || "";
+    if (end) end.value = State.ui.dateEnd || "";
+  }
+
+  function applyDateFilterFromInputs() {
+    const start = document.getElementById("filterDateStart")?.value || null;
+    const end = document.getElementById("filterDateEnd")?.value || null;
+    State.setDateRange(start, end);
+    refreshDashboardView();
+  }
+
+  function clearDateFilter() {
+    const start = document.getElementById("filterDateStart");
+    const end = document.getElementById("filterDateEnd");
+    if (start) start.value = "";
+    if (end) end.value = "";
+    State.setDateRange(null, null);
+    refreshDashboardView();
   }
 
   // ── Status bar ────────────────────────────────────────────────────────
@@ -320,10 +436,19 @@ window.UIModule = (() => {
     renderDetectionsList,
     selectDetection,
     setActiveFilter,
+    refreshDashboardView,
     updateStatusBar,
+    updateMaintenanceScore,
     showMockWarning,
     showLoading,
     showError,
     toast,
+    formatCaptureTimeET,
+    openImageFullscreen,
+    openImageFullscreenFromBtn,
+    closeImageFullscreen,
+    syncDateInputsFromState,
+    applyDateFilterFromInputs,
+    clearDateFilter,
   };
 })();

@@ -77,9 +77,9 @@ window.AppModule = (() => {
       State.setLocations(locations);
 
       UIModule.showMockWarning(State.data.isUsingMock, State.data.lastError);
-      UIModule.renderDetectionsList(State.data.filtered);
+      UIModule.syncDateInputsFromState();
+      UIModule.refreshDashboardView();
       UIModule.updateStatusBar();
-      MapModule.placeMarkers(State.data.all);
 
       console.log(
         `✅ AppModule: loaded ${locations.length} locations (mock=${State.data.isUsingMock})`,
@@ -131,6 +131,26 @@ window.AppModule = (() => {
     document.querySelectorAll(".tab-button").forEach((btn, i, all) => {
       btn.addEventListener("click", () => _switchTab(btn.dataset.tab));
       btn.addEventListener("keydown", (e) => _tabKeyNav(e, i, all));
+    });
+
+    document
+      .getElementById("filterDateApply")
+      ?.addEventListener("click", () => UIModule.applyDateFilterFromInputs());
+    document
+      .getElementById("filterDateClear")
+      ?.addEventListener("click", () => UIModule.clearDateFilter());
+
+    document
+      .getElementById("imageModalClose")
+      ?.addEventListener("click", () => UIModule.closeImageFullscreen());
+    document
+      .getElementById("imageFullscreenModal")
+      ?.addEventListener("click", (e) => {
+        if (e.target.id === "imageFullscreenModal")
+          UIModule.closeImageFullscreen();
+      });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") UIModule.closeImageFullscreen();
     });
   }
 
@@ -215,8 +235,7 @@ window.AppModule = (() => {
 })();
 
 window.initMap = () => {
-  MapModule.init(); // Initialize the map
-  AppModule.loadData(); // Then trigger the data fetch
+  MapModule.init();
 };
 
 // ── Kick everything off ───────────────────────────────────────────────────

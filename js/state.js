@@ -26,6 +26,9 @@ window.State = {
   ui: {
     selectedCaptureId: null,
     activeFilter: "ALL", // 'ALL' | 'NO_VEGETATION' | 'VEGETATION' | 'OTHER'
+    /** `YYYY-MM-DD` or null — calendar date in America/New_York */
+    dateStart: null,
+    dateEnd: null,
   },
 
   // ── Config ────────────────────────────────────────────────────────────
@@ -39,6 +42,35 @@ window.State = {
   // Helpers
   // ─────────────────────────────────────────────────────────────────────
 
+  /** Calendar date string YYYY-MM-DD for instant in Eastern Time. */
+  _captureDateET(isoString) {
+    if (!isoString) return null;
+    const d = new Date(isoString);
+    if (Number.isNaN(d.getTime())) return null;
+    return d.toLocaleDateString("en-CA", { timeZone: "America/New_York" });
+  },
+
+  _passesDateFilter(loc) {
+    const start = this.ui.dateStart;
+    const end = this.ui.dateEnd;
+    if (!start && !end) return true;
+    const ymd = this._captureDateET(loc.fullTimestamp);
+    if (!ymd) return false;
+    if (start && ymd < start) return false;
+    if (end && ymd > end) return false;
+    return true;
+  },
+
+  /** Re-compute data.filtered from data.all + class filter + date range. */
+  _applyFilter() {
+    let rows = this.data.all.filter((loc) => this._passesDateFilter(loc));
+    const filter = this.ui.activeFilter;
+    if (filter !== "ALL") {
+      rows = rows.filter((loc) => loc.risk === filter);
+    }
+    this.data.filtered = rows;
+  },
+
   /** Replace the full location dataset and rebuild the lookup index. */
   setLocations(locations) {
     this.data.all = locations;
@@ -49,18 +81,16 @@ window.State = {
     this._applyFilter();
   },
 
-  /** Re-compute data.filtered from data.all + ui.activeFilter. */
-  _applyFilter() {
-    const filter = this.ui.activeFilter;
-    this.data.filtered =
-      filter === "ALL"
-        ? [...this.data.all]
-        : this.data.all.filter((loc) => loc.risk === filter);
-  },
-
-  /** Change the active filter and recompute data.filtered. */
+  /** Change the active class filter and recompute data.filtered. */
   setFilter(filter) {
     this.ui.activeFilter = filter;
+    this._applyFilter();
+  },
+
+  /** Set inclusive date range (`YYYY-MM-DD` strings or null) and refilter. */
+  setDateRange(start, end) {
+    this.ui.dateStart = start || null;
+    this.ui.dateEnd = end || null;
     this._applyFilter();
   },
 
